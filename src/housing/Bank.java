@@ -74,14 +74,12 @@ public class Bank {
 	public MortgageApproval requestLoan(Household h, double housePrice, boolean isHome) {
 		MortgageApproval approval = new MortgageApproval();
 		double r = mortgageInterestRate()/12.0; // monthly interest rate
-		double ltv_principal, pdi_principal, lti_principal;
+		double ltv_principal, lti_principal;
 
 		// --- calculate maximum allowable principal
 		ltv_principal = housePrice*loanToValue(h, isHome);
-		pdi_principal = Math.max(0.0,h.getMonthlyDiscretionaryIncome())/monthlyPaymentFactor();
 		lti_principal = h.annualEmploymentIncome * config.LTI;
-		approval.principal = Math.min(ltv_principal, pdi_principal);
-		approval.principal = Math.min(approval.principal, lti_principal);
+		approval.principal = Math.min(ltv_principal, lti_principal);
 		approval.monthlyPayment = approval.principal*monthlyPaymentFactor();
 		/**
 		double pdi;
@@ -132,19 +130,15 @@ public class Bank {
 	 ****************************************/
 	public double getMaxMortgage(Household h, boolean isHome) {
 		double ltv_max; // loan to value constraint
-		double itv_max; // income to value constraint
-		double pdi_max; // disposable income constraint
 		double lti_max; // loan to income constraint
 		
 		ltv_max = h.bankBalance/(1.0 - loanToValue(h, isHome));
-		pdi_max = h.bankBalance + Math.max(0.0,h.getMonthlyDiscretionaryIncome())/monthlyPaymentFactor();
-		lti_max = h.annualEmploymentIncome * config.LTI/loanToValue(h,isHome);
+		lti_max = h.getAnnualDisposableIncome() * config.LTI/loanToValue(h,isHome);
 		
-		pdi_max = Math.min(pdi_max, ltv_max); // find minimum
-		pdi_max = Math.min(pdi_max, lti_max);
-		pdi_max = Math.floor(pdi_max*100.0)/100.0; // round down to nearest penny
+		double maxHousePrice = Math.min(ltv_max, lti_max); // find minimum
+		maxHousePrice = Math.floor(maxHousePrice*100.0)/100.0; // round down to nearest penny
 		
-		return(pdi_max);
+		return maxHousePrice;
 	}
 
 	/**********************************************

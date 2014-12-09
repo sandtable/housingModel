@@ -35,12 +35,22 @@ public class Household implements IHouseOwner {
 
 		/////////////////////////////////////////////////////////////////////////////////
 		static public class PurchaseEqn {
-			static public double A = 0.01;			// sensitivity to house price appreciation
-			static public double EPSILON = 0.3; 	// S.D. of noise
-			static public double SIGMA = 4.5*12.0;	// scale
+			static public double PSI = 0.33;
 
-			public double desiredPrice(double monthlyIncome, double hpa) {
-				return(SIGMA*monthlyIncome*Math.exp(EPSILON*rand.nextGaussian())/(1.0 - A*hpa));
+			private double getInterestFactor(double monthlyInterestRate, int numberMonthlyPayments) {
+				return monthlyInterestRate / (1 - Math.pow(1 + monthlyInterestRate, -numberMonthlyPayments));
+			}
+
+			public double desiredHousePrice(double monthlyIncome,
+											double annualInterestRate,
+											double downPayment,
+											int numberMonthlyPayments) {
+
+				double monthlyInterestRate = annualInterestRate / 12.0;
+				double interestFactor = getInterestFactor(monthlyInterestRate, numberMonthlyPayments);
+				double housePrice = downPayment + PSI * monthlyIncome / interestFactor;
+
+				return housePrice;
 			}
 		}
 
@@ -426,8 +436,12 @@ public class Household implements IHouseOwner {
 	 * given that it can afford a mortgage.
 	 ****************************************/
 	protected void bidOnHousingMarket(double p) {
-		double desiredPrice = config.purchaseEqn.desiredPrice(getMonthlyEmploymentIncome(), houseMarket.housePriceAppreciation());
+		double desiredPrice = config.purchaseEqn.desiredHousePrice(getMonthlyDisposableIncome(),
+																   bank.mortgageInterestRate(),
+																   bankBalance,
+																   bank.config.N_PAYMENTS);
 		double maxMortgage = bank.getMaxMortgage(this, true);
+		System.out.print(desiredPrice <= maxMortgage);
 		if(desiredPrice <= maxMortgage) {
 			if(p<1.0) {
 				if(Math.random() < p) houseMarket.bid(this, desiredPrice);
@@ -448,7 +462,10 @@ public class Household implements IHouseOwner {
 	protected void decideToBuyFirstHome() {
 		double costOfHouse;
 		double costOfRent;
-		double p = config.purchaseEqn.desiredPrice(getMonthlyEmploymentIncome(), houseMarket.housePriceAppreciation());
+		double p = config.purchaseEqn.desiredHousePrice(getMonthlyDisposableIncome(),
+														bank.mortgageInterestRate(),
+														bankBalance,
+														bank.config.N_PAYMENTS);
 		double maxMortgage = bank.getMaxMortgage(this, true);
 		if(p <= maxMortgage) {
 			costOfHouse = p*(1.0-HousingMarketTest.bank.config.THETA_FTB)*bank.mortgageInterestRate() - p*houseMarket.housePriceAppreciation();

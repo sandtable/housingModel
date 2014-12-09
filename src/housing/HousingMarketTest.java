@@ -226,6 +226,7 @@ public class HousingMarketTest extends SimState implements Steppable {
 	static void recordBidOffer(HousingMarket market) {
 		averageBidPrice = 0.0;
 		for(HouseBuyerRecord buyer : market.buyers) {
+			System.out.print(buyer.price);
 			averageBidPrice += buyer.price;
 		}
 		if(market.buyers.size() > 0) averageBidPrice /= market.buyers.size();
@@ -241,12 +242,12 @@ public class HousingMarketTest extends SimState implements Steppable {
 	// Getters/setters for the console
 	////////////////////////////////////////////////////////////////////////
 	
-	public double getPurchaseEqn_A() {
-		return(Household.Config.PurchaseEqn.A);
+	public double getPurchaseEqn_PSI() {
+		return(Household.Config.PurchaseEqn.PSI);
 	}
 
-	public void setPurchaseEqn_A(double x) {
-		Household.Config.PurchaseEqn.A = x;
+	public void setPurchaseEqn_PSI(double x) {
+		Household.Config.PurchaseEqn.PSI = x;
 	}
 
 	public double getSaleEqn_D() {

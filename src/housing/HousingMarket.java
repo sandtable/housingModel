@@ -70,6 +70,7 @@ public class HousingMarket {
 	 * @param price The price that the household is willing to pay.
 	 ******************************************/
 	public void bid(Household buyer, double price) {
+//		System.out.println(price);
 		buyers.add(new HouseBuyerRecord(buyer, price));
 		nBuyers += 1;
 	}
