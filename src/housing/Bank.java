@@ -14,7 +14,7 @@ public class Bank {
 	//////////////////////////////////////////////////////////////////////////////////////
 	// Configuration
 	//////////////////////////////////////////////////////////////////////////////////////
-	static public class Config implements Configuration {
+	static public class Config {
 		public double THETA_FTB = 0.1; // first-time buyer haircut (LTV)
 		public double THETA_HOME = 0.2; // home buyer haircut (LTV)
 		public double THETA_BTL = 0.4; // buy-to-let buyer haircut (LTV)

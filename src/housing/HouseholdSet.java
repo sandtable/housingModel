@@ -77,6 +77,9 @@ public class HouseholdSet extends ArrayList<Household> {
 		this.ensureCapacity(config.N);
 	}
 	
+	/**
+	 * Initialises the households in this set
+	 */
 	public void start() {
 		int i,j,n,p;
 		double price;

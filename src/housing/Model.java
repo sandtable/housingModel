@@ -48,7 +48,7 @@ public class Model extends SimState implements Steppable {
 	////////////////////////////////////////////////////////////////////////
 	// Initialisation
 	////////////////////////////////////////////////////////////////////////
-	static void initialise() {		
+	static void initialise() {
 		/***
 		final double RENTERS = 0.32; // proportion of population who rent
 		final double OWNERS = 0.32;  // proportion of population outright home-owners (no mortgage)

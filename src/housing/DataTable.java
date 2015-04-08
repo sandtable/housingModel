@@ -5,9 +5,14 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Map;
 
-import org.apache.commons.csv.*;
-
+//import org.apache.commons.csv.*;
+/**
+ * Class for reading in data from a CSV file.
+ * @author daniel
+ *
+ */
 public class DataTable {
+	/***
 	public DataTable(String filename) throws IOException {
 		super();
 		Reader in = new FileReader(filename);
@@ -31,4 +36,5 @@ public class DataTable {
 	}
 	
 	CSVParser data;
+	***/
 }
