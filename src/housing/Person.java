@@ -79,7 +79,7 @@ public class Person {
 				});
 }
 
-	public Person(Household h) {
+	public Person(LifecycleHousehold h) {
 		household = h;
 		status = Status.SINGLE;
 		sex = (Model.rand.nextDouble() < Config.PMale?Sex.MALE:Sex.FEMALE);
@@ -109,5 +109,5 @@ public class Person {
 	Sex 		sex;
 	Status		status;
 	double		income;
-	Household 	household;
+	LifecycleHousehold 	household;
 }

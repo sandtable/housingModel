@@ -1,15 +1,9 @@
 package housing;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
-
-//import org.jfree.chart.ChartUtilities;
-//import org.jfree.data.xy.XYSeries;
-
-
 import sim.display.Console;
 import sim.display.Controller;
 import sim.display.GUIState;
@@ -33,11 +27,8 @@ public class ModelGUI extends GUIState implements Steppable {
     // Chart generators
     
 	public ScatterPlotGenerator
-		housingChart,
-		housePriceChart,
-		bankBalanceChart,
-		mortgageStatsChart,
-		mortgagePhaseChart;
+		bankBalanceChart;
+
             
     protected ArrayList<TimeSeriesPlot> timeSeriesPlots;
     
@@ -61,50 +52,13 @@ public class ModelGUI extends GUIState implements Steppable {
        
         // Create a tab interface
         JTabbedPane newTabPane = new JTabbedPane();
-        housingChart = makeScatterPlot(newTabPane, "Housing stats", "Probability", "Household Income");
-        housePriceChart = makeScatterPlot(newTabPane, "House prices", "Modelled Price", "Reference Price");
-        bankBalanceChart = makeScatterPlot(newTabPane, "Bank balances", "Balance", "Income");
-        mortgageStatsChart = makeScatterPlot(newTabPane, "Mortgage stats", "Frequency", "Ratio");
-        mortgagePhaseChart = makeScatterPlot(newTabPane, "Mortgage phase",  "Down-payment/Income", "Loan to Income ratio");
-        mortgagePhaseChart.setXAxisRange(0.0, 8.0);
-        mortgagePhaseChart.setYAxisRange(0.0, 8.0);
-                
-        timeSeriesPlots.add(
-        		new TimeSeriesPlot("Market Statistics","Time (years)","Value")
-        			.addVariable(Model.housingMarket,"housePriceIndex", "HPI")
-        			.addVariable(Model.housingMarket,"averageDaysOnMarket", "Years on market", new DataRecorder.Transform() {
-        				public double exec(double x) {return(Math.min(x/360.0, 1.0));}
-        			})
-        			.addVariable(Model.housingMarket.diagnostics, "nBuyers", "Buyers (1000s)", new DataRecorder.Transform() {
-        				public double exec(double x) {return(x/1000.0);}
-        			})
-//        			.addVariable(HousingMarketTest.housingMarket.diagnostics,"averageSoldPriceToOLP", "Sold Price/List price")
-        			.addVariable(Model.bank.diagnostics,"affordability", "Affordability (Mortgage-payment/income)")
-    	);
-
-        timeSeriesPlots.add(
-        		new TimeSeriesPlot("Bid/Offer quantities","Time (years)","Number")
-        			.addVariable(Model.housingMarket.diagnostics,"nSales", "Transactions")
-        			.addVariable(Model.housingMarket.diagnostics,"nSellers", "Sellers")
-        			.addVariable(Model.housingMarket.diagnostics,"nBuyers", "Buyers")
-    	);
+        bankBalanceChart = makeScatterPlot(newTabPane, "Bank balances", "Balance", "Income");                
         
         timeSeriesPlots.add(
-        		new TimeSeriesPlot("Bid/Offer Prices","Time (years)","Price")
-        			.addVariable(Model.housingMarket.diagnostics,"averageBidPrice", "Average Bid Price")
-        			.addVariable(Model.housingMarket.diagnostics,"averageOfferPrice", "Average Offer Price")        			
-        );
-
-//        timeSeriesPlots.add(
-//        		new TimeSeriesPlot("Affordability","Time (years)","mortgage payment/income")
-//        			.addVariable(HousingMarketTest.bank.diagnostics,"affordability", "Affordability")
-//    	);
-
-        timeSeriesPlots.add(
-        		new TimeSeriesPlot("Renting/Homeless Quantity","Time (years)","number")
-        			.addVariable(Household.diagnostics,"nHomeless", "Homeless")
-        			.addVariable(Household.diagnostics,"nRenting", "Renting")        			
+        		new TimeSeriesPlot("Some numbers of interest","Time (years)","Number")
+        			.addVariable(state,"t", "the t variable")
     	);
+
         
         for(TimeSeriesPlot plot : timeSeriesPlots) {
         	plot.addToPane(newTabPane);
@@ -119,18 +73,9 @@ public class ModelGUI extends GUIState implements Steppable {
     @Override
     public void start() {
         super.start();
-        Household.diagnostics.init();
-        
-        addSeries(housingChart, "Homeless", Household.diagnostics.homelessData);
-        addSeries(housingChart, "Renting", Household.diagnostics.rentingData);
-        addSeries(housePriceChart, "Modelled prices", Model.housingMarket.diagnostics.priceData);
-        addSeries(bankBalanceChart, "Bank balances", Household.diagnostics.bankBalData);
-        addSeries(mortgageStatsChart, "LTV distribution", Model.bank.diagnostics.ltv_distribution);
-        addSeries(mortgageStatsChart, "LTI distribution (x0.1)", Model.bank.diagnostics.lti_distribution);
-        addSeries(mortgagePhaseChart, "Approved mortgages", Model.bank.diagnostics.approved_mortgages);
-        
-        housePriceChart.addSeries(Model.housingMarket.diagnostics.referencePriceData, "Reference price", null);
-        bankBalanceChart.addSeries(Household.diagnostics.referenceBankBalData, "Reference bank balance", null);
+
+        // Add scatterplot data here
+ //       addSeries(bankBalanceChart, "Bank balances", Household.diagnostics.bankBalData);
 
         // Execute when each time-step is complete
         scheduleRepeatingImmediatelyAfter(this);
@@ -145,10 +90,6 @@ public class ModelGUI extends GUIState implements Steppable {
         for(TimeSeriesPlot plot : timeSeriesPlots) {
         	plot.recordValues(t);
         }
-        
-        Household.diagnostics.step();
-        Model.bank.diagnostics.step();
-        Model.housingMarket.diagnostics.step();
     }
     
     
@@ -169,20 +110,6 @@ public class ModelGUI extends GUIState implements Steppable {
         	}
         });
     }
-
-    /***
-    private TimeSeriesChartGenerator makeTimeSeriesChart(JTabbedPane pane, String title, String yAxis) {
-    	TimeSeriesChartGenerator chart = ChartUtilities.buildTimeSeriesChartGenerator(title, yAxis);
-        pane.addTab(title, chart);
-        return(chart);
-    }
-
-
-    private void addSeries(TimeSeriesChartGenerator chart, String title, Valuable val) {
-    	TimeSeriesAttributes attributes = ChartUtilities.addSeries(chart, title);
-        ChartUtilities.scheduleSeries(this, attributes, val);
-    }
-     ***/
     
     /** Called once, when the console quits. */
     @Override
@@ -194,15 +121,6 @@ public class ModelGUI extends GUIState implements Steppable {
     // Java entry point
     public static void main(String[] args) {
         // Create a console for the GUI
-
-    	/****
-    	try {
-			DataTable myTable = new DataTable("./data/ONS_UN_Census2011Table57b.csv");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	***/
         Console console = new Console(new ModelGUI());
         console.setVisible(true);
     }

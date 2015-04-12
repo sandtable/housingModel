@@ -22,6 +22,10 @@ public class Model extends SimState implements Steppable {
 	public void start() {
 		super.start();
         schedule.scheduleRepeating(this);
+        
+        int j;
+		for(j = 0; j<N; ++j) households.add(new LifecycleHousehold());
+
 		t=0;
 	}
 	
@@ -45,8 +49,8 @@ public class Model extends SimState implements Steppable {
 	////////////////////////////////////////////////////////////////////////
 	
 
-	public Household.Config getHouseholdConfig() {
-		return(new Household.Config());
+	public LifecycleHousehold.Config getLifecycleConfig() {
+		return(new LifecycleHousehold.Config());
 	}
 	
 
@@ -66,8 +70,9 @@ public class Model extends SimState implements Steppable {
 	public static final int Nh = 4100; // number of houses
 	public static int N_STEPS = 50000; // timesteps
 
-	public static ArrayList<LifecycleBehaviour> 		households = new ArrayList<LifecycleBehaviour>(N);
-	public static int 				t;
-	public static MersenneTwisterFast			rand = new MersenneTwisterFast(1L);
+	public static Firm								firm;
+	public static ArrayList<LifecycleHousehold> 	households = new ArrayList<LifecycleHousehold>(N);
+	public static int 								t;
+	public static MersenneTwisterFast				rand = new MersenneTwisterFast(1L);
 	
 }
