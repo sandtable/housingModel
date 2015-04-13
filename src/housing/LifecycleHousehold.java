@@ -1,9 +1,93 @@
 package housing;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 
 public class LifecycleHousehold {
+	
+	
+	// simplistic distribution of household types: only single and married/couple
+	public static final double POnePersonHousehold = 0.3; // Probability of a household being
+												// one person in 2013. Source:
+												// ONS families and households
+												// 2013
+	public static final double PCouple = 0.7;
+	/*
+	 * public double PLoneParent = 0.105; public double PMultipleOccupation =
+	 * 0.043; public double PSharedFlat = 0.032; public double PMultipleFamilies
+	 * = 0.012;
+	 */
+	
+	// Lifecycle Parameters
+	public static final double LifeDuration = 70;
+
+	// characteristics of a household
+	public static int HouseholdMarriedCount;
+	public static int HouseholdSingleCount;
+	public static int HouseholdTotalCount;
+	public int householdid;
+	public int personsInHousehold;
+
+	enum Status {
+		SINGLE, MARRIED // married or in civil partnership
+	}
+
+	Status status;
+	double income;
+
+	// Constructor
+	public LifecycleHousehold() {
+		
+		// set household id and count number of households
+		HouseholdTotalCount++;
+		householdid = HouseholdTotalCount;
+		
+		// assign household type and create persons accordingly
+		double random = new Random().nextDouble();
+		if (random < POnePersonHousehold) {
+			status = Status.SINGLE;
+			people.add(new Person());
+			people.get(0).determineSingleSex();
+			personsInHousehold++;
+			HouseholdSingleCount++;			
+
+		} else if (random >= POnePersonHousehold) {
+			status = Status.MARRIED;
+			people.add(new Person());
+			personsInHousehold++;
+			people.add(new Person());
+			personsInHousehold++;
+			people.get(0).makeMale();
+			people.get(1).makeFemale();
+			HouseholdMarriedCount++;
+		}
+		//System.out.println("Household Created. Status: " + status);
+	}
+
+	ArrayList<Person> people = new ArrayList<Person>(); // ages in Months of
+														// people in the
+														// household
+	ArrayList<Person> will = new ArrayList<Person>(); // beneficiaries on the
+														// last will and
+														// testament
+
+	public void step() {
+		for (Person p : people) {
+			p.step();
+			if(p.age > LifeDuration) {
+				p = null;
+				Person.PersonCount = Person.PersonCount - 1;
+				personsInHousehold = personsInHousehold - 1;
+			}
+		}
+	}
+	
+}
+
+
+/*	////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	
 	static public class Config {
 
@@ -11,7 +95,8 @@ public class LifecycleHousehold {
 		public double POnePersonHousehold = 0.290; // Probability of a household being one person in 2013. Source: ONS families and households 2013
 		public double PCouple = 0.562;
 		public double PLoneParent = 0.105;
-		public double PMultipleOccupation = 0.043;
+		public double PMultipleOccupation = 0.043; // multiple families and multiple unrelated adults
+		
 
 		public static double PFemale = 100.0/205.1; // Probability of being male given that you were born in the UK 2007-2011 (Source: Birth ratios in the UK, 2013, Dept of health)
 		public double PFemaleGivenOnePersonHousehold = 0.537;
@@ -63,4 +148,7 @@ public class LifecycleHousehold {
 		
 	ArrayList<Person> 		people = new ArrayList<Person>(); // ages in Months of people in the household
 	ArrayList<Person> 		will = new ArrayList<Person>(); // beneficiaries on the last will and testament
+	
+	
 }
+*/

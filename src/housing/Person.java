@@ -1,6 +1,57 @@
 package housing;
 
+import java.util.Random;
+
 public class Person {
+	
+	public static double PMale = 105.1 / 205.1;
+	double age;
+	double income;
+	public static int PersonCount;
+	public int personid;
+	int householdID;
+
+	enum Sex {
+		MALE, FEMALE
+	}
+
+	Sex sex;
+
+	public Person() {
+		PersonCount++;
+		personid = PersonCount;
+		householdID = LifecycleHousehold.HouseholdTotalCount;
+		age = 0;
+		income = 0;
+		//System.out.println("Person created, ID: " + personid + "; belongs to household " + householdID);
+	}
+
+	public void determineSingleSex() {
+		double random = new Random().nextDouble();
+		if (random < PMale) {
+			sex = Sex.MALE;
+		} else {
+			sex = Sex.FEMALE;
+		}
+	}
+
+	public void makeFemale() {
+		sex = Sex.FEMALE;
+	}
+
+	public void makeMale() {
+		sex = Sex.MALE;
+	}
+
+	public void step() {
+		age = age +  (1.0 / 12.0);
+		System.out.println("Age: " + age);
+	}	
+	
+}
+
+/*////////////////////////////////////////////////////////////////////////////////
+	
 	static class Config {
 		public static double PMale = 105.1/205.1; // Probability of being male given that you were born in the UK 2007-2011 (Source: Birth ratios in the UK, 2013, Dept of health)
 		public static SampledFunction PBirthGivenMarried = // monthly probability of birth by age for married female
@@ -111,3 +162,4 @@ public class Person {
 	double		income;
 	LifecycleHousehold 	household;
 }
+*/
