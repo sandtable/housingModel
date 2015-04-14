@@ -26,24 +26,19 @@ public class LifecycleHousehold {
 	public static int HouseholdMarriedCount;
 	public static int HouseholdSingleCount;
 	public static int HouseholdTotalCount;
-	public int householdid;
-	public int personsInHousehold;
+	public final int HID;
+	public int householdMembers;
 
-	enum Status {
-		SINGLE, MARRIED // married or in civil partnership
-	}
-
-	Status status;
-	double income;
+	double householdIncome;
 
 	// Constructor
 	public LifecycleHousehold() {
 		
 		// set household id and count number of households
 		HouseholdTotalCount++;
-		householdid = HouseholdTotalCount;
+		HID = HouseholdTotalCount;
 		
-		// assign household type and create persons accordingly
+/*		// assign household type and create persons accordingly
 		double random = new Random().nextDouble();
 		if (random < POnePersonHousehold) {
 			status = Status.SINGLE;
@@ -63,12 +58,13 @@ public class LifecycleHousehold {
 			HouseholdMarriedCount++;
 		}
 		//System.out.println("Household Created. Status: " + status);
+		 */
 	}
 
 	ArrayList<Person> people = new ArrayList<Person>(); // ages in Months of
 														// people in the
 														// household
-	ArrayList<Person> will = new ArrayList<Person>(); // beneficiaries on the
+	ArrayList<Person> heirs = new ArrayList<Person>(); // beneficiaries on the
 														// last will and
 														// testament
 
@@ -78,7 +74,7 @@ public class LifecycleHousehold {
 			if(p.age > LifeDuration) {
 				p = null;
 				Person.PersonCount = Person.PersonCount - 1;
-				personsInHousehold = personsInHousehold - 1;
+				householdMembers = householdMembers - 1;
 			}
 		}
 	}
