@@ -47,7 +47,7 @@ public class Model extends SimState implements Steppable {
 		int j;
         if (schedule.getTime() >= N_STEPS) simulationStateNow.kill();
         
-		//System.out.println("Step " + t + " begins ...");	
+		System.out.println("Step " + t + " begins ...");	
 		
 		for (Person p : persons) {
 			p.step();
@@ -55,7 +55,7 @@ public class Model extends SimState implements Steppable {
 		}
 		persons.removeAll(persons_justdied);
 		persons.addAll(persons_justborn);
-		System.out.println("Number of people in persons after step " + t + ": " + persons.size());
+		//System.out.println("Number of people in persons after step " + t + ": " + persons.size());
 		persons_justdied.removeAll(persons_justdied);
 		persons_justborn.removeAll(persons_justborn);
 
@@ -98,9 +98,9 @@ public class Model extends SimState implements Steppable {
 	////////////////////////////////////////////////////////////////////////
 
 	public static final int N_HOUSEHOLD = 1; // number of households	
-	public static final int N_PERSON = 10; // number of households	
+	public static final int N_PERSON = 1000; // number of households	
 	public static final int Nh = 4100; // number of houses
-	public static int N_STEPS = 12*160; // timesteps
+	public static int N_STEPS = 12*400; // timesteps
 
 	public static Firm								firm;
 	public static ArrayList<Person> 				persons = new ArrayList<Person>(N_PERSON);
