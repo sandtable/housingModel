@@ -48,17 +48,23 @@ public class Model extends SimState implements Steppable {
 			persons.add(new Person());
 		}        
 		personsAll.addAll(persons);
-		
+		householdsAll.addAll(households_justcreated);
+		households.addAll(households_justcreated);
+		households_justcreated.clear();
 
 		for (Person p : persons) {
 			p.setUpInitialMarriages();
 		}
+		
+		households.removeAll(households_justremoved);
+		households_justremoved.clear();
+		
 
 		t=0;
 		System.out.println();
-		System.out.println("Number of households, Total: " + LifecycleHousehold.HouseholdTotalCount);
-		//System.out.println("Number of households, Single: " + LifecycleHousehold.HouseholdSingleCount);
-		//System.out.println("Number of households, Married: " + LifecycleHousehold.HouseholdMarriedCount);
+		System.out.println("Number of households, Total: " + Household.HouseholdCount);
+		//System.out.println("Number of households, Single: " + Household.HouseholdSingleCount);
+		//System.out.println("Number of households, Married: " + Household.HouseholdMarriedCount);
 		System.out.println("Number of people: " + Person.PersonCount);
 		System.out.println();
 	}
@@ -78,13 +84,24 @@ public class Model extends SimState implements Steppable {
 			if (Person.PersonCount == 0) simulationStateNow.kill();
 		}
 		
-		// births and deaths //////////
+		// update person lists
 		personsAll.addAll(persons_justborn);
 		persons.removeAll(persons_justdied);
 		persons.addAll(persons_justborn);
-		//System.out.println("Number of people in persons after step " + t + ": " + persons.size());
 		persons_justdied.clear();
 		persons_justborn.clear();
+		
+		// update household lists
+		householdsAll.addAll(households_justcreated);
+		households.addAll(households_justcreated);
+		households.removeAll(households_justremoved);
+		households_justcreated.clear();
+		households_justremoved.clear();
+		
+		// step for each household agent //////
+		for (Household h : households) {
+			h.step();
+		}		
 
 		t++;
 	}
@@ -94,7 +111,8 @@ public class Model extends SimState implements Steppable {
 	public void finish() {
 		
 		System.out.println();
-		//System.out.println("Number of households, Total: " + LifecycleHousehold.HouseholdTotalCount);
+		System.out.println("Number of households, Total: " + Household.HouseholdCount);
+		System.out.println("Number of households, Total: " + households.size());
 		System.out.println("Number of people: " + Person.PersonCount);
 		System.out.println("Number of people ever lived: " + Person.PIDcount);		
 		System.out.println();
@@ -108,8 +126,8 @@ public class Model extends SimState implements Steppable {
 	////////////////////////////////////////////////////////////////////////
 	
 /*
-	public LifecycleHousehold.Config getLifecycleConfig() {
-		return(new LifecycleHousehold.Config());
+	public Household.Config getLifecycleConfig() {
+		return(new Household.Config());
 	}
 */	
 
@@ -126,9 +144,9 @@ public class Model extends SimState implements Steppable {
 	////////////////////////////////////////////////////////////////////////
 
 	public static final int N_HOUSEHOLD = 1; // number of households	
-	public static final int N_PERSON = 5000; // number of households	
+	public static final int N_PERSON = 10000; // number of households	
 	public static final int Nh = 4100; // number of houses
-	public static int N_STEPS = Person.LifecycleFreq*50; // timesteps
+	public static int N_STEPS = Person.LifecycleFreq*150; // timesteps
 
 	public static Firm								firm;
 	public static ArrayList<Person> 				personsAll = new ArrayList<Person>(); // record of all people who ever lived
@@ -160,7 +178,10 @@ public class Model extends SimState implements Steppable {
 	public static ArrayList<Person> 				female_singles_85plus = new ArrayList<Person>();
 	
 	
-	public static ArrayList<LifecycleHousehold> 	households = new ArrayList<LifecycleHousehold>(N_HOUSEHOLD);
+	public static ArrayList<Household> 				households = new ArrayList<Household>();
+	public static ArrayList<Household> 				householdsAll = new ArrayList<Household>();
+	public static ArrayList<Household> 				households_justcreated = new ArrayList<Household>();
+	public static ArrayList<Household> 				households_justremoved = new ArrayList<Household>();
 	public static int 								t;
 	public static MersenneTwisterFast				rand = new MersenneTwisterFast(1L);
 	

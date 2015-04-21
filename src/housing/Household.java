@@ -1,5 +1,8 @@
 package housing;
 
+import housing.Person.Sex;
+import housing.Person.Status;
+
 import java.util.ArrayList;
 
 
@@ -17,9 +20,8 @@ public class Household {
 	public int householdMembers;
 
 	// lists
-	public ArrayList<Person> members = new ArrayList<Person>();
-	public ArrayList<Person> heirs = new ArrayList<Person>(); // beneficiaries on the last will and testament
-	
+	public ArrayList<Person> adults = new ArrayList<Person>();
+	public ArrayList<Person> children = new ArrayList<Person>();
 	
 	
 	// Class Characteristics
@@ -30,19 +32,86 @@ public class Household {
 	public static int HouseholdSingleCount;
 
 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//			CONSTRUCTOR - CONSTRUCTOR - CONSTRUCTOR - CONSTRUCTOR - CONSTRUCTOR - CONSTRUCTOR
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 	// Constructor
-	public Household() {
+	public Household(Person person) {
 		// set household id and count number of households
+		HID = HIDCount;
 		HouseholdCount++;
-		HID = HouseholdCount;
+		HIDCount++;
+		adults.add(person);
 	}
 
-
+	// Constructor when marriage
+	public Household(Person husband, Person wife) {
+		// set household id and count number of households
+		HID = HIDCount;
+		HouseholdCount++;
+		HIDCount++;
+		adults.add(husband);
+		adults.add(wife);
+	}
+	
 	public void step() {
-
+		// aggregate over income of members
+		for(int i = 0; i<adults.size(); i++) {
+			householdIncome =  householdIncome + adults.get(i).income;
+		}
+		economicDecisions();
 	}
 
+	
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//					METHODS - METHODS - METHODS - METHODS - METHODS - METHODS
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+	public void economicDecisions() {
+		
+	}
+	
+	public void handleDivorce() {
+		adults.clear();
+		children.clear();
+		householdMembers = 0;
+		Model.households_justremoved.add(this);
+		HouseholdCount = HouseholdCount - 1;
+	}
+	
+	public void handleMarriage() {
+		adults.clear();
+		children.clear();
+		householdMembers = 0;
+		Model.households_justremoved.add(this);
+		HouseholdCount = HouseholdCount - 1;
+	}
+	
+	public void returnToSingleHouseholdAfterDivorce(int pid) {
+		adults.add(Model.personsAll.get(pid));
+		if(adults.get(0).sex == Sex.FEMALE) {
+			children.addAll(Model.personsAll.get(pid).children);
+		}
+	}
+	
+	public void handleDeath(Person person) {
+		
+		if(person.status == Status.DEPENDENTCHILD) {children.remove(person);}
+		else {adults.remove(person);}
+
+		householdMembers = adults.size() + children.size();
+		if(householdMembers == 0) {
+			Model.households_justremoved.add(this);
+			HouseholdCount = HouseholdCount - 1;
+		}
+
+	}
+	
+	
+	
+	
+	
 }
 
 

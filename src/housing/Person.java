@@ -22,18 +22,20 @@ public class Person {
 	public double income;
 	enum Sex {MALE, FEMALE}
 	public Sex sex;
-	enum MaritalStatus {SINGLE, COUPLE, MARRIED, DIVORCED, WIDOWED}
-	public MaritalStatus maritalStatus;
+	enum Status {DEPENDENTCHILD, SINGLE, MARRIED, DIVORCED, WIDOWED}
+	public Status status;
 	public boolean marryThisPeriod = false;
 	public int motherPID;
 	public int fatherPID;	
 	public int partnerPID;
 	public int ageDifferencePartner;
+	public double ageAtMarriage;
 	
 	// Lists
-	public static ArrayList<Person> parents 	= new ArrayList<Person>();
-	public static ArrayList<Person> partner 	= new ArrayList<Person>();
-	public static ArrayList<Person> children 	= new ArrayList<Person>();
+	public ArrayList<Person> parents 	= new ArrayList<Person>();
+	public ArrayList<Person> partner 	= new ArrayList<Person>();
+	public ArrayList<Person> children 	= new ArrayList<Person>();
+	public ArrayList<Person> heirs 		= new ArrayList<Person>(); // beneficiaries on the last will and testament
 
 	
 	
@@ -56,10 +58,11 @@ public class Person {
 		sex = determineSex();
 		age = initialAge();
 		agegroup = determineAgeGroup();
-		maritalStatus = initialMaritalStatus();
+		status = initialStatus();
 		income = 0;
-		if(sex == Sex.FEMALE & maritalStatus == MaritalStatus.SINGLE) orderInitialSingleFemales();
-		//System.out.println("Person created -  ID " + PID + ", Sex " + sex + ", Age " + age + ", Status " + maritalStatus);
+		if(sex == Sex.FEMALE & status == Status.SINGLE) orderInitialSingleFemales();
+		Model.households_justcreated.add(new Household(this));
+		//System.out.println("Person created -  ID " + PID + ", Sex " + sex + ", Age " + age + ", Status " + status);
 	}
 
 	// Person Constructor/for newborn children  /////////////////////////////////////////////////
@@ -72,7 +75,7 @@ public class Person {
 		this.hid = hid;
 		sex = determineSex();
 		age = 0;
-		maritalStatus = MaritalStatus.SINGLE;
+		status = Status.SINGLE;
 		income = 0;
 		//System.out.println("Person " + PID + " was born; Sex: " + sex);
 	}
@@ -89,46 +92,39 @@ public class Person {
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 	// Step 1: all females single, males according to observed distribution
-	public MaritalStatus initialMaritalStatus() {
-		MaritalStatus initialMaritalStatus = MaritalStatus.SINGLE;
+	public Status initialStatus() {
+		Status initialStatus = Status.SINGLE;
 		if(sex == Sex.MALE) {
 			for(int i = 0; i < 15; i++) {
 				int min = i*5;
 				int max = min + 5;
 				double random = new Random().nextDouble(); 
 				if(age >= min & age < max) {
-					if(random >= 0 & random < CumProbInitialMaritalStatusMale[i][0]) 									 {initialMaritalStatus = MaritalStatus.SINGLE;} // random integer within the respective agegroup (uniform distribution within agegroups assumed)
-					if(random >= CumProbInitialMaritalStatusMale[i][0] & random < CumProbInitialMaritalStatusMale[i][1]) {initialMaritalStatus = MaritalStatus.MARRIED;} // random integer within the respective agegroup (uniform distribution within agegroups assumed)
-					if(random >= CumProbInitialMaritalStatusMale[i][1] & random < CumProbInitialMaritalStatusMale[i][2]) {initialMaritalStatus = MaritalStatus.WIDOWED;} // random integer within the respective agegroup (uniform distribution within agegroups assumed)
-					if(random >= CumProbInitialMaritalStatusMale[i][2] & random < 1) 									 {initialMaritalStatus = MaritalStatus.DIVORCED;} // random integer within the respective agegroup (uniform distribution within agegroups assumed)
+					if(random >= 0 & random < CumProbInitialStatusMale[i][0]) 									 {initialStatus = Status.SINGLE;} // random integer within the respective agegroup (uniform distribution within agegroups assumed)
+					if(random >= CumProbInitialStatusMale[i][0] & random < CumProbInitialStatusMale[i][1]) {initialStatus = Status.MARRIED;} // random integer within the respective agegroup (uniform distribution within agegroups assumed)
+					if(random >= CumProbInitialStatusMale[i][1] & random < CumProbInitialStatusMale[i][2]) {initialStatus = Status.WIDOWED;} // random integer within the respective agegroup (uniform distribution within agegroups assumed)
+					if(random >= CumProbInitialStatusMale[i][2] & random < 1) 									 {initialStatus = Status.DIVORCED;} // random integer within the respective agegroup (uniform distribution within agegroups assumed)
 				}	
 			}
 		}
 		if(sex == Sex.FEMALE) {
-			initialMaritalStatus = MaritalStatus.SINGLE;
+			initialStatus = Status.SINGLE;
 		}
-		return initialMaritalStatus;
+		return initialStatus;
 	}
 	
 	// Step 2: Find wives for married males
 	public void setUpInitialMarriages() {
 		int col = 99;
-		if(sex == Sex.MALE & maritalStatus == MaritalStatus.MARRIED) {
-			System.out.println();
-			System.out.println("Begin Marriage " + PID);
+		if(sex == Sex.MALE & status == Status.MARRIED) {
 			if(age >= 16 & age < 90) {col = agegroup - 3;}
 			if(age >= 90) {col = 14;}
 			partnerPID = selectWife(col); // contrary to general process: choose wife from same agegroup! (empirically, mean age difference betw. 2 and 3 years.)
-			ageDifferencePartner = (int)(age - Model.personsAll.get(partnerPID).age);
-			maritalStatus = MaritalStatus.MARRIED;
-			Model.personsAll.get(partnerPID).justMarriedBride(PID, col);
-			Model.MarriageCount++;
-			
+			Model.households_justcreated.add(new Household(this, Model.personsAll.get(partnerPID)));
+			handleMarriage(col);
 			// checks
-			System.out.println("MARRIAGE: PID of Husband: " + PID + ", PID of Wife: " + partnerPID + ", Age Difference: " + ageDifferencePartner 
-					+ ", agegroup wife: " + Model.personsAll.get(partnerPID).agegroup);
-			System.out.println("End Marriage " + PID);
-			System.out.println();
+			//System.out.println("MARRIAGE: PID of Husband: " + PID + ", PID of Wife: " + partnerPID + ", Age Difference: " + ageDifferencePartner 
+			//		+ ", agegroup wife: " + Model.personsAll.get(partnerPID).agegroup);
 		}
 	}
 
@@ -141,6 +137,10 @@ public class Person {
 		age = age +  (1.0 / LifecycleFreq);
 		agegroup = determineAgeGroup();
 		//System.out.println("Step() begins for Person " + PID + " " + agegroup + " " + age + " " + sex);
+		
+		if(age == 18 & status == Status.DEPENDENTCHILD) {
+			leaveParentalHome();
+		}
 		
 		if(sex == Sex.FEMALE) {
 			orderSingleFemales();
@@ -179,35 +179,37 @@ public class Person {
 	}
 	
 	
-	// Determining whether a female gives BIRTH (conditional on age)
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Determining whether a female gives BIRTH (conditional on age)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		// Source: ONS: Births: Characteristics of Mother 2, England and Wales, 2013
-		// These probabilities lead to Prob(no birth) = 13% which is not realistic (actual value in 2013: 20%)
-		// But the expected number of children of 1,847 fits the actual fertility rate (2013) of 1,85 very well!
-			//http://www.ons.gov.uk/ons/rel/fertility-analysis/cohort-fertility--england-and-wales/2011/sty-1-in-5-women-are-childless-at-45.html
-		 	//http://www.ons.gov.uk/ons/rel/vsob1/birth-summary-tables--england-and-wales/2013/stb-births-in-england-and-wales-2013.html
 	public void giveBirth() {
-		boolean birth = false;
+		boolean birthThisPeriod = false;
+		int col;
+		if(status == Status.MARRIED) {col = 0;} else {col = 1;}
 		double random_birth = new Random().nextDouble();
-		if(age >= 15 & age < 20 & random_birth < 0.0174 / (LifecycleFreq)) {birth = true;}	
-		else if(age >= 20 & age < 25 & random_birth < 0.0637 / (LifecycleFreq)) {birth = true;}
-		else if(age >= 25 & age < 29 & random_birth < 0.1115 / (LifecycleFreq)) {birth = true;}	// real value: 0.1015
-		else if(age >= 30 & age < 35 & random_birth < 0.1594 / (LifecycleFreq)) {birth = true;}	// real value: 0.1094	
-		else if(age >= 35 & age < 40 & random_birth < 0.0629 / (LifecycleFreq)) {birth = true;}
-		else if(age >= 40 & age < 45 & random_birth < 0.0135 / (LifecycleFreq)) {birth = true;}
-		else if(age >= 45 & age < 50 & random_birth < 0.001 / (LifecycleFreq)) {birth = true;}
+		if(age >= 15 & age < 20 & random_birth 		< ProbBirth[0][col] / (LifecycleFreq)) {birthThisPeriod = true;}	
+		else if(age >= 20 & age < 25 & random_birth < ProbBirth[1][col] / (LifecycleFreq)) {birthThisPeriod = true;}
+		else if(age >= 25 & age < 29 & random_birth < ProbBirth[2][col] / (LifecycleFreq)) {birthThisPeriod = true;}
+		else if(age >= 30 & age < 35 & random_birth < ProbBirth[3][col] / (LifecycleFreq)) {birthThisPeriod = true;}
+		else if(age >= 35 & age < 40 & random_birth < ProbBirth[4][col] / (LifecycleFreq)) {birthThisPeriod = true;}
+		else if(age >= 40 & age < 45 & random_birth < ProbBirth[5][col] / (LifecycleFreq)) {birthThisPeriod = true;}
+		else if(age >= 45 & age < 50 & random_birth < ProbBirth[6][col] / (LifecycleFreq)) {birthThisPeriod = true;}
 		// create child/new person. The members of Model.persons_justborn will be added to Model.persons at the end of Model.step()
-		if(birth == true) {
+		if(birthThisPeriod == true) {
 			Model.persons_justborn.add(new Person(hid, PID/*, partnerPID*/)); // auxiliary list as we are looping over Model.persons
 			children.add(Model.persons_justborn.get(Model.persons_justborn.size()-1));
+			if(status == Status.MARRIED) {
+				Model.personsAll.get(partnerPID).children.add(children.get(children.size()-1));
+				children.get(children.size()-1).fatherPID = partnerPID;
+			}
 			//System.out.println("New child was born!");
 		}
 	}
 	
-	// Determining whether DEATH (conditional on age, sex)
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Determining whether DEATH (conditional on age, sex)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		// Source: ONS: Mortality Statistics: Deaths Registered in 2013 (Series DR) Tables 1–4 and Tables 6–14 (Excel sheet 988Kb)
-		// http://www.ons.gov.uk/ons/rel/vsob1/mortality-statistics--deaths-registered-in-england-and-wales--series-dr-/2013/dr-tables-2013.xls
+		// http://wwhw.ons.gov.uk/ons/rel/vsob1/mortality-statistics--deaths-registered-in-england-and-wales--series-dr-/2013/dr-tables-2013.xls
 
 	public void death() {
 		if(sex == Sex.MALE) {
@@ -216,18 +218,10 @@ public class Person {
 		else {
 			dead = die(ProbDeath[agegroup][1]/LifecycleFreq);
 		}
-		
 		if(dead == true) {
 			//System.out.println("Person " + PID + " died at age " + age + ".");
-			Model.persons_justdied.add(this);
-			Person.PersonCount = Person.PersonCount - 1;
-			if(maritalStatus == MaritalStatus.MARRIED){
-				Model.MarriageCount = Model.MarriageCount - 1;
-				Model.personsAll.get(partnerPID).maritalStatus = MaritalStatus.WIDOWED;
-				//Model.households.get(hid).members.remove(this);
-			}
+			handleDeath();
 		}
-		
 	}
 	
 	public boolean die(double prob) {
@@ -238,6 +232,27 @@ public class Person {
 		return dieThisPeriod;
 	}
 	
+	public void handleDeath() {
+		Model.persons_justdied.add(this);
+		Person.PersonCount = Person.PersonCount - 1;
+		Model.householdsAll.get(hid).handleDeath(this);
+		if(status == Status.MARRIED){
+			Model.MarriageCount = Model.MarriageCount - 1;
+			Model.personsAll.get(partnerPID).status = Status.WIDOWED;
+		}
+	}
+	
+	
+// LEAVING PARENTAL HOME
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+	public void leaveParentalHome() {
+		Model.households_justcreated.add(new Household(this));
+		singleHID = Household.HIDCount;
+		hid = singleHID;
+		Model.householdsAll.get(hid).children.remove(this);
+		status = Status.SINGLE;
+	}
 	
 	
 // MARRIAGE
@@ -253,30 +268,22 @@ public class Person {
 		// determine whether marriage this period
 		if(sex == Sex.MALE & age >= 16) {
 			
-			if(maritalStatus == MaritalStatus.SINGLE) {determineMarriage(ProbMarriageMale[agegroup][0]);}
-			else if(maritalStatus == MaritalStatus.WIDOWED) {determineMarriage(ProbMarriageMale[agegroup][1]);}
-			else if(maritalStatus == MaritalStatus.DIVORCED) {determineMarriage(ProbMarriageMale[agegroup][2]);}
+			if(status == Status.SINGLE | status == Status.DEPENDENTCHILD) {determineMarriage(ProbMarriageMale[agegroup][0]);}
+			else if(status == Status.WIDOWED) {determineMarriage(ProbMarriageMale[agegroup][1]);}
+			else if(status == Status.DIVORCED) {determineMarriage(ProbMarriageMale[agegroup][2]);}
 			
 			if(marryThisPeriod == true) {
-				System.out.println();
-				System.out.println("Begin Marriage " + PID + ", Age " + age);
 				if(age >= 16 & age < 90) {col = agegroup - 3;}
-				if(age >= 90) {col = 14;}
-				int ageListWife = determineAgeBride(col);
-				partnerPID = selectWife(ageListWife);
-				ageDifferencePartner = (int)(age - Model.personsAll.get(partnerPID).age);
-				maritalStatus = MaritalStatus.MARRIED;
-				Model.personsAll.get(partnerPID).justMarriedBride(PID, ageListWife);
-				Model.MarriageCount++;
-				
-				// checks
-				System.out.println("MARRIAGE: PID of Husband: " + PID + ", PID of Wife: " + partnerPID + ", Age Difference: " + ageDifferencePartner 
-						+ ", agegroup wife: " + Model.personsAll.get(partnerPID).agegroup);
-				System.out.println("End Marriage " + PID + ", Age " + age);
-				System.out.println();
+				else if(age >= 90) {col = 14;}
+				int ageGroupWife = determineAgeBride(col);
+				partnerPID = selectWife(ageGroupWife);
+				Model.households_justcreated.add(new Household(this, Model.personsAll.get(partnerPID)));
+				handleMarriage(ageGroupWife);
+				//System.out.println("MARRIAGE: PID of Husband: " + PID + ", PID of Wife: " + partnerPID + ", Age Difference: " + ageDifferencePartner 
+				//		+ ", agegroup wife: " + Model.personsAll.get(partnerPID).agegroup);
+				//System.out.println();
 			}
 		}
-
 	}
 	
 	// determine whether marriage this period
@@ -285,14 +292,14 @@ public class Person {
 		double random_marriage = new Random().nextDouble();
 		if(random_marriage < prob/LifecycleFreq) {
 			marryThisPeriod = true;
+			//System.out.println("Check determineMarriage() " + marryThisPeriod);
 		}
-		System.out.println("Check determineMarriage() " + marryThisPeriod);
 	}
 	
 	// determine age bracket from which wife will be selected
 	public int determineAgeBride(int col) {
 		double random_ageWife = new Random().nextDouble();
-		System.out.println("random_ageWife = " + random_ageWife);
+		//System.out.println("random_ageWife = " + random_ageWife);
 		int index = 0;
 		if(random_ageWife >= 0 & random_ageWife < CumProbAgeBride[0][col]) {index=0;}	
 		for(int i = 0; i<14; i++) {
@@ -303,7 +310,7 @@ public class Person {
 			}
 		}
 		if(random_ageWife >= CumProbAgeBride[14][col] & random_ageWife < 1)  {index=14;}	
-		System.out.println("Check determineAgeBride() " + index);
+		//System.out.println("Check determineAgeBride() " + index);
 		return index;
 	}
 
@@ -311,24 +318,64 @@ public class Person {
 	// randomly select wife from list of candidates and CREATE NEW HOUSEHOLD!
 	public int selectWife(int index) {
 		int pidWife;
-		System.out.println("Number of Women to choose from: " + Model.females_by_agegroup.get(index).size());
-		pidWife = Model.females_by_agegroup.get(index).get(new Random().nextInt(Model.females_by_agegroup.get(index).size())).PID;
-		//int randomint = (int)(Math.random() * (Model.females_by_agegroup.get(index).size() + 1)); // random integer between 0 and Model.females_by_agegroup.get(agegroup).size()
-		//pidWife = Model.females_by_agegroup.get(index).get(randomint).PID;
-		System.out.println("Check selectWife() " + Model.personsAll.get(pidWife).PID + ", agegroup: " + Model.personsAll.get(pidWife).agegroup);
+		//System.out.println("Number of Women to choose from: " + Model.females_by_agegroup.get(index).size());
+		if(Model.females_by_agegroup.get(index).size() > 0) {
+			pidWife = Model.females_by_agegroup.get(index).get(new Random().nextInt(Model.females_by_agegroup.get(index).size())).PID;
+		}
+		else {
+			pidWife = Model.females_by_agegroup.get(index).get(new Random().nextInt(Model.females_by_agegroup.get(index+1).size())).PID;
+		}
+		//System.out.println("Check selectWife() " + Model.personsAll.get(pidWife).PID + ", agegroup: " + Model.personsAll.get(pidWife).agegroup);
 		return pidWife;
+	}
+	
+	// adjust person characteristics because of marriage
+	public void handleMarriage(int ageGroupWife) {
+		ageDifferencePartner = (int)(age - Model.personsAll.get(partnerPID).age);
+		status = Status.MARRIED;
+		Model.personsAll.get(partnerPID).justMarriedBride(PID, ageGroupWife);
+		Model.MarriageCount++;
+		Model.householdsAll.get(hid).handleMarriage();
 	}
 	
 	// adjust characteristics of women who just got married
 	public void justMarriedBride(int partner, int ageList) {
 		Model.personsAll.get(partnerPID).partnerPID = partner;
-		Model.personsAll.get(partnerPID).maritalStatus = MaritalStatus.MARRIED;
+		Model.personsAll.get(partnerPID).status = Status.MARRIED;
 		Model.females_by_agegroup.get(ageList).remove(this);
-		System.out.println("Check justMarriedBride() " + Model.personsAll.get(partnerPID).maritalStatus);
+		Model.householdsAll.get(hid).handleMarriage();
+		//System.out.println("Check justMarriedBride() " + Model.personsAll.get(partnerPID).status);
 	}
 	
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+	
+	
+	// divorce mechanism
+	public void divorce() {
+		boolean divorceThisPeriod = false;
+		if(status == Status.MARRIED & sex == Sex.MALE) {
+			int marriageDuration = (int)(age - ageAtMarriage);
+			double random_divorce = new Random().nextDouble();
+			if(random_divorce < ProbDivorceGivenAnniversary[1][marriageDuration]) {divorceThisPeriod = true;}
+			if(divorceThisPeriod == true) {
+				Model.householdsAll.get(hid).handleDivorce();
+				handleDivorce();
+				Model.personsAll.get(partnerPID).handleDivorce();
+				Model.MarriageCount = Model.MarriageCount - 1;
+			}
+		}
+	}
+	public void handleDivorce() {
+		Model.householdsAll.get(singleHID).returnToSingleHouseholdAfterDivorce(PID);
+		status = Status.DIVORCED;
+		hid = singleHID;
+		if(children.size() > 0 & sex == Sex.FEMALE) {
+			for(Person p : children) {
+				p.hid = hid;
+			}
+		}
+	}
 	
 	
 	// determine age group
@@ -388,6 +435,22 @@ public class Person {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 	
+	
+	// Probabilities of giving birth (conditional on age and marital Status) (7 rows, 2 columns)
+	// SOURCE: ONS: Births: Characteristics of Mother 2, England and Wales, 2013 (2012 data)
+	// rows stand for age brackets: Under 20, 20-24, 25-29, 30-34, 35-39, 40-44, 45+
+	// column 0 = married; column 1 = not married
+	public static final double [][] ProbBirth = {
+		{0.2232, 0.0190},
+		{0.2749, 0.0579},
+		{0.2290, 0.0657},
+		{0.1806, 0.0659},
+		{0.0762, 0.0438},
+		{0.0139, 0.0130},
+		{0.0009, 0.0010}
+	};
+	
+	
 	// Probabilities of dying this year depending on age and sex (19 rows, 2 columns)
 	// column 1: males, column 2: females
 	// rows stand for agegroups
@@ -439,6 +502,21 @@ public class Person {
 		{0.0033, 0.0052, 0.0154}, // 85-89
 		{0.0033, 0.0052, 0.0154}  // 90+
 	};
+	
+	// Probability of divorce in interval to next anniversary (1 row, 60 columns)
+	public static final double [][] ProbDivorceGivenAnniversary = { 
+		// SOURCE: ONS: Age at marriage, duration of marriage and cohort analyses, 2011 (data from 2010)
+		// Attention: this is only one row with 59 columns (0-58)
+		// Columns stand for duration of marriage (column 0 --> before first anniversary)
+		// Example 1: column 0 = Probability of divorce given that marriage has lasted for less than one year
+		// Example 2: column 5 = Probability of divorce given that marriage has lasted for 5 years (6th anniversary coming up)
+		{0.0001, 0.0081, 0.0188, 0.0267, 0.0305, 0.0316, 0.0325, 0.0324, 0.0291, 0.0263, 0.0239, 0.0226, 0.0218, 0.0204, 0.0190, 0.0176, 
+			0.0172, 0.0154, 0.0152, 0.0148, 0.0143, 0.0134, 0.0124, 0.0121, 0.0106, 0.0103, 0.0096, 0.0082, 0.0073, 0.0069, 0.0065, 
+			0.0057, 0.0048, 0.0044, 0.0037, 0.0042, 0.0038, 0.0025, 0.0023, 0.0023, 0.0018, 0.0014, 0.0012, 0.0011, 0.0009, 0.0007, 
+			0.0007, 0.0005, 0.0005, 0.0004, 0.0002, 0.0003, 0.0003, 0.0002, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0000}
+
+	};
+
 		
 	// Cumulative Probabilities of the bride having a certain age given marriage and age (15 rows, 15 columns)
 	public static final double [][] CumProbAgeBride = { 
@@ -466,12 +544,13 @@ public class Person {
 	public static final double [][] CumProbInitialAge = { 
 		// columns 2-19 stand for age groups 0-4,5-9,10-14,15-19,20-24,25-29, ... ,75-79,80-84,85+)
 		// Example: column 4 = 0.1773 = Prob(age < 14)
-		{0.0000, 0.0631, 0.1221, 0.1773, 0.2378, 0.3049, 0.3730, 0.4408, 0.5029, 0.5731, 0.6458, 0.7131, 0.7711, 0.8261, 0.8806, 0.9201, 0.9526, 0.9769, 1.0000}
+		{0.0000, 0.0631, 0.1221, 0.1773, 0.2378, 0.3049, 0.3730, 0.4408, 0.5029, 0.5731, 0.6458, 0.7131, 0.7711, 0.8261, 0.8806, 
+			0.9201, 0.9526, 0.9769, 1.0000}
 
 	};
 	
 	// Initial cumulative probabilities for marital status for MALES (19 rows, 4 columns)
-	public static final double [][] CumProbInitialMaritalStatusMale = { 
+	public static final double [][] CumProbInitialStatusMale = { 
 		// rows 1-19 stand for age groups 0-4,5-9,10-14,15-19,20-24,25-29, ... ,75-79,80-84,85-89,90+)
 		// SOURCE: ONS: Principal projection legal marital status: Summary of population by age & legal marital status
 		
@@ -498,7 +577,7 @@ public class Person {
 	};
 
 	// Initial cumulative probabilities for marital status for FEMALES (19 rows, 4 columns)
-	public static final double [][] CumProbInitialMaritalStatusFemale = { 
+	public static final double [][] CumProbInitialStatusFemale = { 
 		// rows 1-19 stand for age groups 0-4,5-9,10-14,15-19,20-24,25-29, ... ,75-79,80-84,85-89,90+)
 		// SOURCE: ONS: Principal projection legal marital status: Summary of population by age & legal marital status
 		
