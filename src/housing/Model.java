@@ -48,24 +48,26 @@ public class Model extends SimState implements Steppable {
 			persons.add(new Person());
 		}        
 		personsAll.addAll(persons);
-		householdsAll.addAll(households_justcreated);
-		households.addAll(households_justcreated);
-		households_justcreated.clear();
+		
+		System.out.println();
+		System.out.println("Number of People: " + persons.size());
+		System.out.println("Number of people: " + Person.PersonCount);
+		System.out.println("Number of Households: " + households.size());
+		System.out.println("Number of Households: " + Household.HouseholdCount);
+		
 
 		for (Person p : persons) {
 			p.setUpInitialMarriages();
 		}
-		
-		households.removeAll(households_justremoved);
-		households_justremoved.clear();
-		
+				
 
 		t=0;
 		System.out.println();
-		System.out.println("Number of households, Total: " + Household.HouseholdCount);
-		//System.out.println("Number of households, Single: " + Household.HouseholdSingleCount);
-		//System.out.println("Number of households, Married: " + Household.HouseholdMarriedCount);
+		System.out.println("Number of Households: " + households.size());
+		System.out.println("Number of Households: " + Household.HouseholdCount);
+		System.out.println("Number of People: " + persons.size());
 		System.out.println("Number of people: " + Person.PersonCount);
+		System.out.println("Number of marriages: " + Model.MarriageCount);
 		System.out.println();
 	}
 
@@ -81,8 +83,19 @@ public class Model extends SimState implements Steppable {
 		// step for each person agent //////
 		for (Person p : persons) {
 			p.step();
-			if (Person.PersonCount == 0) simulationStateNow.kill();
+						
+			if(Person.PersonCount == 0) {
+				System.out.println("Everybody dead!");
+				simulationStateNow.kill();
+			}
+			
+			if(Household.HouseholdCount != Model.households.size()) simulationStateNow.kill();
+			
 		}
+	
+		//System.out.println("Births: " + persons_justborn.size());
+		//System.out.println("Deaths: " + persons_justdied.size());
+		//System.out.println("Orphans: " + Model.OrphanCount);
 		
 		// update person lists
 		personsAll.addAll(persons_justborn);
@@ -91,18 +104,12 @@ public class Model extends SimState implements Steppable {
 		persons_justdied.clear();
 		persons_justborn.clear();
 		
-		// update household lists
-		householdsAll.addAll(households_justcreated);
-		households.addAll(households_justcreated);
-		households.removeAll(households_justremoved);
-		households_justcreated.clear();
-		households_justremoved.clear();
 		
 		// step for each household agent //////
-		for (Household h : households) {
+/*		for (Household h : households) {
 			h.step();
 		}		
-
+*/
 		t++;
 	}
 	
@@ -114,9 +121,15 @@ public class Model extends SimState implements Steppable {
 		System.out.println("Number of households, Total: " + Household.HouseholdCount);
 		System.out.println("Number of households, Total: " + households.size());
 		System.out.println("Number of people: " + Person.PersonCount);
-		System.out.println("Number of people ever lived: " + Person.PIDcount);		
+		System.out.println("Number of people: " + persons.size());
+		System.out.println("Number of people ever: " + Person.PIDCount);		
+		System.out.println("Number of households ever: " + Household.HIDCount);		
+		System.out.println("Number of marriages: " + Model.MarriageCount);
+		System.out.println("Number of marriages with at least one partner still a child: " + Model.DependentChildMarriageCount);
+		System.out.println("Number of orphans: " + Model.orphans.size());
 		System.out.println();
 		super.finish();
+		
 	}
 	
 	
@@ -146,13 +159,15 @@ public class Model extends SimState implements Steppable {
 	public static final int N_HOUSEHOLD = 1; // number of households	
 	public static final int N_PERSON = 10000; // number of households	
 	public static final int Nh = 4100; // number of houses
-	public static int N_STEPS = Person.LifecycleFreq*150; // timesteps
+	public static int N_STEPS = Person.LifecycleFreq*100; // timesteps
 
 	public static Firm								firm;
 	public static ArrayList<Person> 				personsAll = new ArrayList<Person>(); // record of all people who ever lived
 	public static ArrayList<Person> 				persons = new ArrayList<Person>();
 	public static ArrayList<Person> 				persons_justborn = new ArrayList<Person>();
 	public static ArrayList<Person> 				persons_justdied = new ArrayList<Person>();
+	public static ArrayList<Person> 				orphans = new ArrayList<Person>();
+	
 	
 	
 	public static ArrayList<Person> 				males_marryThisPeriod = new ArrayList<Person>();
@@ -180,12 +195,12 @@ public class Model extends SimState implements Steppable {
 	
 	public static ArrayList<Household> 				households = new ArrayList<Household>();
 	public static ArrayList<Household> 				householdsAll = new ArrayList<Household>();
-	public static ArrayList<Household> 				households_justcreated = new ArrayList<Household>();
-	public static ArrayList<Household> 				households_justremoved = new ArrayList<Household>();
 	public static int 								t;
 	public static MersenneTwisterFast				rand = new MersenneTwisterFast(1L);
 	
-	public static int 								MarriageCount; 
+	public static int 								MarriageCount = 0; 
+	public static int								DependentChildMarriageCount = 0;
+	public static int 								OrphanCount = 0; 
 
 	
 	
