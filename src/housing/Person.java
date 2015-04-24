@@ -52,6 +52,16 @@ public class Person {
 
 
 	// Person Constructor/Initialization /////////////////////////////////////////////////
+	/**
+	 * This constructs a new person agent (PA) of the initial population. 
+	 * It assigns a unique and invariant person ID (PID) and subsequently increments PIDCount 
+	 * and PersonCount by one unit. 
+	 * It also determines the PA's sex, initial age (and agegroup) and initial status to match ONS data. 
+	 * This is done using the methods determineSex(), initialAge() (plus determineAgeGroup()) 
+	 * as well as initialStatus(). All unmarried females above 15 years of age (16 is the legal marriage limit) 
+	 * are assigned to an age group dependent list (orderInitialSingleFemales()) 
+	 * which is used to set up initial marriages in setUpInitialMarriages().
+	 */
 	public Person() {
 		PID = PIDCount;
 		PIDCount++;		
@@ -66,6 +76,15 @@ public class Person {
 	}
 
 	// Person Constructor/for newborn children  /////////////////////////////////////////////////
+	/**
+	 * This constructor is used for all newborn PAs and takes the PID and current hid of the mother as inputs. 
+	 * Apart from assigning a PID and incrementing the PIDCount and PersonCount static variables, the new PA is added to the 
+	 * list of dependent children of the mother's household and the mother is added to the PA's mother list 
+	 * (a list that never has more than one element). The status is set to Status.DEPENDENTCHILD and determineSex() determines the sex.
+	 * 
+	 * @param motherhid The HID of the household that the PA's mother currently belongs to
+	 * @param motherPID The PID of the PA who has given birth to this PA
+	 */
 	public Person(int motherhid, int motherPID/*, int fatherPID*/) {
 		PID = PIDCount;
 		PIDCount++;		
@@ -94,6 +113,13 @@ public class Person {
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 	// Step 1: all females single, males according to observed distribution
+	/**
+	 * This method determines the status of the PAs in the initial population. The status of all females and 
+	 * males under 16 years of age is set to single.
+	 * Males who are 16 or older (16 is the legal marriage limit) are either single, married, widowed or divorced 
+	 * with a probability for each status taken from CumProbInitialStatusMale (see below).
+	 * @return The PA's status
+	 */
 	public Status initialStatus() {
 		Status initialStatus = Status.SINGLE;
 		if(sex == Sex.MALE & age < 16) {initialStatus = Status.SINGLE;}
@@ -116,6 +142,15 @@ public class Person {
 	}
 	
 	// Step 2: Find wives for married males
+	/**
+	 * This method finds a wife and manages the marriage process for male PAs of the initial population 
+	 * whose status was set to married by the initialStatus()-method. 
+	 * The only difference to the marry()-method lies in the determination of the wife's age group. 
+	 * For the initial population, the wife is selected from the husband's age group.
+	 * The reason for this is the fact that there is only data for the age of the bride given the age of the bridegroom at marriage, 
+	 * but for the initial population, we would need data on the age of the wife given that the male is married. I have yet to find these
+	 * data and hence opted for the above-mentioned rule of thumb. (The average age difference between husband in wife is between 2 and 3)
+	 */
 	public void setUpInitialMarriages() {
 		if(sex == Sex.MALE & status == Status.MARRIED) {
 			int col = 99;
@@ -136,10 +171,16 @@ public class Person {
 	
 	// Step Method
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	/**
+	 * This method executes the different life cycle events.
+	 * First, die() determines whether a PA dies this period. If not, age is increased and the age group adjusted. 
+	 * Children who just turned 18 leave the home of their parents.
+	 * Unmarried females are put on age-group-specific lists from which they may be chosen in the case of marriage. 
+	 * Dependent children females are only put on one of these lists if they are at least 16 years old.
+	 * Married couples may split up and new marriages take place.
+	 * Women may give birth to children
+	 */
 	public void step() {
-		
-		int size1 = Model.households.size();
-		int counter1 = Household.HouseholdCount;
 		
 		//System.out.println("Step() begins for Person " + PID);
 		
@@ -164,6 +205,10 @@ public class Person {
 	
 	// Determine SEX of new person
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	/** 
+	 * This method determines a PA's sex.
+	 * @return The sex of the PA
+	 */
 	public Sex determineSex() {
 		Sex sex;
 		double random = new Random().nextDouble();
@@ -174,6 +219,10 @@ public class Person {
 	
 	// Determine AGE of members of initial population
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	/**
+	 * This method assigns each PA of the initial population an age. The relevant probabilities depend on the PA's sex.
+	 * @return Age of PA
+	 */
 	public int initialAge() {
 		int initialAge = 0;
 		double random_age = new Random().nextDouble();
@@ -191,6 +240,14 @@ public class Person {
 // Determining whether a female gives BIRTH (conditional on age)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		// Source: ONS: Births: Characteristics of Mother 2, England and Wales, 2013
+	/**
+	 * This method determines whether a woman gives birth to a child (probabilities for giving birth are conditional on age and status).
+	 * If a child is supposed to be born, a new PA is created and added to the list Model.persons_justborn as the program is currently 
+	 * looping over the Model.person list. All newborn PAs are added to the latter list at the end of each step. 
+	 * The child is also added to the mother's (and if the woman giving birth is married also to the father's) children and dependentChildren lists.
+	 * 
+	 * QUESTION: There should be a father in the case of a single mother, but difficult to find appropriate data.
+	 */
 	public void giveBirth() {
 		boolean birthThisPeriod = false;
 		int col;
@@ -222,6 +279,9 @@ public class Person {
 		// Source: ONS: Mortality Statistics: Deaths Registered in 2013 (Series DR) Tables 1–4 and Tables 6–14 (Excel sheet 988Kb)
 		// http://wwhw.ons.gov.uk/ons/rel/vsob1/mortality-statistics--deaths-registered-in-england-and-wales--series-dr-/2013/dr-tables-2013.xls
 
+	/**
+	 * This method determines whether a PA dies and if this is the case, makes the relevant adjustments in handleDeath().
+	 */
 	public void die() {
 		if(sex == Sex.MALE) {
 			dead = determineIfDeath(ProbDeath[agegroup][0]/LifecycleFreq);
@@ -236,6 +296,11 @@ public class Person {
 	}
 	
 	// determineIfDeath()
+	/**
+	 * This is an auxiliary method for die() which uses age and sex dependent probabilities of death to determine whether a PA has to die this period.
+	 * @param prob age and sex dependent probability of death
+	 * @return True if person dies this period, false if not.
+	 */
 	public boolean determineIfDeath(double prob) {
 		boolean dieThisPeriod;
 		double random_death = new Random().nextDouble();
@@ -245,6 +310,16 @@ public class Person {
 	}
 	
 	// handleDeath()
+	/**
+	 * This method handles the necessary adjustment for a PA that dies. The PA is added to the Model.persons_justremoved list whose elements
+	 * removed from the Model.persons list after the completion of the step for all PAs. Note that the PA still exists with dead = true 
+	 * on the Model.personsAll list.
+	 * In addition, the method Household.handleDeath() is called to take care of the household-level adjustments.
+	 * If the dying person was married, the method handleDeathPartner() is called for the partner which becomes a widow and returns to its former
+	 * single hid. 
+	 * If the dying person had dependent children and was not married, the children become orphans ... TO DO: assign to father (if father available for all kids)
+	 * Finally, unmarried females are removed from the single female lists used for marriages.
+	 */
 	public void handleDeath() {
 		Model.persons_justdied.add(this);
 		Person.PersonCount = Person.PersonCount - 1;
@@ -276,6 +351,9 @@ public class Person {
 // LEAVING THE PARENTAL HOME
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
+	/**
+	 * This method turns a dependent child into a single. Thereby, a new single household is set up.
+	 */
 	public void leaveParentalHome() {
 		Model.householdsAll.get(hid).dependentChildren.remove(this);
 		Model.personsAll.get(motherPID).dependentChildren.remove(this);
@@ -290,6 +368,13 @@ public class Person {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 	// Determining whether MARRIAGE (conditional on age, sex and previous marital status)
+	/**
+	 * This method first decides whether a PA (only males --> see step) is getting married this period and if that is the case,
+	 * finds a suitable wife from the female single list (age group of wife is also determined probabilistically) and
+	 * handles the marriage process which includes the adjustment of PA characteristics for both partners as well as the creation of a new household.
+	 * If either the husband or the wife is still a dependent child living in the household of their parents, the leaveParentalHome() method is
+	 * executed first to ensure that every partner has a single household to return to when the partner dies for the case of divorce.
+	 */
 	public void marry() {
 		int col = 99;
 		marryThisPeriod = false;	
@@ -318,6 +403,11 @@ public class Person {
 	}
 	
 	// determineIfMarriage()
+	/**
+	 * [auxiliary method for marry()] This method determines whether a PA will get married. The probability for that depends on age and
+	 * previous marital status.
+	 * @param prob Probability of marriage given age and previous marital status
+	 */
 	public void determineIfMarriage(double prob) {
 		marryThisPeriod = false;
 		double random_marriage = new Random().nextDouble();
@@ -327,6 +417,12 @@ public class Person {
 	}
 	
 	// determineAgeGroupOfWife()
+	/**
+	 * [auxiliary method for marry()] This method determines the age group of the future wife given that the male PA is getting married.
+	 * The probability distribution for the age of the bride depends on the age group of the husband
+	 * @param col age bracket of the husband: 0 = under 20; 1 = 20-24, 2 = 25-29; ...; 13 = 80-84; 14 = 85+
+	 * @return age bracket from which wife will be selected
+	 */
 	public int determineAgeGroupOfWife(int col) {
 		double random_ageWife = new Random().nextDouble();
 		int ageGroupWife = 0;
@@ -343,6 +439,12 @@ public class Person {
 
 	
 	// selectWife()
+	/**
+	 * [auxiliary method for marry()] This method randomly selects a single female of the list corresponding to the age group of the wife
+	 * as determined by determineAgeWife().
+	 * @param ageGroupWife Age group of the future wife which represents the sublist in Model.females_by_agegroup
+	 * @return the wife of the male PA who marries this period.
+	 */
 	public Person selectWife(int ageGroupWife) {
 		Person wife;
 		if(Model.females_by_agegroup.get(ageGroupWife).size() == 0) { // needs more work for small samples
@@ -357,6 +459,11 @@ public class Person {
 	}
 	
 	// handleMarriageHusband()
+	/**
+	 * [auxiliary method for marry()] This method adjusts the status of the husband to married and initiates the ageDifferencePartner variable.
+	 * Most importantly, the husband's single household is made inactive.
+	 * @param ageGroupWife
+	 */
 	public void handleMarriageHusband(int ageGroupWife) {
 		ageDifferencePartner = (int)(age - partner.get(0).age);
 		status = Status.MARRIED;
@@ -364,6 +471,13 @@ public class Person {
 	}
 	
 	// handleMarriageWife()
+	/**
+	 * [auxiliary method for marry()] This method stores the PID of the husband as the partnerPID and adds him to the partner list. 
+	 * It also adjusts the status of the wife to married and initiates the ageDifferencePartner variable.
+	 * Most importantly, the wife's single household is made inactive.
+	 * @param partnerPID
+	 * @param ageGroup
+	 */
 	public void handleMarriageWife(int partnerPID, int ageGroup) {
 		this.partnerPID = partnerPID;
 		partner.add(Model.personsAll.get(partnerPID));
@@ -382,6 +496,11 @@ public class Person {
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 	// divorce()
+	/**
+	 * This method decides whether a male PA divorces this period and, if yes, handles the adjustments.
+	 * The probability of divorce depends on the marriage duration. In the case of divorce, the marriage counter is reduced
+	 * and both partners return to their single households.
+	 */
 	public void divorce() {
 		boolean divorceThisPeriod = false;
 		if(sex == Sex.MALE) {
@@ -397,6 +516,10 @@ public class Person {
 		}
 	}
 	// handleDivorce()
+	/**
+	 * [auxiliary method for divorce()] This method adjusts the characteristics of both the husband and wife after divorce.
+	 * The status is set to divorced and the partner is moved to the previousPartners list.
+	 */
 	public void handleDivorce() {
 		Model.householdsAll.get(singleHID).returnToSingleHousehold(this);
 		status = Status.DIVORCED;
@@ -410,6 +533,10 @@ public class Person {
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 	// determineAgeGroup()
+	/**
+	 * This method determines a PA's age group. The following 19 age groups exist: 0-4, 5-9, 10-14, ..., 85-89, 90+
+	 * @return Age group: integer between 0 and 18
+	 */
 	public int determineAgeGroup() {
 		int agegroup = this.agegroup;
 		for(int i = 0; i < 18; i++) {
@@ -421,6 +548,9 @@ public class Person {
 
 
 	// orderSingleFemales(): put single females in corresponding age group list --> needed for assignment of wives
+	/**
+	 * This method assigns single females to the correct age-specific list.
+	 */
 	public void orderSingleFemales() {
 		if(age == 16) {Model.females_by_agegroup.get(0).add(this);}
 		else if(age == 20) {Model.females_by_agegroup.get(0).remove(this);Model.females_by_agegroup.get(1).add(this);}
@@ -440,6 +570,9 @@ public class Person {
 	}
 	
 	// orderInitialSingleFemales(): put INITIAL single females in corresponding age group list --> needed for assignment of wives
+	/**
+	 * This method assigns single females of the initial population to the correct age-specific list.
+	 */
 	public void orderInitialSingleFemales() {
 		if(agegroup == 3) {Model.females_by_agegroup.get(0).add(this);}
 		else if(agegroup == 4) {Model.females_by_agegroup.get(1).add(this);}
@@ -471,6 +604,11 @@ public class Person {
 	// SOURCE: ONS: Births: Characteristics of Mother 2, England and Wales, 2013 (2012 data)
 	// rows stand for age brackets: Under 20, 20-24, 25-29, 30-34, 35-39, 40-44, 45+
 	// column 0 = married; column 1 = not married
+	/**
+	 * Probabilities of giving birth (conditional on age and marital Status) (7 rows, 2 columns). 
+	 * Rows = age brackets {under 20, 20-24, 25-29, 30-34, 35-39, 40-44, 45+}; 
+	 * Columns = {married, not married}
+	 */
 	public static final double [][] ProbBirth = {
 		{0.2232, 0.0190},
 		{0.2749, 0.0579},
@@ -485,6 +623,11 @@ public class Person {
 	// Probabilities of dying this year depending on age and sex (19 rows, 2 columns)
 	// column 1: males, column 2: females
 	// rows stand for agegroups
+	/**
+	 * Probabilities of dying this year depending on age and sex (19 rows, 2 columns)
+	 * Rows = {0-4, 5-9, ..., 85-89, 90+}
+	 * Columns = {male, female}
+	 */
 	public static final double [][] ProbDeath = { 
 		//males	  females
 		{0.00101, 0.00081}, // 0-4
@@ -510,6 +653,11 @@ public class Person {
 	};
 	
 	// Probabilities of getting married depending on age and previous marital status for MALES (19 rows, 3 columns)
+	/**
+	 * Probabilities of getting married depending on age and previous marital status for MALES (19 rows, 3 columns)
+	 * Rows = {0-4, 5-9, ..., 85-89, 90+}
+	 * Columns = {single, widowed, divorced}
+	 */
 	public static final double [][] ProbMarriageMale = { 
 		// rows stand for age groups
 		// column 1: single; column 2: widowed; column 3: divorced
@@ -535,6 +683,10 @@ public class Person {
 	};
 	
 	// Probability of divorce in interval to next anniversary (1 row, 60 columns)
+	/**
+	 * Probability of divorce in interval to next anniversary (1 row, 60 columns)
+	 * Columns  {1, 2, ..., 60}
+	 */
 	public static final double [][] ProbDivorceGivenAnniversary = { 
 		// SOURCE: ONS: Age at marriage, duration of marriage and cohort analyses, 2011 (data from 2010)
 		// Attention: this is only one row with 60 columns (0-59)
@@ -550,6 +702,11 @@ public class Person {
 
 		
 	// Cumulative Probabilities of the bride having a certain age given marriage and age (15 rows, 15 columns)
+	/**
+	 * Cumulative Probabilities of the bride having a certain age given marriage and age (15 rows, 15 columns)
+	 * Rows = {Age groups of wife: under 20,20-24,25-29, ... , 75-79,80-84,85+}
+	 * Columns = {Age groups of husband: 20,20-24,25-29, ... , 75-79,80-84,85+}
+	 */
 	public static final double [][] CumProbAgeWife = { 
 		// rows stand for age groups of bride (under 20,20-24,25-29, ... , 75-79,80-84,85+)
 		// columns stand for age groups of bridegroom (under 20,20-24,25-29, ... , 75-79,80-84,85+)	
@@ -572,6 +729,10 @@ public class Person {
 	};
 	
 	// Initial Cumulative Probabilities of having a certain age (1 row, 19 columns)
+	/**
+	 * Initial Cumulative Probabilities of having a certain age (1 row, 19 columns)
+	 * Columns = {0,0-4,5-9,10-14,15-20,20-24,25-29, ... , 75-79,80-84,85+}
+	 */
 	public static final double [][] CumProbInitialAge = { 
 		// Source ?
 		// columns 2-19 stand for age groups 0-4,5-9,10-14,15-19,20-24,25-29, ... ,75-79,80-84,85+)
@@ -582,6 +743,11 @@ public class Person {
 	};
 	
 	// Initial cumulative probabilities for marital status for MALES (19 rows, 4 columns)
+	/**
+	 * Initial cumulative probabilities for marital status for MALES (19 rows, 4 columns)
+	 * Rows = {0-4,5-9,10-14,15-19,20-24,25-29, ... ,75-79,80-84,85-89,90+}
+	 * Columns = {single, married, widowed, divorced}
+	 */
 	public static final double [][] CumProbInitialStatusMale = { 
 		// rows 1-19 stand for age groups 0-4,5-9,10-14,15-19,20-24,25-29, ... ,75-79,80-84,85-89,90+)
 		// SOURCE: ONS: Principal projection legal marital status: Summary of population by age & legal marital status
@@ -608,33 +774,6 @@ public class Person {
 		{0.1113,	0.4763,	0.9795,	1.0000}
 	};
 
-	// Initial cumulative probabilities for marital status for FEMALES (19 rows, 4 columns)
-	public static final double [][] CumProbInitialStatusFemale = { 
-		// rows 1-19 stand for age groups 0-4,5-9,10-14,15-19,20-24,25-29, ... ,75-79,80-84,85-89,90+)
-		// SOURCE: ONS: Principal projection legal marital status: Summary of population by age & legal marital status
-		
-		//Single	Married	Widowed	Divorced
-		{1.0000,	1.0000,	1.0000,	1.0000},
-		{1.0000,	1.0000,	1.0000,	1.0000},
-		{1.0000,	1.0000,	1.0000,	1.0000},
-		{0.9968,	0.9999,	0.9999,	1.0000},
-		{0.9431,	0.9977,	0.9978,	1.0000},
-		{0.7508,	0.9776,	0.9789,	1.0000},
-		{0.5156,	0.9391,	0.9414,	1.0000},
-		{0.3462,	0.8903,	0.8946,	1.0000},
-		{0.2358,	0.8358,	0.8439,	1.0000},
-		{0.1638,	0.7964,	0.8114,	1.0000},
-		{0.1098,	0.7745,	0.8036,	1.0000},
-		{0.0757,	0.7613,	0.8139,	1.0000},
-		{0.0531,	0.7435,	0.8345,	1.0000},
-		{0.0449,	0.6995,	0.8610,	1.0000},
-		{0.0458,	0.6154,	0.8875,	1.0000},
-		{0.0516,	0.4957,	0.9179,	1.0000},
-		{0.0582,	0.3511,	0.9441,	1.0000},
-		{0.0619,	0.2269,	0.9642,	1.0000},
-		{0.0779,	0.1782,	0.9926,	1.0000}
-	};
-	
 	
 }
 
