@@ -31,6 +31,7 @@ public class Person {
 	public int partnerPID;
 	public int ageDifferencePartner;
 	public double ageAtMarriage;
+	public int generation;
 	
 	// Lists
 	public ArrayList<Person> mother 			= new ArrayList<Person>();
@@ -38,11 +39,15 @@ public class Person {
 	public ArrayList<Person> previousPartners	= new ArrayList<Person>();
 	public ArrayList<Person> children 			= new ArrayList<Person>();
 	public ArrayList<Person> dependentChildren 	= new ArrayList<Person>();
+	public ArrayList<Person> deadChildren 		= new ArrayList<Person>();
 
 	
 	// Class Characteristics
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	public static int PersonCount = 0; // keeps track of the number of living people
+	/** number of living person agents **/
+	public static int PersonCount = 0;
+	
+	/** number of all person agents who have ever lived **/
 	public static int PIDCount = 0; // // for unique PIDs, number of all people (including the dead) (first person: PID = 1)
 
 	// Class Parameters
@@ -58,7 +63,8 @@ public class Person {
 	 * and PersonCount by one unit. 
 	 * It also determines the PA's sex, initial age (and agegroup) and initial status to match ONS data. 
 	 * This is done using the methods determineSex(), initialAge() (plus determineAgeGroup()) 
-	 * as well as initialStatus(). All unmarried females above 15 years of age (16 is the legal marriage limit) 
+	 * as well as initialStatus(). The generation is set to 0 as the PA is part of the initial population.
+	 * All unmarried females above 15 years of age (16 is the legal marriage limit) 
 	 * are assigned to an age group dependent list (orderInitialSingleFemales()) 
 	 * which is used to set up initial marriages in setUpInitialMarriages().
 	 */
@@ -69,6 +75,7 @@ public class Person {
 		sex = determineSex();
 		age = initialAge();
 		agegroup = determineAgeGroup();
+		generation = 0;
 		status = initialStatus();
 		if(sex == Sex.FEMALE & status != Status.MARRIED & age >= 16) orderInitialSingleFemales();
 		Model.householdsAll.add(new Household(this));
@@ -77,24 +84,24 @@ public class Person {
 
 	// Person Constructor/for newborn children  /////////////////////////////////////////////////
 	/**
-	 * This constructor is used for all newborn PAs and takes the PID and current hid of the mother as inputs. 
+	 * This constructor is used for all newborn PAs and takes the mother as input. 
 	 * Apart from assigning a PID and incrementing the PIDCount and PersonCount static variables, the new PA is added to the 
 	 * list of dependent children of the mother's household and the mother is added to the PA's mother list 
-	 * (a list that never has more than one element). The status is set to Status.DEPENDENTCHILD and determineSex() determines the sex.
+	 * (a list that never has more than one element). The generation number is set to the mother's generation + 1. The status is set to Status.DEPENDENTCHILD and determineSex() determines the sex.
 	 * 
-	 * @param motherhid The HID of the household that the PA's mother currently belongs to
-	 * @param motherPID The PID of the PA who has given birth to this PA
+	 * @param mother The PA that has given birth to the child.
 	 */
-	public Person(int motherhid, int motherPID/*, int fatherPID*/) {
+	public Person(Person mother/*, Person father*/) {
 		PID = PIDCount;
 		PIDCount++;		
 		PersonCount++; 	
-		this.hid = motherhid;
-		mother.add(Model.personsAll.get(motherPID));
-		Model.householdsAll.get(motherhid).dependentChildren.add(this);
+		generation = mother.generation + 1;
+		hid = mother.hid;
+		this.mother.add(mother);
+		Model.householdsAll.get(hid).dependentChildren.add(this);
 		
-		this.motherPID = motherPID;
-		//this.fatherPID = fatherPID;
+		motherPID = mother.PID;
+		//fatherPID = father.PID;
 		sex = determineSex();
 		age = 0;
 		status = Status.DEPENDENTCHILD;
@@ -262,7 +269,7 @@ public class Person {
 		else if(age >= 45 & age < 50 & random_birth < ProbBirth[6][col] / (LifecycleFreq)) {birthThisPeriod = true;}
 		// create child/new person. The members of Model.persons_justborn will be added to Model.persons at the end of Model.step()
 		if(birthThisPeriod == true) {
-			Model.persons_justborn.add(new Person(hid, PID/*, partnerPID*/)); // auxiliary list as we are looping over Model.persons
+			Model.persons_justborn.add(new Person(this/*, partner.get(0)*/)); // auxiliary list as we are looping over Model.persons
 			children.add(Model.persons_justborn.get(Model.persons_justborn.size()-1));
 			dependentChildren.add(Model.persons_justborn.get(Model.persons_justborn.size()-1));
 			if(status == Status.MARRIED) {
@@ -295,7 +302,7 @@ public class Person {
 		}
 	}
 	
-	// determineIfDeath()
+	/////////////////// determineIfDeath() ////////////////////////////////
 	/**
 	 * This is an auxiliary method for die() which uses age and sex dependent probabilities of death to determine whether a PA has to die this period.
 	 * @param prob age and sex dependent probability of death
@@ -309,51 +316,58 @@ public class Person {
 		return dieThisPeriod;
 	}
 	
-	// handleDeath()
+	//////////////////  handleDeath()  ////////////////////////////////////
 	/**
 	 * This method handles the necessary adjustment for a PA that dies. The PA is added to the Model.persons_justremoved list whose elements
 	 * removed from the Model.persons list after the completion of the step for all PAs. Note that the PA still exists with dead = true 
 	 * on the Model.personsAll list.
 	 * In addition, the method Household.handleDeath() is called to take care of the household-level adjustments.
-	 * If the dying person was married, the method handleDeathPartner() is called for the partner which becomes a widow and returns to its former
-	 * single hid. 
-	 * If the dying person had dependent children and was not married, the children become orphans ... TO DO: assign to father (if father available for all kids)
+	 * If the person is not part of the initial population (i.e. has a mother), it is moved from the children to the dead children list.
+	 * If the dying person is a dependent child, it is also removed from the mother's dependent children list.
+	 * If the dying person was married, the method handleDeathPartner() is called for the partner and the marriage count is reduced.
+	 * If the dying person had dependent children and was a female, the children become orphans ... TO DO: assign to father (if father available for all kids)
 	 * Finally, unmarried females are removed from the single female lists used for marriages.
 	 */
 	public void handleDeath() {
 		Model.persons_justdied.add(this);
 		Person.PersonCount = Person.PersonCount - 1;
 		Model.householdsAll.get(hid).handleDeath(this);
+		
+		if(generation > 0) {
+			mother.get(0).children.remove(this);
+			mother.get(0).deadChildren.add(this);
+		}
+		
+		if(status == Status.DEPENDENTCHILD) {mother.get(0).dependentChildren.remove(this);}
+		
 		if(status == Status.MARRIED){
 			Model.MarriageCount = Model.MarriageCount - 1;
 			partner.get(0).handleDeathPartner();
 		}
-		else {
-			Model.orphans.addAll(dependentChildren);
-		}
-		if(sex == Sex.FEMALE & status != Status.MARRIED) {
-			for(int i = 0; i<15; i++) {
-				Model.females_by_agegroup.get(i).remove(this);
-			}
+		if(sex == Sex.FEMALE) {
+			Model.orphans.addAll(dependentChildren); // NEEDS WORK!!!
+			if(status != Status.MARRIED & age >= 16) {Model.females_by_agegroup.get(Math.min(14, agegroup-3)).remove(this);}
 		}
 	}
 	
-	// handleDeathPartner()
+	////////////////////  handleDeathPartner()  //////////////////////////////////
+	/** This method adjusts the characteristics of the partner of the PA who just died. The status is set to widow, the dead partner
+	 * is removed from the partner list and added to the list of previous partners. The PA then returns to its single household.
+	 */
 	public void handleDeathPartner() {
 		status = Status.WIDOWED;
 		previousPartners.add(partner.get(0));
 		partner.clear();
-		Model.householdsAll.get(hid).makePassive();
 		Model.householdsAll.get(singleHID).returnToSingleHousehold(this);
 	}
 	
 	
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // LEAVING THE PARENTAL HOME
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
-	/**
-	 * This method turns a dependent child into a single. Thereby, a new single household is set up.
-	 */
+	
+	/** This method turns a dependent child into a single. Thereby, a new single household is set up. */
 	public void leaveParentalHome() {
 		Model.householdsAll.get(hid).dependentChildren.remove(this);
 		Model.personsAll.get(motherPID).dependentChildren.remove(this);
@@ -572,6 +586,7 @@ public class Person {
 	// orderInitialSingleFemales(): put INITIAL single females in corresponding age group list --> needed for assignment of wives
 	/**
 	 * This method assigns single females of the initial population to the correct age-specific list.
+	 * These 15 age-group specific lists are then stored in the Model.females_by_agegroup list.
 	 */
 	public void orderInitialSingleFemales() {
 		if(agegroup == 3) {Model.females_by_agegroup.get(0).add(this);}
@@ -605,7 +620,7 @@ public class Person {
 	// rows stand for age brackets: Under 20, 20-24, 25-29, 30-34, 35-39, 40-44, 45+
 	// column 0 = married; column 1 = not married
 	/**
-	 * Probabilities of giving birth (conditional on age and marital Status) (7 rows, 2 columns). 
+	 * Probability of giving birth (conditional on age and marital Status) (7 rows, 2 columns). 
 	 * Rows = age brackets {under 20, 20-24, 25-29, 30-34, 35-39, 40-44, 45+}; 
 	 * Columns = {married, not married}
 	 */
@@ -624,7 +639,7 @@ public class Person {
 	// column 1: males, column 2: females
 	// rows stand for agegroups
 	/**
-	 * Probabilities of dying this year depending on age and sex (19 rows, 2 columns)
+	 * Probability of dying (conditional on age and sex) (19 rows, 2 columns)
 	 * Rows = {0-4, 5-9, ..., 85-89, 90+}
 	 * Columns = {male, female}
 	 */
@@ -654,7 +669,7 @@ public class Person {
 	
 	// Probabilities of getting married depending on age and previous marital status for MALES (19 rows, 3 columns)
 	/**
-	 * Probabilities of getting married depending on age and previous marital status for MALES (19 rows, 3 columns)
+	 * Probability of getting married for males (conditional on age and previous marital status) (19 rows, 3 columns)
 	 * Rows = {0-4, 5-9, ..., 85-89, 90+}
 	 * Columns = {single, widowed, divorced}
 	 */
@@ -684,8 +699,8 @@ public class Person {
 	
 	// Probability of divorce in interval to next anniversary (1 row, 60 columns)
 	/**
-	 * Probability of divorce in interval to next anniversary (1 row, 60 columns)
-	 * Columns  {1, 2, ..., 60}
+	 * Probability of divorce (conditional on current duration of marriage/ upcoming anniversary) (1 row, 60 columns)
+	 * Columns = {1, 2, ..., 60}
 	 */
 	public static final double [][] ProbDivorceGivenAnniversary = { 
 		// SOURCE: ONS: Age at marriage, duration of marriage and cohort analyses, 2011 (data from 2010)
@@ -703,7 +718,7 @@ public class Person {
 		
 	// Cumulative Probabilities of the bride having a certain age given marriage and age (15 rows, 15 columns)
 	/**
-	 * Cumulative Probabilities of the bride having a certain age given marriage and age (15 rows, 15 columns)
+	 * Cumulative Probability of the bride having a certain age given marriage and age (15 rows, 15 columns)
 	 * Rows = {Age groups of wife: under 20,20-24,25-29, ... , 75-79,80-84,85+}
 	 * Columns = {Age groups of husband: 20,20-24,25-29, ... , 75-79,80-84,85+}
 	 */

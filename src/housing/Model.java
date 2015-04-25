@@ -21,11 +21,89 @@ public class Model extends SimState implements Steppable {
 
 	// START: INITIAL POPULATION OF PERSON AGENTS
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	/** This method creates the setting for the simulation. Most importantly, the initial population of person and 
+	 * household agents is created.
+	 */
 	public void start() {
 		super.start();
         schedule.scheduleRepeating(this);
 
+        makeInitialPopulation();
+
+		t=0;
+		System.out.println();
+		System.out.println("Number of Households: " + households.size());
+		System.out.println("Number of Households: " + Household.HouseholdCount);
+		System.out.println("Number of People: " + persons.size());
+		System.out.println("Number of people: " + Person.PersonCount);
+		System.out.println("Number of marriages: " + Model.MarriageCount);
+		System.out.println();
+	}
+
+	
+	// STEP 
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	/** This method executes the simulation steps. After the step() method of each PA has been executed, 
+	 * the person and personAll lists are updated and the persons_justBorn and persons_justDied lists are cleared.
+	 */
+	public void step(SimState simulationStateNow) {
+		int j;
+        if (schedule.getTime() >= N_STEPS) simulationStateNow.kill();
         
+		System.out.println("Step " + t + " begins ...");	
+		
+		// step for each person agent //////
+		for (Person p : persons) {
+			p.step();
+			if(Person.PersonCount == 0) {
+				System.out.println("Everybody dead!");
+				simulationStateNow.kill();
+			}
+			if(Household.HouseholdCount != Model.households.size()) simulationStateNow.kill();
+		}
+		//System.out.println("Births: " + persons_justborn.size());
+		//System.out.println("Deaths: " + persons_justdied.size());
+		//System.out.println("Orphans: " + Model.OrphanCount);
+		
+		// update person lists
+		personsAll.addAll(persons_justborn);
+		persons.removeAll(persons_justdied);
+		persons.addAll(persons_justborn);
+		persons_justdied.clear();
+		persons_justborn.clear();
+		
+		// step for each household agent //////
+/*		for (Household h : households) {
+			h.step();
+		}		
+*/
+		t++;
+	}
+	
+	
+	// FINISH
+	/** This method finishes the simulation */
+	public void finish() {
+		
+		System.out.println();
+		System.out.println("Number of households, Total: " + Household.HouseholdCount);
+		System.out.println("Number of households, Total: " + households.size());
+		System.out.println("Number of people: " + Person.PersonCount);
+		System.out.println("Number of people: " + persons.size());
+		System.out.println("Number of people ever: " + Person.PIDCount);		
+		System.out.println("Number of households ever: " + Household.HIDCount);		
+		System.out.println("Number of marriages: " + Model.MarriageCount);
+		System.out.println("Number of marriages with at least one partner still a child: " + Model.DependentChildMarriageCount);
+		System.out.println("Number of orphans: " + Model.orphans.size());
+		System.out.println();
+		super.finish();
+		
+	}
+	
+	/** This method creates the initial population of person and household agents. First, the person agents are created.
+	 * Second, marriages are established.
+	 */
+	public void makeInitialPopulation() {
 		females_by_agegroup.clear();
 		females_by_agegroup.add(female_singles_16to19);
 		females_by_agegroup.add(female_singles_20to24);
@@ -49,89 +127,10 @@ public class Model extends SimState implements Steppable {
 		}        
 		personsAll.addAll(persons);
 		
-		System.out.println();
-		System.out.println("Number of People: " + persons.size());
-		System.out.println("Number of people: " + Person.PersonCount);
-		System.out.println("Number of Households: " + households.size());
-		System.out.println("Number of Households: " + Household.HouseholdCount);
-		
-
 		for (Person p : persons) {
 			p.setUpInitialMarriages();
 		}
-				
-
-		t=0;
-		System.out.println();
-		System.out.println("Number of Households: " + households.size());
-		System.out.println("Number of Households: " + Household.HouseholdCount);
-		System.out.println("Number of People: " + persons.size());
-		System.out.println("Number of people: " + Person.PersonCount);
-		System.out.println("Number of marriages: " + Model.MarriageCount);
-		System.out.println();
 	}
-
-	
-	// STEP 
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	public void step(SimState simulationStateNow) {
-		int j;
-        if (schedule.getTime() >= N_STEPS) simulationStateNow.kill();
-        
-		System.out.println("Step " + t + " begins ...");	
-		
-		// step for each person agent //////
-		for (Person p : persons) {
-			p.step();
-						
-			if(Person.PersonCount == 0) {
-				System.out.println("Everybody dead!");
-				simulationStateNow.kill();
-			}
-			
-			if(Household.HouseholdCount != Model.households.size()) simulationStateNow.kill();
-			
-		}
-	
-		//System.out.println("Births: " + persons_justborn.size());
-		//System.out.println("Deaths: " + persons_justdied.size());
-		//System.out.println("Orphans: " + Model.OrphanCount);
-		
-		// update person lists
-		personsAll.addAll(persons_justborn);
-		persons.removeAll(persons_justdied);
-		persons.addAll(persons_justborn);
-		persons_justdied.clear();
-		persons_justborn.clear();
-		
-		
-		// step for each household agent //////
-/*		for (Household h : households) {
-			h.step();
-		}		
-*/
-		t++;
-	}
-	
-	
-	// FINISH
-	public void finish() {
-		
-		System.out.println();
-		System.out.println("Number of households, Total: " + Household.HouseholdCount);
-		System.out.println("Number of households, Total: " + households.size());
-		System.out.println("Number of people: " + Person.PersonCount);
-		System.out.println("Number of people: " + persons.size());
-		System.out.println("Number of people ever: " + Person.PIDCount);		
-		System.out.println("Number of households ever: " + Household.HIDCount);		
-		System.out.println("Number of marriages: " + Model.MarriageCount);
-		System.out.println("Number of marriages with at least one partner still a child: " + Model.DependentChildMarriageCount);
-		System.out.println("Number of orphans: " + Model.orphans.size());
-		System.out.println();
-		super.finish();
-		
-	}
-	
 	
 
 	////////////////////////////////////////////////////////////////////////
