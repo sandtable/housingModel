@@ -57,6 +57,7 @@ public class ModelGUI extends GUIState implements Steppable {
         timeSeriesPlots.add(
         		new TimeSeriesPlot("Some numbers of interest","Time (years)","Number")
         			.addVariable(state,"t", "the t variable")
+        			//.addVariable(Model.persons, "size()", "Number of PAs")
     	);
 
         

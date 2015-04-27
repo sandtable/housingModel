@@ -61,8 +61,9 @@ public class Model extends SimState implements Steppable {
 			}
 			if(Household.HouseholdCount != Model.households.size()) simulationStateNow.kill();
 		}
-		//System.out.println("Births: " + persons_justborn.size());
-		//System.out.println("Deaths: " + persons_justdied.size());
+		System.out.println("Births: " + persons_justborn.size());
+		System.out.println("Deaths: " + persons_justdied.size());
+		System.out.println("People: " + persons.size());
 		//System.out.println("Orphans: " + Model.OrphanCount);
 		
 		// update person lists
@@ -158,7 +159,7 @@ public class Model extends SimState implements Steppable {
 	public static final int N_HOUSEHOLD = 1; // number of households	
 	public static final int N_PERSON = 10000; // number of households	
 	public static final int Nh = 4100; // number of houses
-	public static int N_STEPS = Person.LifecycleFreq*100; // timesteps
+	public static int N_STEPS = Person.LifecycleFreq*200; // timesteps
 
 	public static Firm								firm;
 	public static ArrayList<Person> 				personsAll = new ArrayList<Person>(); // record of all people who ever lived
@@ -168,13 +169,7 @@ public class Model extends SimState implements Steppable {
 	public static ArrayList<Person> 				orphans = new ArrayList<Person>();
 	
 	
-	
-	public static ArrayList<Person> 				males_marryThisPeriod = new ArrayList<Person>();
-	
-	
 	public static ArrayList<ArrayList<Person>> 		females_by_agegroup = new ArrayList<ArrayList<Person>>();
-	
-	
 	public static ArrayList<Person> 				female_singles_16to19 = new ArrayList<Person>();
 	public static ArrayList<Person> 				female_singles_20to24 = new ArrayList<Person>();
 	public static ArrayList<Person> 				female_singles_25to29 = new ArrayList<Person>();
