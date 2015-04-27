@@ -80,6 +80,7 @@ public class Household {
 		adults.get(1).hid = HID;
 		
 		bringDependentChildren(wife);
+		bringDependentChildrenFather(husband);
 		Model.households.add(this);
 	}
 	
@@ -104,6 +105,8 @@ public class Household {
 	public void makePassive() {
 		adults.clear();
 		dependentChildren.clear();
+		//System.out.println("exists? " + Model.households.indexOf(this));
+		//System.out.println("exists? " + Model.householdsAll.indexOf(this));
 		Model.households.remove(this);
 		HouseholdCount = HouseholdCount - 1;
 	}
@@ -118,9 +121,8 @@ public class Household {
 		adults.add(person);
 		person.hid = HID;
 		if(person.hid != person.singleHID) {System.out.println("ERROR: hid != singleHID");}
-		if(adults.get(0).sex == Sex.FEMALE) {
-			bringDependentChildren(person);
-		}
+		if(adults.get(0).sex == Sex.FEMALE)	bringDependentChildren(person);
+		if(adults.get(0).sex == Sex.MALE)	bringDependentChildrenFather(person);
 		Model.households.add(this);
 		HouseholdCount++;
 	}
@@ -133,10 +135,19 @@ public class Household {
 	 * @param person Person agent who just died
 	 */
 	public void handleDeath(Person person) {
-		if(person.status == Status.DEPENDENTCHILD) {dependentChildren.remove(person);}
+
+		if(person.status == Status.DEPENDENTCHILD) {
+			dependentChildren.remove(person);
+		}
 		else {
-			adults.remove(person);
 			makePassive();
+		}
+	}
+	
+	public void checkCounter() {	
+		if(Model.households.size() != Household.HouseholdCount) {
+			System.out.println("Problem in household");
+			Model.households.get(1000000);
 		}
 	}
 	
@@ -152,6 +163,12 @@ public class Household {
 		}
 	}
 	
+	public void bringDependentChildrenFather(Person father) {
+		dependentChildren.addAll(father.dependentChildrenMotherDead);
+		for(Person p : dependentChildren) {
+			p.hid = HID;
+		}
+	}
 	
 }
 

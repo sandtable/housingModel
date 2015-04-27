@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
+
+import sim.display.ChartUtilities;
 import sim.display.Console;
 import sim.display.Controller;
 import sim.display.GUIState;
@@ -11,7 +13,6 @@ import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.util.media.chart.ScatterPlotGenerator;
 import sim.util.media.chart.ScatterPlotSeriesAttributes;
-import sim.display.ChartUtilities;
 
 /********************************************
  * Mason Graphic Interface for the housing market simulation.
@@ -57,7 +58,6 @@ public class ModelGUI extends GUIState implements Steppable {
         timeSeriesPlots.add(
         		new TimeSeriesPlot("Some numbers of interest","Time (years)","Number")
         			.addVariable(state,"t", "the t variable")
-        			//.addVariable(Model.persons, "size()", "Number of PAs")
     	);
 
         

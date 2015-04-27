@@ -59,8 +59,12 @@ public class Model extends SimState implements Steppable {
 				System.out.println("Everybody dead!");
 				simulationStateNow.kill();
 			}
-			if(Household.HouseholdCount != Model.households.size()) simulationStateNow.kill();
 		}
+/*		if(Household.HouseholdCount != Model.households.size()) {
+			simulationStateNow.kill();
+			System.out.println("Fuck ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+		}*/
+
 		System.out.println("Births: " + persons_justborn.size());
 		System.out.println("Deaths: " + persons_justdied.size());
 		System.out.println("People: " + persons.size());
@@ -105,6 +109,7 @@ public class Model extends SimState implements Steppable {
 	 * Second, marriages are established.
 	 */
 	public void makeInitialPopulation() {
+		
 		females_by_agegroup.clear();
 		females_by_agegroup.add(female_singles_16to19);
 		females_by_agegroup.add(female_singles_20to24);
@@ -121,6 +126,23 @@ public class Model extends SimState implements Steppable {
 		females_by_agegroup.add(female_singles_75to79);
 		females_by_agegroup.add(female_singles_80to84);
 		females_by_agegroup.add(female_singles_85plus);
+
+		males_by_agegroup.clear();
+		males_by_agegroup.add(male_singles_16to19);
+		males_by_agegroup.add(male_singles_20to24);
+		males_by_agegroup.add(male_singles_25to29);
+		males_by_agegroup.add(male_singles_30to34);
+		males_by_agegroup.add(male_singles_35to39);
+		males_by_agegroup.add(male_singles_40to44);
+		males_by_agegroup.add(male_singles_45to49);
+		males_by_agegroup.add(male_singles_50to54);
+		males_by_agegroup.add(male_singles_55to59);
+		males_by_agegroup.add(male_singles_60to64);
+		males_by_agegroup.add(male_singles_65to69);
+		males_by_agegroup.add(male_singles_70to74);
+		males_by_agegroup.add(male_singles_75to79);
+		males_by_agegroup.add(male_singles_80to84);
+		males_by_agegroup.add(male_singles_85plus);
 
         // create persons
 		for(int p = 0; p<N_PERSON; ++p) { 
@@ -159,7 +181,7 @@ public class Model extends SimState implements Steppable {
 	public static final int N_HOUSEHOLD = 1; // number of households	
 	public static final int N_PERSON = 10000; // number of households	
 	public static final int Nh = 4100; // number of houses
-	public static int N_STEPS = Person.LifecycleFreq*200; // timesteps
+	public static int N_STEPS = Person.LifecycleFreq*400; // timesteps
 
 	public static Firm								firm;
 	public static ArrayList<Person> 				personsAll = new ArrayList<Person>(); // record of all people who ever lived
@@ -185,7 +207,24 @@ public class Model extends SimState implements Steppable {
 	public static ArrayList<Person> 				female_singles_75to79 = new ArrayList<Person>();
 	public static ArrayList<Person> 				female_singles_80to84 = new ArrayList<Person>();
 	public static ArrayList<Person> 				female_singles_85plus = new ArrayList<Person>();
-	
+
+	public static ArrayList<ArrayList<Person>> 		males_by_agegroup = new ArrayList<ArrayList<Person>>();
+	public static ArrayList<Person> 				male_singles_16to19 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_20to24 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_25to29 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_30to34 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_35to39 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_40to44 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_45to49 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_50to54 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_55to59 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_60to64 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_65to69 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_70to74 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_75to79 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_80to84 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_85plus = new ArrayList<Person>();
+
 	
 	public static ArrayList<Household> 				households = new ArrayList<Household>();
 	public static ArrayList<Household> 				householdsAll = new ArrayList<Household>();
