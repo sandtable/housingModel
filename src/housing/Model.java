@@ -181,7 +181,7 @@ public class Model extends SimState implements Steppable {
 	public static final int N_HOUSEHOLD = 1; // number of households	
 	public static final int N_PERSON = 10000; // number of households	
 	public static final int Nh = 4100; // number of houses
-	public static int N_STEPS = Person.LifecycleFreq*400; // timesteps
+	public static int N_STEPS = Person.LifecycleFreq*200; // timesteps
 
 	public static Firm								firm;
 	public static ArrayList<Person> 				personsAll = new ArrayList<Person>(); // record of all people who ever lived

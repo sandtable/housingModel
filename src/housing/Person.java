@@ -216,7 +216,6 @@ public class Person {
 		}		
 	}	
 
-
 	
 	// Determine SEX of new person
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -292,6 +291,11 @@ public class Person {
 		}
 	}
 	
+	/**
+	 * This method randomly selects a male person agent from a specified agegroup.
+	 * @param agegroupMother Age group of the lone mother giving birth
+	 * @return Father of the newborn child
+	 */
 	public Person selectFather(int agegroupMother) {
 		Person father;
 		
@@ -301,6 +305,9 @@ public class Person {
 		return father;
 	}
 	
+	/**
+	 * This method adds a child to a person's list of children/dependent children
+	 */
 	public void addChild() {
 		children.add(Model.persons_justborn.get(Model.persons_justborn.size()-1));
 		dependentChildren.add(Model.persons_justborn.get(Model.persons_justborn.size()-1));
