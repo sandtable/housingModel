@@ -67,7 +67,7 @@ public class Person {
 	 * This is done using the methods determineSex(), initialAge() (plus determineAgeGroup()) 
 	 * as well as initialStatus(). The generation is set to 0 as the PA is part of the initial population.
 	 * All unmarried females above 15 years of age (16 is the legal marriage limit) 
-	 * are assigned to an age group dependent list (orderInitialSingleFemales()) 
+	 * are assigned to an age group dependent list (addToSingleFemalesList()) 
 	 * which is used to set up initial marriages in setUpInitialMarriages().
 	 */
 	public Person() {
@@ -79,8 +79,8 @@ public class Person {
 		agegroup = determineAgeGroup();
 		generation = 0;
 		status = initialStatus();
-		if(sex == Sex.FEMALE & status != Status.MARRIED & age >= 16) orderInitialSingleFemales();
-		if(sex == Sex.MALE & status != Status.MARRIED & age >= 16) orderInitialSingleMales();
+		if(sex == Sex.FEMALE & status != Status.MARRIED & age >= 16) addToSingleFemalesList();
+		if(sex == Sex.MALE & status != Status.MARRIED & age >= 16) addToSingleMalesList();
 		Model.householdsAll.add(new Household(this));
 		//System.out.println("Person created -  PID: " + PID + ", hid: " + hid);
 	}
@@ -134,11 +134,7 @@ public class Person {
 	 */
 	public Status initialStatus() {
 		Status initialStatus = Status.SINGLE;
-		if(sex == Sex.MALE & age < 16) {initialStatus = Status.SINGLE;}
-		else if(sex == Sex.FEMALE) {
-			initialStatus = Status.SINGLE; // needs to be better...divorces/widows
-		}
-		else if(sex == Sex.MALE & age >= 16) {
+		if(sex == Sex.MALE & age >= 16) {
 			for(int i = 3; i < 19; i++) {
 				double random = new Random().nextDouble(); 
 				if(agegroup == i) {
@@ -165,16 +161,16 @@ public class Person {
 	 */
 	public void setUpInitialMarriages() {
 		if(sex == Sex.MALE & status == Status.MARRIED) {
-			int col = 99;
-			if(age >= 16 & age < 90) {col = agegroup - 3;}
-			if(age >= 90) {col = 14;}
+			int col = Math.min(agegroup-3, 14);
 			
 			partner.add(selectWife(col)); // contrary to general process: choose wife from same agegroup! (empirically, mean age difference betw. 2 and 3 years.)
 			partnerPID = partner.get(0).PID;
 
-			Model.householdsAll.add(new Household(this, partner.get(0)));
-			handleMarriageHusband(col);
-			partner.get(0).handleMarriageWife(PID, col);
+			Model.householdsAll.get(hid).handleMarriage(partner.get(0));
+			
+			handleMarriageHusband();
+			partner.get(0).handleMarriageWife(this);
+
 			Model.MarriageCount++;
 
 		}
@@ -204,10 +200,10 @@ public class Person {
 			
 			if(age == 18 & status == Status.DEPENDENTCHILD) leaveParentalHome();
 			
-			if(sex == Sex.FEMALE & (status == Status.SINGLE | status == Status.DEPENDENTCHILD)) orderSingleFemales();
-			if(sex == Sex.MALE & (status == Status.SINGLE | status == Status.DEPENDENTCHILD)) orderSingleMales();
+			if(sex == Sex.FEMALE & status != Status.MARRIED) orderSingleFemales();
+			if(sex == Sex.MALE & status != Status.MARRIED) orderSingleMales();
 			
-			if(status == Status.MARRIED) divorce(); 
+			if(status == Status.MARRIED & sex == Sex.MALE) divorce(); 
 			
 			if(sex == Sex.MALE & age >= 16) marry(); // divorce and marriage in the same period plausible (month or year?)
 			
@@ -364,9 +360,7 @@ public class Person {
 		Model.persons_justdied.add(this);
 		Model.orphans.remove(this);
 		Person.PersonCount = Person.PersonCount - 1;
-		
-		Model.householdsAll.get(hid).handleDeath(this);
-		
+				
 		if(generation > 0) {
 			mother.get(0).children.remove(this);
 			mother.get(0).deadChildren.add(this);
@@ -383,34 +377,38 @@ public class Person {
 		
 		if(sex == Sex.FEMALE) {
 			if(status != Status.MARRIED & age >= 16) {
-				Model.females_by_agegroup.get(Math.min(14, agegroup-3)).remove(this);
+				removeFromSingleFemalesList();
 			}
 			if(dependentChildren.size() > 0) {
+				Model.householdsAll.get(hid).dependentChildren.removeAll(dependentChildren);
 				for(Person p : dependentChildren) {
 					if(p.father.get(0).dead == false) {
+						p.father.get(0).dependentChildren.remove(p);
 						p.father.get(0).dependentChildrenMotherDead.add(p);
 						p.hid = p.father.get(0).hid;
-						Model.householdsAll.get(hid).dependentChildren.add(p);						
+						Model.householdsAll.get(p.hid).dependentChildren.add(p);						
 					}
 					else {
-						//System.out.println("New orphan: " + p.PID + " " + p.mother.get(0).dead + " " + p.father.get(0).dead + " " + p.age);
 						Model.orphans.add(p);
 					}
 				}
 			}
-		}
-		else if(sex == Sex.MALE) {
-			if(status != Status.MARRIED & age >= 16) {Model.males_by_agegroup.get(Math.min(14, agegroup-3)).remove(this);}
-			if(dependentChildrenMotherDead.size() > 0) {
-				Model.orphans.addAll(dependentChildrenMotherDead);
-				//System.out.println("New orphans: " + dependentChildrenMotherDead.get(0).PID + " " + dependentChildrenMotherDead.get(0).age + " ///////////////////////////////");
-			}
+			Model.householdsAll.get(hid).handleDeathFemale(this);
 		}
 		
-		if(status == Status.MARRIED){
+		else if(sex == Sex.MALE) {
+			if(status != Status.MARRIED & age >= 16) removeFromSingleMalesList();	
+			if(dependentChildrenMotherDead.size() > 0) {
+				Model.orphans.addAll(dependentChildrenMotherDead);
+			}
+			Model.householdsAll.get(hid).handleDeathMale(this);
+		}
+		
+		if(status == Status.MARRIED) {
 			Model.MarriageCount = Model.MarriageCount - 1;
 			partner.get(0).handleDeathPartner();
 		}
+		
 	}
 	
 	////////////////////  handleDeathPartner()  //////////////////////////////////
@@ -421,7 +419,11 @@ public class Person {
 		status = Status.WIDOWED;
 		previousPartners.add(partner.get(0));
 		partner.clear();
-		Model.householdsAll.get(singleHID).returnToSingleHousehold(this);
+		if(sex == Sex.FEMALE) {
+			Model.householdsAll.get(singleHID).returnToSingleHousehold(this);
+			addToSingleFemalesList();
+		}
+		else addToSingleMalesList();
 	}
 	
 	
@@ -434,15 +436,14 @@ public class Person {
 	public void leaveParentalHome() {
 		Model.householdsAll.get(hid).dependentChildren.remove(this);
 		mother.get(0).dependentChildren.remove(this);
-		father.get(0).dependentChildren.remove(this);
 		father.get(0).dependentChildrenMotherDead.remove(this);
 		status = Status.SINGLE;
 		
 		Model.householdsAll.add(new Household(this));
-		
 	}
 	
 	
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // MARRIAGE
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
@@ -473,11 +474,10 @@ public class Person {
 			if(status == Status.DEPENDENTCHILD) leaveParentalHome();
 			if(partner.get(0).status == Status.DEPENDENTCHILD) partner.get(0).leaveParentalHome();
 			
-			Model.householdsAll.add(new Household(this, partner.get(0)));
-	
-			handleMarriageHusband(ageGroupWife);
-
-			partner.get(0).handleMarriageWife(PID, ageGroupWife);
+			Model.householdsAll.get(hid).handleMarriage(partner.get(0));
+			
+			handleMarriageHusband();
+			partner.get(0).handleMarriageWife(this);
 
 
 			Model.MarriageCount++;
@@ -548,11 +548,10 @@ public class Person {
 	 * Most importantly, the husband's single household is made inactive.
 	 * @param ageGroupWife
 	 */
-	public void handleMarriageHusband(int ageGroupWife) {
+	public void handleMarriageHusband() {
 		ageDifferencePartner = (int)(age - partner.get(0).age);
 		status = Status.MARRIED;
-		Model.householdsAll.get(singleHID).makePassive();
-		Model.males_by_agegroup.get(Math.min(14, agegroup-3)).remove(this);
+		removeFromSingleMalesList();
 	}
 	
 	// handleMarriageWife()
@@ -563,23 +562,22 @@ public class Person {
 	 * @param partnerPID
 	 * @param ageGroup
 	 */
-	public void handleMarriageWife(int partnerPID, int ageGroup) {
-		this.partnerPID = partnerPID;
-		partner.add(Model.personsAll.get(partnerPID));
+	public void handleMarriageWife(Person husband) {
+		partnerPID = husband.PID;
+		partner.add(husband);
 		
 		ageDifferencePartner = (int)(age - partner.get(0).age);
+		
 		status = Status.MARRIED;
+		removeFromSingleFemalesList();
 		
-		Model.females_by_agegroup.get(ageGroup).remove(this);
-		Model.householdsAll.get(singleHID).makePassive();
-		
+		Model.householdsAll.get(singleHID).makePassive("handleMarriageWife");
 	}
 	
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 	
-	// DIVORCE
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// DIVORCE
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 	// divorce()
 	/**
@@ -589,29 +587,32 @@ public class Person {
 	 */
 	public void divorce() {
 		boolean divorceThisPeriod = false;
-		if(sex == Sex.MALE) {
-			int marriageDuration = (int)(age - ageAtMarriage);
-			double random_divorce = new Random().nextDouble();
-			if(random_divorce < ProbDivorceGivenAnniversary[0][Math.min(marriageDuration, 59)]) {divorceThisPeriod = true;}
-			if(divorceThisPeriod == true) {
-				Model.householdsAll.get(hid).makePassive();
-				partner.get(0).handleDivorce();
-				handleDivorce();
-				Model.MarriageCount = Model.MarriageCount - 1;
-			}
+		int marriageDuration = (int)(age - ageAtMarriage);
+		double random_divorce = new Random().nextDouble();
+		if(random_divorce < ProbDivorceGivenAnniversary[0][Math.min(marriageDuration, 59)]) {divorceThisPeriod = true;}
+		if(divorceThisPeriod == true) {
+			Model.householdsAll.get(hid).handleDivorce(partner.get(0));
+			partner.get(0).handleDivorceWife();
+			handleDivorceHusband();
+			Model.MarriageCount = Model.MarriageCount - 1;
 		}
 	}
-	// handleDivorce()
-	/**
-	 * [auxiliary method for divorce()] This method adjusts the characteristics of both the husband and wife after divorce.
-	 * The status is set to divorced and the partner is moved to the previousPartners list.
-	 */
-	public void handleDivorce() {
+
+	public void handleDivorceWife() {
 		Model.householdsAll.get(singleHID).returnToSingleHousehold(this);
 		status = Status.DIVORCED;
 		previousPartners.add(partner.get(0));
 		partner.clear();
 		partnerPID = 0;
+		addToSingleFemalesList();
+	}
+	
+	public void handleDivorceHusband() {
+		status = Status.DIVORCED;
+		previousPartners.add(partner.get(0));
+		partner.clear();
+		partnerPID = 0;
+		addToSingleMalesList();
 	}
 	
 	
@@ -677,53 +678,32 @@ public class Person {
 		else if(age == 85) {Model.males_by_agegroup.get(13).remove(this);Model.males_by_agegroup.get(14).add(this);}
 	}
 	
-	// orderInitialSingleFemales(): put INITIAL single females in corresponding age group list --> needed for assignment of wives
+	// addToInitialSingleFemalesList(): put INITIAL single females in corresponding age group list --> needed for assignment of wives
 	/**
 	 * This method assigns single females of the initial population to the correct age-specific list.
 	 * These 15 age-group specific lists are then stored in the Model.females_by_agegroup list.
 	 */
-	public void orderInitialSingleFemales() {
-		if(agegroup == 3) {Model.females_by_agegroup.get(0).add(this);}
-		else if(agegroup == 4) {Model.females_by_agegroup.get(1).add(this);}
-		else if(agegroup == 5) {Model.females_by_agegroup.get(2).add(this);}
-		else if(agegroup == 6) {Model.females_by_agegroup.get(3).add(this);}
-		else if(agegroup == 7) {Model.females_by_agegroup.get(4).add(this);}
-		else if(agegroup == 8) {Model.females_by_agegroup.get(5).add(this);}
-		else if(agegroup == 9) {Model.females_by_agegroup.get(6).add(this);}
-		else if(agegroup == 10) {Model.females_by_agegroup.get(7).add(this);}
-		else if(agegroup == 11) {Model.females_by_agegroup.get(8).add(this);}
-		else if(agegroup == 12) {Model.females_by_agegroup.get(9).add(this);}
-		else if(agegroup == 13) {Model.females_by_agegroup.get(10).add(this);}
-		else if(agegroup == 14) {Model.females_by_agegroup.get(11).add(this);}
-		else if(agegroup == 15) {Model.females_by_agegroup.get(12).add(this);}
-		else if(agegroup == 16) {Model.females_by_agegroup.get(13).add(this);}
-		else if(agegroup >= 17) {Model.females_by_agegroup.get(14).add(this);}
+	public void addToSingleFemalesList() {
+		Model.females_by_agegroup.get(Math.min(agegroup-3, 14)).add(this);
 	}
 
-	// orderInitialSingleMales(): put INITIAL single males in corresponding age group list --> needed for assignment of fathers
+	// addToInitialSingleMalesList(): put INITIAL single males in corresponding age group list --> needed for assignment of fathers
 	/**
 	 * This method assigns single males of the initial population to the correct age-specific list.
 	 * These 15 age-group specific lists are then stored in the Model.males_by_agegroup list.
 	 */
-	public void orderInitialSingleMales() {
-		if(agegroup == 3) {Model.males_by_agegroup.get(0).add(this);}
-		else if(agegroup == 4) {Model.males_by_agegroup.get(1).add(this);}
-		else if(agegroup == 5) {Model.males_by_agegroup.get(2).add(this);}
-		else if(agegroup == 6) {Model.males_by_agegroup.get(3).add(this);}
-		else if(agegroup == 7) {Model.males_by_agegroup.get(4).add(this);}
-		else if(agegroup == 8) {Model.males_by_agegroup.get(5).add(this);}
-		else if(agegroup == 9) {Model.males_by_agegroup.get(6).add(this);}
-		else if(agegroup == 10) {Model.males_by_agegroup.get(7).add(this);}
-		else if(agegroup == 11) {Model.males_by_agegroup.get(8).add(this);}
-		else if(agegroup == 12) {Model.males_by_agegroup.get(9).add(this);}
-		else if(agegroup == 13) {Model.males_by_agegroup.get(10).add(this);}
-		else if(agegroup == 14) {Model.males_by_agegroup.get(11).add(this);}
-		else if(agegroup == 15) {Model.males_by_agegroup.get(12).add(this);}
-		else if(agegroup == 16) {Model.males_by_agegroup.get(13).add(this);}
-		else if(agegroup >= 17) {Model.males_by_agegroup.get(14).add(this);}
+	public void addToSingleMalesList() {
+		Model.males_by_agegroup.get(Math.min(agegroup-3, 14)).add(this);
 	}
 	
+	public void removeFromSingleFemalesList() {
+		Model.females_by_agegroup.get(Math.min(agegroup-3, 14)).remove(this);
+	}	
+	public void removeFromSingleMalesList() {
+		Model.males_by_agegroup.get(Math.min(agegroup-3, 14)).remove(this);
+	}
 
+	
 	public void checkCounter() {	
 		if(Model.households.size() != Household.HouseholdCount) {
 			System.out.println("Partners. Sex " + sex + " " + status + " " + dependentChildren.size() + " " + partner.size());

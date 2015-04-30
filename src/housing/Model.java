@@ -175,6 +175,11 @@ public class Model extends SimState implements Steppable {
 	}
 
 	public String nameN_STEPS() {return("Number of timesteps");}
+	
+	public double getnumberOfPeople() {
+		return(households.size());
+	}
+	
 
 	////////////////////////////////////////////////////////////////////////
 

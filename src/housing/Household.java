@@ -102,11 +102,12 @@ public class Household {
 	 * This method turns an active household into a passive one. That is, removes the household from Model.households, 
 	 * and removes all members from the adults and dependentChildren lists. In addition, the household counter is reduced by one.
 	 */
-	public void makePassive() {
+	public void makePassive(String method) {
 		adults.clear();
 		dependentChildren.clear();
 		//System.out.println("exists? " + Model.households.indexOf(this));
 		//System.out.println("exists? " + Model.householdsAll.indexOf(this));
+		//if(Model.households.indexOf(this) == -1) System.out.println(method + adults.size() + "makePassive()~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ household does not exist");
 		Model.households.remove(this);
 		HouseholdCount = HouseholdCount - 1;
 	}
@@ -120,9 +121,7 @@ public class Household {
 	public void returnToSingleHousehold(Person person) {
 		adults.add(person);
 		person.hid = HID;
-		if(person.hid != person.singleHID) {System.out.println("ERROR: hid != singleHID");}
-		if(adults.get(0).sex == Sex.FEMALE)	bringDependentChildren(person);
-		if(adults.get(0).sex == Sex.MALE)	bringDependentChildrenFather(person);
+		bringDependentChildren(person);
 		Model.households.add(this);
 		HouseholdCount++;
 	}
@@ -135,15 +134,21 @@ public class Household {
 	 * @param person Person agent who just died
 	 */
 	public void handleDeath(Person person) {
-
-		if(person.status == Status.DEPENDENTCHILD) {
-			dependentChildren.remove(person);
-		}
-		else {
-			makePassive();
-		}
+		if(person.status == Status.DEPENDENTCHILD) dependentChildren.remove(person);
+		else makePassive("handleDeath");
 	}
 	
+	public void handleDeathFemale(Person female) {
+		if(female.status == Status.DEPENDENTCHILD) dependentChildren.remove(female);
+		else if(female.status == Status.MARRIED) adults.remove(female);
+		else makePassive("handleDeathFemale");
+	}
+	
+	public void handleDeathMale(Person male) {
+		if(male.status == Status.DEPENDENTCHILD) dependentChildren.remove(male);
+		else makePassive("handleDeathMale");
+	}
+		
 	public void checkCounter() {	
 		if(Model.households.size() != Household.HouseholdCount) {
 			System.out.println("Problem in household");
@@ -151,21 +156,40 @@ public class Household {
 		}
 	}
 	
+	// handleMarriage()
+	/** 
+	 * This method adds the wife to the husband's household and makes the wife's single household passive.
+	 * The wife's dependent children are brought into the household and her household is made passive.
+	 * @param wife
+	 */
+	public void handleMarriage(Person wife) {
+		adults.add(wife);
+		wife.hid = HID;
+		bringDependentChildren(wife);
+	}
+	
+	// handleDivorce()
+	public void handleDivorce(Person wife) {
+		adults.remove(wife);
+		dependentChildren.removeAll(wife.dependentChildren);
+	}
+	
+	
 	/**
 	 * This method adds the dependent children of the PA mother to the mother's (new) household. They are added to the household's dependent
 	 * children list and their hid is adjusted.
 	 * @param mother
 	 */
-	public void bringDependentChildren(Person mother) {
-		dependentChildren.addAll(mother.dependentChildren);
-		for(Person p : dependentChildren) {
+	public void bringDependentChildren(Person parent) {
+		dependentChildren.addAll(parent.dependentChildren);
+		for(Person p : parent.dependentChildren) {
 			p.hid = HID;
 		}
 	}
 	
 	public void bringDependentChildrenFather(Person father) {
 		dependentChildren.addAll(father.dependentChildrenMotherDead);
-		for(Person p : dependentChildren) {
+		for(Person p : father.dependentChildren) {
 			p.hid = HID;
 		}
 	}
