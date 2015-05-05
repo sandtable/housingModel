@@ -27,12 +27,34 @@ public class Model extends SimState implements Steppable {
 	 * This method is called before the simualtion starts. It schedules this
 	 * object to be stepped at each timestep and initialises the agents.
 	 */
-	public void start() {
+	public void startOld() {
 		super.start();
         schedule.scheduleRepeating(this);
 		initialise();
 		t = 0;
 	}
+	
+	// START: INITIAL POPULATION OF PERSON AGENTS
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	/** This method creates the setting for the simulation. Most importantly, the initial population of person and 
+	 * household agents is created.
+	 */
+	public void start() {
+		super.start();
+        schedule.scheduleRepeating(this);
+
+        makeInitialPopulation();
+
+		t=0;
+		System.out.println();
+		System.out.println("Number of Households: " + households.size());
+		System.out.println("Number of Households: " + Household.HouseholdCount);
+		System.out.println("Number of People: " + persons.size());
+		System.out.println("Number of people: " + Person.PersonCount);
+		System.out.println("Number of marriages: " + Model.MarriageCount);
+		System.out.println();
+	}
+
 	
 	/**
 	 * This is the main time-step of the whole simulation. Everything starts
@@ -41,7 +63,34 @@ public class Model extends SimState implements Steppable {
 	public void step(SimState simulationStateNow) {
 		if (schedule.getTime() >= N_STEPS) simulationStateNow.kill();
 		
-		demographics.step();
+		int help = (int) t/Person.LifecycleFreq;
+		
+		if (help*Person.LifecycleFreq == t) {
+			System.out.println("Year " + help + " starts");
+			for (Person p : persons) {
+				p.stepBasic();
+				if(Person.PersonCount == 0) {
+					System.out.println("Everybody dead!");
+					simulationStateNow.kill();
+				}
+			}
+			personsAll.addAll(persons_justborn);
+			persons.removeAll(persons_justdied);
+			persons.addAll(persons_justborn);
+			persons_justdied.clear();
+			persons_justborn.clear();
+			for (Person p : persons) {
+				p.step();
+			}
+			for(int i = 0; i<15; i++) {
+				females_by_agegroup.get(i).clear();
+			}
+	        System.out.println("Number of people: " + persons.size());
+	        System.out.println("Number of households: " + households.size());
+	        System.out.println();
+		}
+		
+//		demographics.step();
 		construction.step();
 		for(Household h : households) h.preHouseSaleStep();
 		housingMarket.clearMarket();
@@ -49,7 +98,9 @@ public class Model extends SimState implements Steppable {
 		housingMarket.clearBuyToLetMarket();
 		rentalMarket.clearMarket();
         bank.step();
-        t += 1;
+        
+        t++;
+        
 	}
 	
 	/**
@@ -164,6 +215,58 @@ public class Model extends SimState implements Steppable {
 		rentalMarket.clearMarket();				
 		***/
 	}
+	
+	// Make initial population
+	/** This method creates the initial population of person and household agents. First, the person agents are created.
+	 * Second, marriages are established.
+	 */
+	public void makeInitialPopulation() {
+		
+		females_by_agegroup.clear();
+		females_by_agegroup.add(female_singles_16to19);
+		females_by_agegroup.add(female_singles_20to24);
+		females_by_agegroup.add(female_singles_25to29);
+		females_by_agegroup.add(female_singles_30to34);
+		females_by_agegroup.add(female_singles_35to39);
+		females_by_agegroup.add(female_singles_40to44);
+		females_by_agegroup.add(female_singles_45to49);
+		females_by_agegroup.add(female_singles_50to54);
+		females_by_agegroup.add(female_singles_55to59);
+		females_by_agegroup.add(female_singles_60to64);
+		females_by_agegroup.add(female_singles_65to69);
+		females_by_agegroup.add(female_singles_70to74);
+		females_by_agegroup.add(female_singles_75to79);
+		females_by_agegroup.add(female_singles_80to84);
+		females_by_agegroup.add(female_singles_85plus);
+
+		males_by_agegroup.clear();
+		males_by_agegroup.add(male_singles_16to19);
+		males_by_agegroup.add(male_singles_20to24);
+		males_by_agegroup.add(male_singles_25to29);
+		males_by_agegroup.add(male_singles_30to34);
+		males_by_agegroup.add(male_singles_35to39);
+		males_by_agegroup.add(male_singles_40to44);
+		males_by_agegroup.add(male_singles_45to49);
+		males_by_agegroup.add(male_singles_50to54);
+		males_by_agegroup.add(male_singles_55to59);
+		males_by_agegroup.add(male_singles_60to64);
+		males_by_agegroup.add(male_singles_65to69);
+		males_by_agegroup.add(male_singles_70to74);
+		males_by_agegroup.add(male_singles_75to79);
+		males_by_agegroup.add(male_singles_80to84);
+		males_by_agegroup.add(male_singles_85plus);
+
+        // create persons
+		for(int p = 0; p<N_PERSON; ++p) { 
+			persons.add(new Person());
+		}        
+		personsAll.addAll(persons);
+		
+		for (Person p : persons) {
+			p.setUpInitialMarriages();
+		}
+	}
+
 
 	////////////////////////////////////////////////////////////////////////
 	// Getters/setters for the console
@@ -211,18 +314,65 @@ public class Model extends SimState implements Steppable {
 
 	////////////////////////////////////////////////////////////////////////
 
-	public static int N_STEPS = 50000; // timesteps
+	public static int N_STEPS = 5000; // timesteps
+	public static final int N_PERSON = 10000; // number of households	
 
-	public static Bank 				bank = new Bank();
-	public static Government		government = new Government();
-	public static Construction		construction = new Construction();
-	public static HouseSaleMarket 	housingMarket = new HouseSaleMarket();
-	public static HouseRentalMarket	rentalMarket = new HouseRentalMarket();
-	public static ArrayList<Household>	households = new ArrayList<Household>();
-	public static Demographics		demographics = new Demographics();
-	public static MersenneTwisterFast			rand = new MersenneTwisterFast(1L);
+	public static Bank 								bank = new Bank();
+	public static Government						government = new Government();
+	public static Construction						construction = new Construction();
+	public static HouseSaleMarket 					housingMarket = new HouseSaleMarket();
+	public static HouseRentalMarket					rentalMarket = new HouseRentalMarket();
+	public static Demographics						demographics = new Demographics();
+	public static MersenneTwisterFast				rand = new MersenneTwisterFast(1L);
 	
-	public static int	t; // time (months)
-	public static LogNormalDistribution grossFinancialWealth;		// household wealth in bank balances and investments
+	public static int								t; // time (months)
+	public static LogNormalDistribution 			grossFinancialWealth;		// household wealth in bank balances and investments
 
+	public static ArrayList<Person> 				personsAll = new ArrayList<Person>(); // record of all people who ever lived
+	public static ArrayList<Person> 				persons = new ArrayList<Person>();
+	public static ArrayList<Person> 				persons_justborn = new ArrayList<Person>();
+	public static ArrayList<Person> 				persons_justdied = new ArrayList<Person>();
+	public static ArrayList<Person> 				orphans = new ArrayList<Person>();
+	public static ArrayList<Household> 				householdsAll = new ArrayList<Household>();
+	public static ArrayList<Household>				households = new ArrayList<Household>();
+	
+	
+	public static ArrayList<ArrayList<Person>> 		females_by_agegroup = new ArrayList<ArrayList<Person>>();
+	public static ArrayList<Person> 				female_singles_16to19 = new ArrayList<Person>();
+	public static ArrayList<Person> 				female_singles_20to24 = new ArrayList<Person>();
+	public static ArrayList<Person> 				female_singles_25to29 = new ArrayList<Person>();
+	public static ArrayList<Person> 				female_singles_30to34 = new ArrayList<Person>();
+	public static ArrayList<Person> 				female_singles_35to39 = new ArrayList<Person>();
+	public static ArrayList<Person> 				female_singles_40to44 = new ArrayList<Person>();
+	public static ArrayList<Person> 				female_singles_45to49 = new ArrayList<Person>();
+	public static ArrayList<Person> 				female_singles_50to54 = new ArrayList<Person>();
+	public static ArrayList<Person> 				female_singles_55to59 = new ArrayList<Person>();
+	public static ArrayList<Person> 				female_singles_60to64 = new ArrayList<Person>();
+	public static ArrayList<Person> 				female_singles_65to69 = new ArrayList<Person>();
+	public static ArrayList<Person> 				female_singles_70to74 = new ArrayList<Person>();
+	public static ArrayList<Person> 				female_singles_75to79 = new ArrayList<Person>();
+	public static ArrayList<Person> 				female_singles_80to84 = new ArrayList<Person>();
+	public static ArrayList<Person> 				female_singles_85plus = new ArrayList<Person>();
+
+	public static ArrayList<ArrayList<Person>> 		males_by_agegroup = new ArrayList<ArrayList<Person>>();
+	public static ArrayList<Person> 				male_singles_16to19 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_20to24 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_25to29 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_30to34 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_35to39 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_40to44 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_45to49 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_50to54 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_55to59 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_60to64 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_65to69 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_70to74 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_75to79 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_80to84 = new ArrayList<Person>();
+	public static ArrayList<Person> 				male_singles_85plus = new ArrayList<Person>();
+
+	public static int 								MarriageCount = 0; 
+	public static int								DependentChildMarriageCount = 0;
+	public static int 								OrphanCount = 0; 
+	
 }

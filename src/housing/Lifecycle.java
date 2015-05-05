@@ -10,8 +10,7 @@ public class Lifecycle {
 			
 	public void step() {
 		age += 1.0/12.0;
-	}
-	
+	}	
 	/*** 
 	 * TODO: Make this age dependent
 	 * 

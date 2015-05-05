@@ -1,5 +1,8 @@
 package housing;
 
+import housing.Person.Sex;
+import housing.Person.Status;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
@@ -459,7 +462,7 @@ public class Household implements IHouseOwner {
 	}
 
 	public Household(Household.Config c, double iage) {
-		config = c;
+		config = new Household.Config();
 		bank = Model.bank;
 		houseMarket = Model.housingMarket;
 		rentalMarket = Model.rentalMarket;
@@ -474,7 +477,7 @@ public class Household implements IHouseOwner {
 		}
 //		setDesiredPropertyInvestmentFraction(0.0);
 		id = ++id_pool;
-		lifecycle = new Lifecycle(iage);
+//		lifecycle = new Lifecycle(iage);
 	}
 
 
@@ -542,8 +545,9 @@ public class Household implements IHouseOwner {
 	public void preHouseSaleStep() {
 		double disposableIncome;
 		
-		lifecycle.step();
-		annualEmploymentIncome = lifecycle.annualIncome();
+		ageOfHead();
+		//lifecycle.step();
+		annualEmploymentIncome = annualIncome();
 		disposableIncome = getMonthlyDisposableIncome() - 0.8 * Government.Config.INCOME_SUPPORT;
 
 //		System.out.println("income = "+monthlyIncome+" disposable = "+disposableIncome );
@@ -1056,12 +1060,24 @@ public class Household implements IHouseOwner {
 	}
 
 	
-	///////////////////////////////////////////////
+
 	
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	
+	// Household Characteristics 
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	// identifiers
+	public int id; // make final. constructors need to be adjusted
+	
+	
+	// socio-economic variables
+	double	age;				// age of representative householder
+	double	incomePercentile; 	// fixed for lifetime of household
+	public int householdMembers;
 	Household.Config	config;
 	HouseSaleMarket		houseMarket;
 	HouseRentalMarket	rentalMarket;
-
 	protected double 	annualEmploymentIncome;
 	protected double 	bankBalance;
 	protected House		home; // current home
@@ -1070,12 +1086,235 @@ public class Household implements IHouseOwner {
 //	public	double		desiredPropertyInvestmentFraction;
 	public int			desiredBTLProperties;	// number of properties
 	Bank				bank;
-	public int		 	id;		// only to ensure deterministic execution
 	protected MersenneTwisterFast 	rand;
+	//public Lifecycle	lifecycle;	// lifecycle plugin
+
+	// lists
+	public ArrayList<Person> adults 			= new ArrayList<Person>();
+	public ArrayList<Person> dependentChildren  = new ArrayList<Person>();
 	
-	public Lifecycle	lifecycle;	// lifecycle plugin
 	
+	// Class Characteristics
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	 /** Number of active households **/
+	public static int HouseholdCount = 0;
+	
+	/** Number of all households who have ever existed. **/
+	public static int idCount = 0;
+
 	static Diagnostics	diagnostics = new Diagnostics(Model.households);
 	static int		 id_pool;
+	
+	public static double INCOME_LOG_MEDIAN = Math.log(29580); // Source: IFS: living standards, poverty and inequality in the UK (22,938 after taxes) //Math.log(20300); // Source: O.N.S 2011/2012
+	public static double INCOME_SHAPE = (Math.log(44360) - INCOME_LOG_MEDIAN)/0.6745; // Source: IFS: living standards, poverty and inequality in the UK (75th percentile is 32692 after tax)
+	public static LogNormalDistribution incomeDistribution = new LogNormalDistribution(INCOME_LOG_MEDIAN, INCOME_SHAPE);
 
+	
+	
+
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//			CONSTRUCTOR - CONSTRUCTOR - CONSTRUCTOR - CONSTRUCTOR - CONSTRUCTOR - CONSTRUCTOR
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+	// Constructor for single households
+	/**
+	 * This method constructs a new household with one adult member. The household receives a unique and invariant household ID (id) and subsequently 
+	 * both the household counter as well as the id counter are incremented by one. The person is added to the adults list and his current hid and
+	 * unique singleHID are set equal to household ID. (The singleHID will not be changed after this). If the person constituting the household is
+	 * female, her dependent children are added to the household's list of dependent children.
+	 * Finally, the household is added to the list of active households (Model.households)
+	 * @param person Adult member of the household
+	 */
+	public Household(Person person) {
+		// set household id and count number of households
+		id = idCount;
+		HouseholdCount++;
+		idCount++;
+		adults.add(person);
+		adults.get(0).singleHID = id;
+		adults.get(0).hid = id;
+		age = person.age;
+		
+		if(person.sex == Sex.FEMALE) bringDependentChildren(person);
+		Model.households.add(this);
+		
+		incomePercentile = Model.rand.nextDouble();
+	
+		config = new Household.Config();
+		bank = Model.bank;
+		houseMarket = Model.housingMarket;
+		rentalMarket = Model.rentalMarket;
+		rand = Model.rand;
+		home = null;
+		bankBalance = 0.0;
+		isFirstTimeBuyer = true;
+		if(config.P_INVESTOR < rand.nextDouble()) {
+			desiredBTLProperties = (int)config.buyToLetDistribution.inverseCumulativeProbability(rand.nextDouble());
+		} else {
+			desiredBTLProperties = 0;
+		}
+//		setDesiredPropertyInvestmentFraction(0.0);
+//		id = ++id_pool;
+
+	}
+
+/*	// Constructor for marriage households 
+	*//**
+	 * This constructer is called in the marriage process and creates a new household with two adult members (husband and wife).
+	 * The household's unique id becomes the adult members' current hid. Their singleHID remains unchanged for the case of death of the partner or divorce.
+	 * The dependent children of the wife are added to the household's list of dependent children. 
+	 * Finally, the household is added to the list of active households (Model.households)
+	 * @param husband Male PA of married couple that creates the household
+	 * @param wife Female PA of married couple that creates the household
+	 *//*
+	public Household(Person husband, Person wife) {
+		// set household id and count number of households
+		id = idCount;
+		HouseholdCount++;
+		idCount++;
+		adults.add(husband);
+		adults.add(wife);
+		adults.get(0).hid = id;
+		adults.get(1).hid = id;
+		age = husband.age;
+	
+		incomePercentile = Model.rand.nextDouble();
+
+		
+		bringDependentChildren(wife);
+		bringDependentChildrenFather(husband);
+		Model.households.add(this);
+		
+		config = new Household.Config();
+		bank = Model.bank;
+		houseMarket = Model.housingMarket;
+		rentalMarket = Model.rentalMarket;
+		rand = Model.rand;
+		home = null;
+		bankBalance = 0.0;
+		isFirstTimeBuyer = true;
+		if(config.P_INVESTOR < rand.nextDouble()) {
+			desiredBTLProperties = (int)config.buyToLetDistribution.inverseCumulativeProbability(rand.nextDouble());
+		} else {
+			desiredBTLProperties = 0;
+		}
+//		setDesiredPropertyInvestmentFraction(0.0);
+//		id = ++id_pool;
+	}
+*/	
+	
+
+	
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//					METHODS - METHODS - METHODS - METHODS - METHODS - METHODS
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+	public void ageOfHead() {
+		age = adults.get(0).age;
+	}
+	
+	
+	/**
+	 * This method turns an active household into a passive one. That is, removes the household from Model.households, 
+	 * and removes all members from the adults and dependentChildren lists. In addition, the household counter is reduced by one.
+	 */
+	public void makePassive(String method) {
+		adults.clear();
+		dependentChildren.clear();
+		//System.out.println("exists? " + Model.households.indexOf(this));
+		//System.out.println("exists? " + Model.householdsAll.indexOf(this));
+		//if(Model.households.indexOf(this) == -1) System.out.println(method + adults.size() + "makePassive()~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ household does not exist");
+		Model.households.remove(this);
+		HouseholdCount = HouseholdCount - 1;
+	}
+	
+	/**
+	 * This method activates the single household of a PA who has been married until this period. 
+	 * The PA is added to the adult list and the dependent children of females are added to the household's list of dependent children.
+	 * The household is added to the Model.household list of active households and the counter is increased by one.
+	 * @param person Person agent whose marriage just ended
+	 */
+	public void returnToSingleHousehold(Person person) {
+		adults.add(person);
+		person.hid = id;
+		bringDependentChildren(person);
+		Model.households.add(this);
+		HouseholdCount++;
+	}
+	
+	/**
+	 * This method adjusts all necessary household variables and lists when the PA person dies.
+	 * The PA is removed from the relevant list and if the number of adults is zero, the makePassive() method is called.
+	 * If the household is made passive while there are still dependent children living in the household, they currently do not
+	 * receive a new household. They show back up when they turn 18 and get their own single household. This needs work...
+	 * @param person Person agent who just died
+	 */
+	public void handleDeath(Person person) {
+		if(person.status == Status.DEPENDENTCHILD) dependentChildren.remove(person);
+		else makePassive("handleDeath");
+	}
+	
+	public void handleDeathFemale(Person female) {
+		if(female.status == Status.DEPENDENTCHILD) dependentChildren.remove(female);
+		else if(female.status == Status.MARRIED) adults.remove(female);
+		else makePassive("handleDeathFemale");
+	}
+	
+	public void handleDeathMale(Person male) {
+		if(male.status == Status.DEPENDENTCHILD) dependentChildren.remove(male);
+		else makePassive("handleDeathMale");
+	}
+		
+	public void checkCounter() {	
+		if(Model.households.size() != Household.HouseholdCount) {
+			System.out.println("Problem in household");
+			Model.households.get(1000000);
+		}
+	}
+	
+	// handleMarriage()
+	/** 
+	 * This method adds the wife to the husband's household and makes the wife's single household passive.
+	 * The wife's dependent children are brought into the household and her household is made passive.
+	 * @param wife
+	 */
+	public void handleMarriage(Person wife) {
+		adults.add(wife);
+		wife.hid = id;
+		bringDependentChildren(wife);
+	}
+	
+	// handleDivorce()
+	public void handleDivorce(Person wife) {
+		adults.remove(wife);
+		dependentChildren.removeAll(wife.dependentChildren);
+	}
+	
+	
+	/**
+	 * This method adds the dependent children of the PA mother to the mother's (new) household. They are added to the household's dependent
+	 * children list and their hid is adjusted.
+	 * @param mother
+	 */
+	public void bringDependentChildren(Person parent) {
+		dependentChildren.addAll(parent.dependentChildren);
+		for(Person p : parent.dependentChildren) {
+			p.hid = id;
+		}
+	}
+	
+	public void bringDependentChildrenFather(Person father) {
+		dependentChildren.addAll(father.dependentChildrenMotherDead);
+		for(Person p : father.dependentChildren) {
+			p.hid = id;
+		}
+	}
+	
+	public double annualIncome() {
+		return(incomeDistribution.inverseCumulativeProbability(incomePercentile));
+	}
+
+
+	
 }

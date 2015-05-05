@@ -33,7 +33,7 @@ public class Demographics {
 		Iterator<Household> iterator = Model.households.iterator();
 		while(iterator.hasNext()) {
 		    Household h = iterator.next();
-			if(Model.rand.nextDouble() < probDeathGivenAge(h.lifecycle.age)/12.0) {
+			if(Model.rand.nextDouble() < probDeathGivenAge(h.age)/12.0) {
 				// --- inheritance
 				h.transferAllWealthTo(Model.households.get(Model.rand.nextInt(Model.households.size())));
 				iterator.remove();
