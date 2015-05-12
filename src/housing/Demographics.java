@@ -26,7 +26,7 @@ public class Demographics {
 			nBirths = (int)(futureBirthRate(Model.t)/12.0 + 0.5);
 		}
 		while(--nBirths >= 0) {
-			Model.households.add(new Household(pdfAgeOfNewHousehold.nextDouble()));
+			//Model.households.add(new Household(pdfAgeOfNewHousehold.nextDouble()));
 		}
 		
 		// --- death

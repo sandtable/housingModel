@@ -454,31 +454,6 @@ public class Household implements IHouseOwner {
 	// Model
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	/********************************************************
-	 * Constructor.
-	 ********************************************************/
-	public Household(double age) {
-		this(new Household.Config(), age);
-	}
-
-	public Household(Household.Config c, double iage) {
-		config = new Household.Config();
-		bank = Model.bank;
-		houseMarket = Model.housingMarket;
-		rentalMarket = Model.rentalMarket;
-		rand = Model.rand;
-		home = null;
-		bankBalance = 0.0;
-		isFirstTimeBuyer = true;
-		if(c.P_INVESTOR < rand.nextDouble()) {
-			desiredBTLProperties = (int)c.buyToLetDistribution.inverseCumulativeProbability(rand.nextDouble());
-		} else {
-			desiredBTLProperties = 0;
-		}
-//		setDesiredPropertyInvestmentFraction(0.0);
-		id = ++id_pool;
-//		lifecycle = new Lifecycle(iage);
-	}
 
 
 	/////////////////////////////////////////////////////////
@@ -1158,52 +1133,6 @@ public class Household implements IHouseOwner {
 //		id = ++id_pool;
 
 	}
-
-/*	// Constructor for marriage households 
-	*//**
-	 * This constructer is called in the marriage process and creates a new household with two adult members (husband and wife).
-	 * The household's unique id becomes the adult members' current hid. Their singleHID remains unchanged for the case of death of the partner or divorce.
-	 * The dependent children of the wife are added to the household's list of dependent children. 
-	 * Finally, the household is added to the list of active households (Model.households)
-	 * @param husband Male PA of married couple that creates the household
-	 * @param wife Female PA of married couple that creates the household
-	 *//*
-	public Household(Person husband, Person wife) {
-		// set household id and count number of households
-		id = idCount;
-		HouseholdCount++;
-		idCount++;
-		adults.add(husband);
-		adults.add(wife);
-		adults.get(0).hid = id;
-		adults.get(1).hid = id;
-		age = husband.age;
-	
-		incomePercentile = Model.rand.nextDouble();
-
-		
-		bringDependentChildren(wife);
-		bringDependentChildrenFather(husband);
-		Model.households.add(this);
-		
-		config = new Household.Config();
-		bank = Model.bank;
-		houseMarket = Model.housingMarket;
-		rentalMarket = Model.rentalMarket;
-		rand = Model.rand;
-		home = null;
-		bankBalance = 0.0;
-		isFirstTimeBuyer = true;
-		if(config.P_INVESTOR < rand.nextDouble()) {
-			desiredBTLProperties = (int)config.buyToLetDistribution.inverseCumulativeProbability(rand.nextDouble());
-		} else {
-			desiredBTLProperties = 0;
-		}
-//		setDesiredPropertyInvestmentFraction(0.0);
-//		id = ++id_pool;
-	}
-*/	
-	
 
 	
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

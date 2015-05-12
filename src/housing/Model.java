@@ -1,12 +1,15 @@
 package housing;
 
+import housing.Person.Sex;
+
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.apache.commons.math3.distribution.LogNormalDistribution;
 
-import ec.util.MersenneTwisterFast;
 import sim.engine.SimState;
 import sim.engine.Steppable;
+import ec.util.MersenneTwisterFast;
 
 /**
  * This is the root object of the simulation. Upon creation it creates
@@ -23,16 +26,6 @@ public class Model extends SimState implements Steppable {
 		households.ensureCapacity(Demographics.TARGET_POPULATION*2);
 	}
 
-	/**
-	 * This method is called before the simualtion starts. It schedules this
-	 * object to be stepped at each timestep and initialises the agents.
-	 */
-	public void startOld() {
-		super.start();
-        schedule.scheduleRepeating(this);
-		initialise();
-		t = 0;
-	}
 	
 	// START: INITIAL POPULATION OF PERSON AGENTS
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -44,6 +37,11 @@ public class Model extends SimState implements Steppable {
         schedule.scheduleRepeating(this);
 
         makeInitialPopulation();
+        MarriageTarget = MarriageCount;
+        
+		for(int i = 0; i<15; i++) {
+			females_by_agegroup.get(i).clear();
+		}
 
 		t=0;
 		System.out.println();
@@ -51,56 +49,35 @@ public class Model extends SimState implements Steppable {
 		System.out.println("Number of Households: " + Household.HouseholdCount);
 		System.out.println("Number of People: " + persons.size());
 		System.out.println("Number of people: " + Person.PersonCount);
-		System.out.println("Number of marriages: " + Model.MarriageCount);
+		System.out.println("Number of marriages: " + MarriageCount);
 		System.out.println();
 	}
 
 	
+	
+	// MAIN SIMULATION: spin-up and main simulation
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	/**
 	 * This is the main time-step of the whole simulation. Everything starts
 	 * here.
 	 */
 	public void step(SimState simulationStateNow) {
+		
 		if (schedule.getTime() >= N_STEPS) simulationStateNow.kill();
 		
-		int help = (int) t/Person.LifecycleFreq;
-		
-		if (help*Person.LifecycleFreq == t) {
+		int help = (int) t/PersonFreq;
+		if (help*PersonFreq == t) {
 			System.out.println("Year " + help + " starts");
-			for (Person p : persons) {
-				p.stepBasic();
-				if(Person.PersonCount == 0) {
-					System.out.println("Everybody dead!");
-					simulationStateNow.kill();
-				}
+			if(schedule.getTime() <= N_SPINUPSTEPS) {
+				spinUpDemographics(); 
+				System.out.println("spinUpDemographics() executed");
 			}
-			personsAll.addAll(persons_justborn);
-			persons.removeAll(persons_justdied);
-			persons.addAll(persons_justborn);
-			persons_justdied.clear();
-			persons_justborn.clear();
-			for (Person p : persons) {
-				p.step();
-			}
-			for(int i = 0; i<15; i++) {
-				females_by_agegroup.get(i).clear();
-			}
-	        System.out.println("Number of people: " + persons.size());
-	        System.out.println("Number of households: " + households.size());
-	        System.out.println();
+			else {mainDemographics(); System.out.println("mainDemographics() executed");}
+			if(Person.PersonCount == 0) simulationStateNow.kill();
 		}
 		
-//		demographics.step();
-		construction.step();
-		for(Household h : households) h.preHouseSaleStep();
-		housingMarket.clearMarket();
-		for(Household h : households) h.preHouseLettingStep();
-		housingMarket.clearBuyToLetMarket();
-		rentalMarket.clearMarket();
-        bank.step();
-        
+		economicDecisions();
         t++;
-        
 	}
 	
 	/**
@@ -111,110 +88,109 @@ public class Model extends SimState implements Steppable {
 	}
 	
 	
-	////////////////////////////////////////////////////////////////////////
-	// Initialisation
-	////////////////////////////////////////////////////////////////////////
-	/**
-	 * Initialises the agents after first creation.
-	 * 
-	 * Assigns houses to agents, creates aged mortgages. Assigns income and
-	 * wealth. Puts renters in rented accomodation, creates rental agreements
-	 * assigns rented houses to buy-to-let investors.
-	 */
-	static void initialise() {		
-		/***
-		final double RENTERS = 0.32; // proportion of population who rent
-		final double OWNERS = 0.32;  // proportion of population outright home-owners (no mortgage)
-		final double INFLATION = 0.5; // average house-price inflation over last 25 years (not verified)
-		final double INCOME_SUPPORT = 113.7*52.0; // married couple lower earnings from income support Source: www.nidirect.gov.uk
-		
-		int i, j, p, n;
-		double price;
-		LogNormalDistribution incomeDistribution;		// Annual household post-tax income
-		LogNormalDistribution buyToLetDistribution; 	// No. of houses owned by buy-to-let investors (ARLA review and index 2014)
-		
-		incomeDistribution 	  = new LogNormalDistribution(Household.Config.INCOME_LOG_MEDIAN, Household.Config.INCOME_SHAPE);
-//		residenceDistribution = new LogNormalDistribution(Math.log(190000), 0.568); // Source: ONS, Wealth in Great Britain wave 3
-		buyToLetDistribution  = new LogNormalDistribution(Math.log(3.44), 1.050); 	// Source: ARLA report Q2 2014
-		grossFinancialWealth  = new LogNormalDistribution(Math.log(9500), 2.259); 	// Source: ONS Wealth in Great Britain table 5.8
-		
-		for(j = 0; j<Nh; ++j) { // setup houses
-			houses[j] = new House();
-			houses[j].quality = (int)(House.Config.N_QUALITY*j*1.0/Nh); // roughly same number of houses in each quality band
-		}
-		
-		for(j = 0; j<N; ++j) { // setup households
-			households[j] = new Household();
-			households[j].annualEmploymentIncome = incomeDistribution.inverseCumulativeProbability((j+0.5)/N);
-			if(households[j].annualEmploymentIncome < INCOME_SUPPORT) households[j].annualEmploymentIncome = INCOME_SUPPORT;
-			households[j].bankBalance = 1e8; // Interim value to ensure liquidity during initialisation of housing
-			// System.out.println(households[j].annualEmploymentIncome);
-			// System.out.println(households[j].getMonthlyEmploymentIncome());
-		}
-		
-		i = Nh-1;
-		for(j = N-1; j>=0 && i > RENTERS*Nh; --j) { // assign houses to homeowners with sigma function probability
-			if(1.0/(1.0+Math.exp((j*1.0/N - RENTERS)/0.04)) < rand.nextDouble()) {
-				houses[i].owner = households[j];
-				houses[i].resident = households[j];
-				households[j].home = houses[i];
-				if(rand.nextDouble() < OWNERS/(1.0-RENTERS)) {
-					// household owns house outright
-					households[j].completeHousePurchase(new HouseSaleRecord(houses[i], 0));
-					households[j].housePayments.get(houses[i]).nPayments = 0;
-				} else {
-					// household is still paying off mortgage
-					p = (int)(bank.config.N_PAYMENTS*rand.nextDouble()); // number of payments outstanding
-					price = HousingMarket.referencePrice(houses[i].quality)/(Math.pow(1.0+INFLATION,Math.floor((bank.config.N_PAYMENTS-p)/12.0)));
-					if(price > bank.getMaxMortgage(households[j], true)) {
-						price = bank.getMaxMortgage(households[j], true);
-					}
-					households[j].completeHousePurchase(new HouseSaleRecord(houses[i], price));
-					households[j].housePayments.get(houses[i]).nPayments = p;
-				}
-				--i;
-			}
-		}
-
-		while(i>=0) { // assign buyToLets
-			do {
-				j = (int)(rand.nextDouble()*N);
-			} while(!households[j].isHomeowner());
-//			n = (int)(buyToLetDistribution.sample() + 0.5); // number of houses owned
-			n = (int)(Math.exp(rand.nextGaussian()*buyToLetDistribution.getShape() + buyToLetDistribution.getScale()) + 0.5); // number of houses owned
-			while(n>0 && i>=0) { 			
-				houses[i].owner = households[j];
-				houses[i].resident = null;
-				p = (int)(bank.config.N_PAYMENTS*rand.nextDouble()); // number of payments outstanding
-				price = Math.min(
-						HousingMarket.referencePrice(houses[i].quality)
-						/(Math.pow(1.0+INFLATION,Math.floor((bank.config.N_PAYMENTS-p)/12.0))),
-						bank.getMaxMortgage(households[j], false)
-						);
-				households[j].completeHousePurchase(new HouseSaleRecord(houses[i], price));	
-				--i;
-				--n;
-			}
-			households[j].desiredPropertyInvestmentFraction = 123.4; // temporary flag for later
-		}
-
-		for(j = 0; j<N; ++j) { // setup financial wealth
-			households[j].bankBalance = grossFinancialWealth.inverseCumulativeProbability((j+0.5)/N);
-//			System.out.println(households[j].monthlyPersonalIncome*12+" "+households[j].bankBalance/households[j].monthlyPersonalIncome);
-			if(households[j].isPropertyInvestor()) {
-				price = households[j].getPropertyInvestmentValuation();
-				households[j].setDesiredPropertyInvestmentFraction(price/(price + households[j].bankBalance));
-//				System.out.println(households[j].desiredPropertyInvestmentFraction + " " + households[j].getDesiredPropertyInvestmentValue()+" "+households[j].getPropertyInvestmentValuation());
-			}
-		}
-
-		
-		for(j = 0; j<N; ++j) { // homeless bid on rental market
-			if(households[j].isHomeless()) rentalMarket.bid(households[j], households[j].desiredRent());
-		}
-		rentalMarket.clearMarket();				
-		***/
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//	METHODS - METHODS - METHODS - METHODS - METHODS - METHODS
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+	
+	public void startOld() {
+		super.start();
+        schedule.scheduleRepeating(this);
+		t = 0;
 	}
+	
+	// Economic Decisions
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	public void economicDecisions() {
+		construction.step();
+		for(Household h : households) h.preHouseSaleStep();
+		housingMarket.clearMarket();
+		for(Household h : households) h.preHouseLettingStep();
+		housingMarket.clearBuyToLetMarket();
+		rentalMarket.clearMarket();
+	    bank.step();
+	}
+	    
+	// Spin-up
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	public void spinUpDemographics() {
+		NumberOfDivorcesNeeded = MarriageCount - MarriageTarget;
+		
+		for (Person p : persons) p.spinUpStepBasic();
+		persons.removeAll(persons_justdied);
+		persons_justdied.clear();
+		
+		for (Person p : persons) p.spinUpStep();
+		
+		PopulationTargetMales = (int) (N_PERSON * Person.PMale * Person.PopulationTargetShareByAge[90-t][0]);
+		PopulationTargetFemales = (int) (N_PERSON * (1-Person.PMale) * Person.PopulationTargetShareByAge[90-t][1]);
+		RequiredNumberMales = (int) (PopulationTargetMales / Person.ProbabilityOfSurvival[90-t][0]); 
+		RequiredNumberFemales = (int) (PopulationTargetFemales / Person.ProbabilityOfSurvival[90-t][1]); 
+		
+		for (Person p : persons_justborn) {
+			if(p.sex == Sex.FEMALE) females_justborn.add(p);
+			else males_justborn.add(p);
+		}
+		
+		excessMales = males_justborn.size() - RequiredNumberMales;
+		for (int i = 0; i < excessMales; i++) {
+			int random = new Random().nextInt(Model.males_justborn.size());
+			persons_justborn.remove(males_justborn.get(random));
+			males_excess.add(males_justborn.get(random));
+			males_justborn.remove(random);
+			Person.PersonCount = Person.PersonCount - 1;
+		}
+		excessFemales = females_justborn.size() - RequiredNumberFemales;
+		for (int i = 0; i < excessFemales; i++) {
+			int random = new Random().nextInt(Model.females_justborn.size());
+			persons_justborn.remove(females_justborn.get(random));
+			females_excess.add(females_justborn.get(random));
+			females_justborn.remove(random);
+			Person.PersonCount = Person.PersonCount - 1;
+		}
+		System.out.println("Females: required: " + RequiredNumberFemales + ", created: " + females_justborn.size());
+		System.out.println("Males: required: " + RequiredNumberMales + ", created: " + males_justborn.size());
+		
+		for (Person p : males_excess) p.removeNewborn();
+		for (Person p : females_excess) p.removeNewborn();			
+		males_justborn.clear();
+		females_justborn.clear();
+		males_excess.clear();
+		females_excess.clear();
+		
+		personsAll.addAll(persons_justborn);
+		persons.addAll(persons_justborn);
+		persons_justborn.clear();
+		
+		for(int i = 0; i<15; i++) females_by_agegroup.get(i).clear();
+		for(int i = 0; i<15; i++) males_by_agegroup.get(i).clear();
+      
+		System.out.println("Number of people: " + persons.size());
+        System.out.println("Number of households: " + households.size());
+        System.out.println();
+	}		
+	
+	
+	public void mainDemographics() {
+		for (Person p : persons) p.stepBasic();
+		
+		persons.removeAll(persons_justdied);
+		persons_justdied.clear();
+		
+		for (Person p : persons) p.step();
+								
+		personsAll.addAll(persons_justborn);
+		persons.addAll(persons_justborn);
+		persons_justborn.clear();
+		
+		for(int i = 0; i<15; i++) females_by_agegroup.get(i).clear();
+		for(int i = 0; i<15; i++) males_by_agegroup.get(i).clear();
+		
+	    System.out.println("Number of people: " + persons.size());
+	    System.out.println("Number of households: " + households.size());
+	    System.out.println();
+	}
+	
 	
 	// Make initial population
 	/** This method creates the initial population of person and household agents. First, the person agents are created.
@@ -265,6 +241,8 @@ public class Model extends SimState implements Steppable {
 		for (Person p : persons) {
 			p.setUpInitialMarriages();
 		}
+		persons_justborn.clear();
+		persons_justdied.clear();
 	}
 
 
@@ -314,8 +292,11 @@ public class Model extends SimState implements Steppable {
 
 	////////////////////////////////////////////////////////////////////////
 
-	public static int N_STEPS = 5000; // timesteps
-	public static final int N_PERSON = 10000; // number of households	
+	public static int 								N_STEPS = 100; // timesteps
+	public static int 								N_SPINUPSTEPS = 90; // timesteps
+	public static final int 						N_PERSON = 10000; // number of households	
+	public static int								PersonFreq = 1;
+	
 
 	public static Bank 								bank = new Bank();
 	public static Government						government = new Government();
@@ -331,6 +312,11 @@ public class Model extends SimState implements Steppable {
 	public static ArrayList<Person> 				personsAll = new ArrayList<Person>(); // record of all people who ever lived
 	public static ArrayList<Person> 				persons = new ArrayList<Person>();
 	public static ArrayList<Person> 				persons_justborn = new ArrayList<Person>();
+	public static ArrayList<Person> 				females_justborn = new ArrayList<Person>();
+	public static ArrayList<Person> 				males_justborn = new ArrayList<Person>();
+	public static ArrayList<Person> 				females_excess = new ArrayList<Person>();
+	public static ArrayList<Person> 				males_excess = new ArrayList<Person>();
+
 	public static ArrayList<Person> 				persons_justdied = new ArrayList<Person>();
 	public static ArrayList<Person> 				orphans = new ArrayList<Person>();
 	public static ArrayList<Household> 				householdsAll = new ArrayList<Household>();
@@ -373,6 +359,20 @@ public class Model extends SimState implements Steppable {
 
 	public static int 								MarriageCount = 0; 
 	public static int								DependentChildMarriageCount = 0;
-	public static int 								OrphanCount = 0; 
+	public static int 								OrphanCount = 0;
+	public static int 								NumberOfDivorcesNeeded = 0;
+	public static int								MarriageTarget;
+	public static int								PopulationTargetMales;
+	public static int								PopulationTargetFemales;
+	public static int								RequiredNumberMales;
+	public static int								RequiredNumberFemales;
+	public static int								excessMales;
+	public static int								excessFemales;
+
+
+		
+
+	
+	
 	
 }
