@@ -111,10 +111,13 @@ public class Model extends SimState implements Steppable {
 	    bank.step();
 	}
 	    
-	// Spin-up
+	// Spin-up Demographics
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	public void spinUpDemographics() {
 		NumberOfDivorcesNeeded = MarriageCount - MarriageTarget;
+		
+		males.clear();
+		females.clear();
 		
 		for (Person p : persons) p.spinUpStepBasic();
 		persons.removeAll(persons_justdied);
@@ -164,6 +167,11 @@ public class Model extends SimState implements Steppable {
 		
 		for(int i = 0; i<15; i++) females_by_agegroup.get(i).clear();
 		for(int i = 0; i<15; i++) males_by_agegroup.get(i).clear();
+		
+		for (Person p : persons) {
+			if(p.sex == Sex.MALE) males.add(p);
+			else females.add(p);
+		}
       
 		System.out.println("Number of people: " + persons.size());
         System.out.println("Number of households: " + households.size());
@@ -171,9 +179,15 @@ public class Model extends SimState implements Steppable {
 	}		
 	
 	
+	// Main Demographics
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
 	public void mainDemographics() {
 		for (Person p : persons) p.stepBasic();
-		
+	
+		males.clear();
+		females.clear();
+
 		persons.removeAll(persons_justdied);
 		persons_justdied.clear();
 		
@@ -185,6 +199,11 @@ public class Model extends SimState implements Steppable {
 		
 		for(int i = 0; i<15; i++) females_by_agegroup.get(i).clear();
 		for(int i = 0; i<15; i++) males_by_agegroup.get(i).clear();
+		
+		for (Person p : persons) {
+			if(p.sex == Sex.MALE) males.add(p);
+			else females.add(p);
+		}
 		
 	    System.out.println("Number of people: " + persons.size());
 	    System.out.println("Number of households: " + households.size());
@@ -278,7 +297,23 @@ public class Model extends SimState implements Steppable {
 	public static int getN() {
 		return households.size();
 	}
+	public static int getN_PERSON() {
+		return persons.size();
+	}
+	public static int getN_MALES() {
+		return males.size();
+	}
+	public static int getN_FEMALES() {
+		return females.size();
+	}
+	public static int getN_MARRIAGES() {
+		return MarriageCount;
+	}
+	public String nameN_PERSON() {return("Current number of people");}
 	public String nameN() {return("Current number of households");}
+	public String nameN_MALES() {return("Current number of males");}
+	public String nameN_FEMALES() {return("Current number of females");}
+	public String nameN_MARRIAGES() {return("Current number of marriages");}
 	
 	public static int getN_STEPS() {
 		return N_STEPS;
@@ -287,12 +322,14 @@ public class Model extends SimState implements Steppable {
 	public static void setN_STEPS(int n_STEPS) {
 		N_STEPS = n_STEPS;
 	}
-
+	public static void setN_SPINUPSTEPS(int n_SPINUPSTEPS) {
+		N_STEPS = n_SPINUPSTEPS;
+	}
 	public String nameN_STEPS() {return("Number of timesteps");}
 
 	////////////////////////////////////////////////////////////////////////
 
-	public static int 								N_STEPS = 100; // timesteps
+	public static int 								N_STEPS = 290; // timesteps
 	public static int 								N_SPINUPSTEPS = 90; // timesteps
 	public static final int 						N_PERSON = 10000; // number of households	
 	public static int								PersonFreq = 1;
@@ -311,6 +348,8 @@ public class Model extends SimState implements Steppable {
 
 	public static ArrayList<Person> 				personsAll = new ArrayList<Person>(); // record of all people who ever lived
 	public static ArrayList<Person> 				persons = new ArrayList<Person>();
+	public static ArrayList<Person> 				males = new ArrayList<Person>();
+	public static ArrayList<Person> 				females = new ArrayList<Person>();
 	public static ArrayList<Person> 				persons_justborn = new ArrayList<Person>();
 	public static ArrayList<Person> 				females_justborn = new ArrayList<Person>();
 	public static ArrayList<Person> 				males_justborn = new ArrayList<Person>();
