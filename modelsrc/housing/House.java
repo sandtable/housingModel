@@ -19,7 +19,7 @@ public class House implements Comparable<House> {
 		owner = null;
 		quality = (int)(Model.rand.nextDouble()*Config.N_QUALITY);
 	}
-			
+	
 	public int 				quality;
 	public IHouseOwner  	owner;
 	public Household		resident;

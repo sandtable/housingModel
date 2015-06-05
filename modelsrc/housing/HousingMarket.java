@@ -42,12 +42,12 @@ public class HousingMarket {
 	public void init() {
 		int i;
 		for(i = 0; i<House.Config.N_QUALITY; ++i) {
-			averageSalePrice[i] = referencePrice(i);
+			averageSalePrice[i] = new ExponentialAverage(Config.G, referencePrice(i));
 		}
 		housePriceIndex = 1.0;
 		lastHousePriceIndex = 1.0;
 		HPIAppreciation = 0.0;
-		averageDaysOnMarket = 30;
+		averageDaysOnMarket = new ExponentialAverage(Config.E, 30);
 		buyers.clear();
 		onMarket.clear();
 	}
@@ -88,8 +88,8 @@ public class HousingMarket {
 	 * @param buyer The household that is making the bid.
 	 * @param price The price that the household is willing to pay.
 	 ******************************************/
-	public void bid(Household buyer, double price) {
-		buyers.add(new HouseBuyerRecord(buyer, price));
+	public void bid(Household buyer, double price, int minQuality) {
+		buyers.add(new HouseBuyerRecord(buyer, price, minQuality));
 	}
 
 	/**************************************************
@@ -146,8 +146,8 @@ public class HousingMarket {
 	 **********************************************/
 	public void completeTransaction(HouseBuyerRecord b, HouseSaleRecord sale) {
 		// --- update sales statistics		
-		averageDaysOnMarket = Config.E*averageDaysOnMarket + (1.0-Config.E)*30*(Model.t - sale.tInitialListing);
-		averageSalePrice[sale.quality] = Config.G*averageSalePrice[sale.quality] + (1.0-Config.G)*sale.currentPrice;
+		averageDaysOnMarket.record(30*(Model.t - sale.tInitialListing));
+		averageSalePrice[sale.quality].record(sale.currentPrice);
 	}
 		
 	public boolean isOnMarket(House h) {
@@ -179,7 +179,7 @@ public class HousingMarket {
 	 * @return the average sale price of houses of the given quality
 	 */
 	public double getAverageSalePrice(int q) {
-		return(averageSalePrice[q]);
+		return(averageSalePrice[q].value());
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -190,8 +190,8 @@ public class HousingMarket {
 		// ---------------------------
 		HPIAppreciation = Config.F*HPIAppreciation - (1.0-Config.F)*housePriceIndex;
 		housePriceIndex = 0.0;
-		for(Double price : averageSalePrice) {
-			housePriceIndex += price; // TODO: assumes equal distribution of houses over qualities
+		for(ExponentialAverage price : averageSalePrice) {
+			housePriceIndex += price.value(); // TODO: assumes equal distribution of houses over qualities
 		}
 		housePriceIndex /= House.Config.N_QUALITY*Config.HPI_MEAN;
 		HPIAppreciation += (1.0-Config.F)*housePriceIndex;
@@ -211,8 +211,8 @@ public class HousingMarket {
 	protected PriorityQueue<HouseBuyerRecord> buyers = new PriorityQueue<HouseBuyerRecord>();
 	
 	// ---- statistics
-	public double averageDaysOnMarket;
-	protected double averageSalePrice[] = new double[House.Config.N_QUALITY];
+	public ExponentialAverage averageDaysOnMarket;
+	protected ExponentialAverage averageSalePrice[] = new ExponentialAverage[House.Config.N_QUALITY];
 	public double HPIAppreciation;
 	public double housePriceIndex;
 	public double lastHousePriceIndex;

@@ -54,7 +54,11 @@ public interface IHouseholdBehaviour {
 	 */
 	public abstract boolean decideToSellInvestmentProperty(House h, Household me);
 
-	public abstract boolean decideToBuyBuyToLet(House h, Household me, double price);
+//	public abstract boolean decideToBuyBuyToLet(House h, Household me, double price);
 	public abstract boolean isPropertyInvestor();
+
+	public abstract double buyToLetMaxInvestment(Household household);
+
+	public abstract double buyToLetDesiredYield(Household household);
 
 }

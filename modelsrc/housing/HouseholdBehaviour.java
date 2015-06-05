@@ -1,5 +1,7 @@
 package housing;
 
+import java.util.Map;
+
 import org.apache.commons.math3.distribution.LogNormalDistribution;
 
 import ec.util.MersenneTwisterFast;
@@ -217,12 +219,35 @@ public class HouseholdBehaviour implements IHouseholdBehaviour {
 		return(false);
 	}
 ***/
-	public boolean decideToBuyBTL(Household me) {
 		
-	}
-	
 	public boolean isPropertyInvestor() {
 		return(desiredBTLProperties > 0);
+	}
+
+	@Override
+	public double buyToLetMaxInvestment(Household me) {
+		return(Model.bank.getMaxMortgage(me, false));
+	}
+
+	/***
+	 * If we're below our desired investment portfolio size, desired yield
+	 * is average yield on the market plus noise. Otherwise, swap if we
+	 * find a house with better yield than worst yield in current portfolio.
+	 */
+	@Override
+	public double buyToLetDesiredYield(Household me) {
+		if(me.housePayments.size()+1 < desiredBTLProperties) {
+			return(Model.rentalMarket.getAverageGrossYield()*(Model.rand.nextGaussian()*0.25+1.0));
+		}		
+		double worstYield = 1.0;
+		double yield;
+		for(House h : me.housePayments.keySet()) {
+			if(h != me.home && h.owner == me) {
+				yield = me.rentCollectedFrom(h)/Model.housingMarket.getAverageSalePrice(h.quality);
+				if(yield < worstYield) worstYield = yield;
+			}
+		}
+		return(worstYield);
 	}
 
 

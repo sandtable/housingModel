@@ -141,9 +141,7 @@ public class Household implements IHouseOwner {
 		}
 		
 		// --- consume
-//		bankBalance += disposableIncome - config.consumptionEqn.desiredConsumption(disposableIncome,bankBalance);
 		bankBalance += disposableIncome - behaviour.desiredConsumptionB(getMonthlyEmploymentIncome(),bankBalance);
-//		bankBalance += -config.consumptionEqn.desiredConsumptionB(monthlyIncome,bankBalance);
 		
 		if(bankBalance < 0.0) {
 			// bankrupt behaviour
@@ -162,8 +160,7 @@ public class Household implements IHouseOwner {
 		makeHousingDecision();
 
 		if(behaviour.isPropertyInvestor()) { // this is a buy-to-let investor
-			
-			houseMarket.BTLBid(this, bank.getMaxMortgage(this, false), );
+			houseMarket.BTLBid(this, behaviour.buyToLetMaxInvestment(this), behaviour.buyToLetDesiredYield(this));
 		}
 
 	}
@@ -178,7 +175,7 @@ public class Household implements IHouseOwner {
 	 ********************************************************/
 	public void preHouseLettingStep() {
 		if(isHomeless()) {
-			rentalMarket.bid(this, behaviour.desiredRent(getMonthlyEmploymentIncome()));
+			rentalMarket.bid(this, behaviour.desiredRent(getMonthlyEmploymentIncome()), 0);
 		}
 	}
 	
@@ -223,8 +220,8 @@ public class Household implements IHouseOwner {
 
 	protected void putHouseForSale(House h) {
 		houseMarket.offer(h, behaviour.initialSalePrice(
-				houseMarket.averageSalePrice[h.quality],
-				houseMarket.averageDaysOnMarket,
+				houseMarket.averageSalePrice[h.quality].value(),
+				houseMarket.averageDaysOnMarket.value(),
 				housePayments.get(h).principal
 		));
 	}
@@ -290,8 +287,8 @@ public class Household implements IHouseOwner {
 		}
 		if(sale.house == home) { // move out of home and become (temporarily) homeless
 			home.resident = null;
-			home = null;
 			bidOnHousingMarket(1.0);
+			home = null;
 		} else if(sale.house.resident != null) { // evict current renter
 			sale.house.resident.endTenancy();
 		}
@@ -374,11 +371,13 @@ public class Household implements IHouseOwner {
 		if(desiredPrice > ltiConstraint) desiredPrice = ltiConstraint - 1.0; // ##### TEST #####
 //		if(desiredPrice > maxMortgage) desiredPrice = maxMortgage - 1;
 		if(desiredPrice <= maxMortgage) {
+			int minQuality = 0;
+			if(home != null) minQuality = home.quality;
 			if(p<1.0) {
-				if(rand.nextDouble() < p) houseMarket.bid(this, desiredPrice);
+				if(rand.nextDouble() < p) houseMarket.bid(this, desiredPrice, minQuality);
 			} else {
 				// no need to call random if p = 1.0
-				houseMarket.bid(this, desiredPrice);				
+				houseMarket.bid(this, desiredPrice, minQuality);				
 			}
 		}
 	}
@@ -400,10 +399,10 @@ public class Household implements IHouseOwner {
 			if(home != null) {
 				costOfRent = housePayments.get(home).monthlyPayment*12;
 			} else {
-				costOfRent = rentalMarket.averageSalePrice[0]*12;
+				costOfRent = rentalMarket.averageSalePrice[0].value()*12;
 			}
 			if(behaviour.renterPurchaseDecision(this, housePrice, costOfRent)) {
-				houseMarket.bid(this, housePrice);
+				houseMarket.bid(this, housePrice, home.quality);
 			}
 		}
 	}
@@ -423,9 +422,9 @@ public class Household implements IHouseOwner {
 	/********************************************************
 	 * Decide whether to buy a house as a buy-to-let investment
 	 ********************************************************/
-	public boolean decideToBuyBuyToLet(House h, double price) {
-		return(behaviour.decideToBuyBuyToLet(h, this, price));
-	}
+//	public boolean decideToBuyBuyToLet(House h, double price) {
+//		return(behaviour.decideToBuyBuyToLet(h, this, price));
+//	}
 
 	@Override
 	public void completeHouseLet(House house) {
@@ -437,7 +436,7 @@ public class Household implements IHouseOwner {
 	public double buyToLetRent(House h) {
 		return(behaviour.buyToLetRent(
 				rentalMarket.getAverageSalePrice(h.quality), 
-				rentalMarket.averageDaysOnMarket,
+				rentalMarket.averageDaysOnMarket.value(),
 				housePayments.get(h).monthlyPayment));
 	}
 	
@@ -493,6 +492,7 @@ public class Household implements IHouseOwner {
 //		return(desiredPropertyInvestmentFraction * (getPropertyInvestmentValuation() + bankBalance));
 //	}
 
+	
 	/***
 	 * @return Number of properties this household currently has on the sale market
 	 */
@@ -506,6 +506,18 @@ public class Household implements IHouseOwner {
 	
 	public boolean isCollectingRentFrom(House h) {
 		return(h.owner == this && h != home && h.resident != null);
+	}
+
+	/***
+	 * 
+	 * @param h house in question
+	 * @return amount of rent collected from h. (0 if house is empty or not currently rented out)
+	 */
+	public double rentCollectedFrom(House h) {
+		if(h.owner == this && h.resident != null && h != home) {
+			return(h.resident.housePayments.get(h).monthlyPayment);
+		}
+		return(0.0);
 	}
 
 	/**

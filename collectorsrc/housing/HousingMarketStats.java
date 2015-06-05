@@ -54,7 +54,7 @@ public class HousingMarketStats {
 	public void step() {
         int i;
         for(i=0; i<House.Config.N_QUALITY; ++i) {
-        	priceData[1][i] = Model.housingMarket.averageSalePrice[i];
+        	priceData[1][i] = Model.housingMarket.averageSalePrice[i].value();
         }
 	}
 	

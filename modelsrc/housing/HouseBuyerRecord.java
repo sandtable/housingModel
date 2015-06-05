@@ -10,9 +10,10 @@ package housing;
  **********************************************/
 public class HouseBuyerRecord implements Comparable<HouseBuyerRecord> {
 	
-	public HouseBuyerRecord(Household h, double p) {
+	public HouseBuyerRecord(Household h, double p, int minquality) {
 		buyer = h;
 		price = p;
+		minQuality = minquality;
 	}
 	
 	@Override
@@ -28,4 +29,5 @@ public class HouseBuyerRecord implements Comparable<HouseBuyerRecord> {
 	
 	public Household buyer; // Who wants to buy the house
 	public double    price; // how much he is willing to pay
+	public int		 minQuality; // minimum quality of house buyer will accept
 }
