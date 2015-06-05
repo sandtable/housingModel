@@ -2,6 +2,7 @@ package housing;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.PriorityQueue;
 import java.util.TreeSet;
 
 /*******************************************************
@@ -25,10 +26,22 @@ public class HouseSaleMarket extends HousingMarket {
 		Collectors.housingMarketStats.recordSale(purchase, sale);
 	}
 	
+	/*******************************************
+	 * Make a bid on the market (i.e. make an offer on
+	 * a (yet to be decided) house).
+	 * 
+	 * @param buyer The household that is making the bid.
+	 * @param price The price that the household is willing to pay.
+	 ******************************************/
+	public void BTLBid(Household buyer, double price, double yield) {
+		BTLBuyers.add(new BTLBuyerRecord(buyer, price, yield));
+	}
+
 	/**
 	 * Buy to let investors get randomly offered the chance to buy houses that
 	 * are still on the market after non-investors have been cleared.
 	 */
+/***
 	public void clearBuyToLetMarket() {
 		HouseBuyerRecord buyer;
 		HouseSaleRecord  seller;
@@ -65,5 +78,8 @@ public class HouseSaleMarket extends HousingMarket {
 		}
 		buyers.clear();
 	}
+***/
+	
+	protected PriorityQueue<BTLBuyerRecord> BTLBuyers = new PriorityQueue<BTLBuyerRecord>();
 
 }

@@ -91,11 +91,13 @@ public class Model extends SimState implements Steppable {
 	public void modelStep() {
 		demographics.step();
 		construction.step();
-		for(Household h : households) h.preHouseSaleStep();
+		for(Household h : households) {
+			h.preHouseSaleStep();
+		}
 		Collectors.housingMarketStats.record();
 		housingMarket.clearMarket();
 		for(Household h : households) h.preHouseLettingStep();
-		housingMarket.clearBuyToLetMarket();
+//		housingMarket.clearBuyToLetMarket();
 		Collectors.rentalMarketStats.record();
 		rentalMarket.clearMarket();
         bank.step();

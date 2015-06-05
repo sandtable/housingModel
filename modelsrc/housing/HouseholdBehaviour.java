@@ -184,6 +184,7 @@ public class HouseholdBehaviour implements IHouseholdBehaviour {
 	/********************************************************
 	 * Decide whether to buy a house as a buy-to-let investment
 	 ********************************************************/
+	/***
 	public boolean decideToBuyBuyToLet(House h, Household me, double price) {
 		// --- give preference to cheaper properties
 		if(Model.rand.nextDouble() < (h.quality*1.0/House.Config.N_QUALITY)-0.5) return(false);
@@ -196,12 +197,14 @@ public class HouseholdBehaviour implements IHouseholdBehaviour {
 //		System.out.println("BTL refused mortgage on "+price+" can get "+Model.bank.getMaxMortgage(me, false));
 		return(false);
 	}
+	***/
 	/**
 	 * @param price The asking price of the house
 	 * @param monthlyPayment The monthly payment on a mortgage for this house
 	 * @param downPayment The minimum downpayment on a mortgage for this house
 	 * @return will the investor decide to buy this house?
 	 */
+	/***
 	public boolean buyToLetPurchaseDecision(double price, double monthlyPayment, double downPayment) {
 		double yield;
 		yield = (monthlyPayment*12*RENT_PROFIT_MARGIN + Model.housingMarket.housePriceAppreciation()*price)/
@@ -213,7 +216,11 @@ public class HouseholdBehaviour implements IHouseholdBehaviour {
 //		System.out.println("BTL: didn't buy");
 		return(false);
 	}
-
+***/
+	public boolean decideToBuyBTL(Household me) {
+		
+	}
+	
 	public boolean isPropertyInvestor() {
 		return(desiredBTLProperties > 0);
 	}

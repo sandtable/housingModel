@@ -160,6 +160,12 @@ public class Household implements IHouseOwner {
 		}
 		
 		makeHousingDecision();
+
+		if(behaviour.isPropertyInvestor()) { // this is a buy-to-let investor
+			
+			houseMarket.BTLBid(this, bank.getMaxMortgage(this, false), );
+		}
+
 	}
 
 	/********************************************************
@@ -173,8 +179,6 @@ public class Household implements IHouseOwner {
 	public void preHouseLettingStep() {
 		if(isHomeless()) {
 			rentalMarket.bid(this, behaviour.desiredRent(getMonthlyEmploymentIncome()));
-		} else if(behaviour.isPropertyInvestor()) { // this is a buy-to-let investor
-			houseMarket.bid(this, bank.getMaxMortgage(this, false));
 		}
 	}
 	

@@ -24,4 +24,8 @@ public class HouseRentalMarket extends HousingMarket {
 		sale.house.owner.completeHouseLet(sale.house);
 		Collectors.rentalMarketStats.recordSale(purchase, sale);
 	}
+	
+	public double getAverageGrossYield() {
+		
+	}
 }
