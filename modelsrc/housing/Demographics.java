@@ -10,6 +10,9 @@ import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
+import utilities.DoubleUnaryOperator;
+import utilities.Pdf;
+
 public class Demographics {
 		
 	/***

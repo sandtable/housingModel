@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import javax.swing.JTabbedPane;
 
 import sim.util.media.chart.TimeSeriesChartGenerator;
+import utilities.DataRecorder;
 
 /**
  * This is a convenient wrapper for plotting time series 

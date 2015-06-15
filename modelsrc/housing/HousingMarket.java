@@ -7,6 +7,8 @@ import java.util.TreeSet;
 
 import org.apache.commons.math3.distribution.LogNormalDistribution;
 
+import utilities.ExponentialAverage;
+
 /**********************************************************
  * Implementation of the mechanism of the house-sale and
  * house-rental markets.
@@ -109,7 +111,8 @@ public class HousingMarket {
 		HouseBuyerRecord buyer;
 		HouseSaleRecord  seller;
 		HouseSaleRecord	 ceilingSeller = new HouseSaleRecord(new House(), 0.0);
-
+		//PriorityQueue2D.Comparable<HouseBuyerRecord> a;
+		
 		recordMarketStats();
 
 		// --- create set of sellers, sorted by quality then price

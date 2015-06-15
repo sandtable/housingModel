@@ -1,4 +1,6 @@
-package housing;
+package utilities;
+
+import housing.Model;
 
 // import java.util.function.DoubleUnaryOperator; // not compatible with Java 1.7
 

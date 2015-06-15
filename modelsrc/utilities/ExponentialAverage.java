@@ -1,4 +1,4 @@
-package housing;
+package utilities;
 
 public class ExponentialAverage {
 	public ExponentialAverage(double decayConst) {

@@ -1,5 +1,7 @@
 package housing;
 
+import utilities.ExponentialAverage;
+
 /***********************************************
  * Class that represents the market for houses for rent.
  * 
