@@ -60,10 +60,19 @@ public class PriorityQueue2D<E extends PriorityQueue2D.Comparable<E>> {
 	public E poll(E xGreatestBoundary) {
 		E head = uncoveredElements.floor(xGreatestBoundary);
 		if(head == null) return(null);
-		
+		removeUncovered(head);
 		return(head);
 	}
 
+	public boolean remove(E element) {
+		if(uncoveredElements.contains(element)) {
+			removeUncovered(element);
+		} else {
+			ySortedElements.remove(element);
+		}
+		return(true);
+	}
+	
 	/***
 	 * Removes element. Element must be an uncovered member of
 	 * this set. Removing an uncovered element may uncover other elements,
@@ -75,18 +84,25 @@ public class PriorityQueue2D<E extends PriorityQueue2D.Comparable<E>> {
 	protected void removeUncovered(E element) {
 		uncoveredElements.remove(element);
 		ySortedElements.remove(element);
+		if(ySortedElements.size() == 0) return;
 		boolean inclusive = false;
-		E nextLower = uncoveredElements.lower(element);
-		if(nextLower == null) {
+		E nextxLower = uncoveredElements.lower(element);
+		if(nextxLower == null) { // removing the lowest uncovered element
 			inclusive = true;
-			nextLower = ySortedElements.first();
+			nextxLower = ySortedElements.first();
+			if(element.YCompareTo(nextxLower) == -1) { // y-least element doesn't cover anything
+				return;
+			}
 		}
-		E nextHigher = uncoveredElements.higher(element);
-		if(nextHigher == null) return;
-		for(E e : ySortedElements.subSet(nextLower, inclusive, element, true).descendingSet()) {
-			if(e.XCompareTo(nextHigher) == -1) {
+		E nextxHigher = uncoveredElements.higher(element);
+		if(nextxHigher == null) { // removing the highest uncovered element (must be tail of ySortedElements)
+			nextxHigher = ySortedElements.last();
+			uncoveredElements.add(nextxHigher);
+		}
+		for(E e : ySortedElements.subSet(nextxLower, inclusive, element, true).descendingSet()) {
+			if(e.XCompareTo(nextxHigher) == -1) {
 				uncoveredElements.add(e);
-				nextHigher = e;
+				nextxHigher = e;
 			}
 		}
 	}
@@ -113,6 +129,9 @@ public class PriorityQueue2D<E extends PriorityQueue2D.Comparable<E>> {
 		}
 		return(false);
 	}
+	
+	public int size() {return(ySortedElements.size());}
+	public int uncoveredSize() {return(uncoveredElements.size());}
 	
 	//////////////////////////////////////////////
 	
