@@ -3,13 +3,12 @@ package housing;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-
-import org.apache.commons.math3.distribution.LogNormalDistribution;
-
 import ec.util.MersenneTwisterFast;
+import sim.engine.Schedule;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.engine.Stoppable;
+import testing.EconAgent;
 
 /**
  * This is the root object of the simulation. Upon creation it creates
@@ -34,6 +33,7 @@ public class Model extends SimState implements Steppable {
 		collectors = new Collectors();
 		recorder = new Recorder();
 		rand = new MersenneTwisterFast(seed);
+		globalSchedule = schedule;
 	}
 
 	public void init() {
@@ -122,6 +122,7 @@ public class Model extends SimState implements Steppable {
 
 	public Stoppable scheduleRepeat;
 
+	public static Schedule			globalSchedule;
 	public static CentralBank		centralBank;
 	public static Bank 				bank;
 	public static Government		government;

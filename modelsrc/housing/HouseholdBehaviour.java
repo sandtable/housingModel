@@ -1,6 +1,5 @@
 package housing;
 
-import java.util.Map;
 
 import org.apache.commons.math3.distribution.LogNormalDistribution;
 
