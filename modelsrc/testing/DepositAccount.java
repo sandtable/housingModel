@@ -1,39 +1,33 @@
 package testing;
 
-public class DepositAccount extends Contract<DepositAccount.Owner, DepositAccount.Issuer> {
-	public DepositAccount(Owner depositHolder, Issuer bank) {
-		super(depositHolder, bank, onDemand());
-	}
+public class DepositAccount extends Contract<DepositAccount> {
 	
 	/***
 	 * Agent module for deposit account issuer
 	 * @author daniel
 	 */
+	
+	Issuer issuer() {
+		return((Issuer)issuer);
+	}
+	
 	static public class Issuer extends Contract.Issuer<DepositAccount> {
 		// honour contract
 		public boolean transfer(DepositAccount account, double amount, DepositAccount payee) {
-//			if(!accounts.contains(account)) return false;
-			//account.
-			if(account.balance < amount) return false;
+			if(!contains(account)) return(false);
+			if(account.balance < amount) return(false);
 			account.balance -= amount;
 			payee.balance += amount;
 			return true;
 		}
 		
-		// issue contract
-		public void openAccount(Owner holder) {
-			issue(new DepositAccount(holder, this));
+		// open new account / issue contract
+		public void issue(Contract.Owner<DepositAccount> holder) {
+			issue(new DepositAccount(), holder);
 		}
 		
 	}
 	
-	/***
-	 * Agent module for deposit account holder
-	 * @author daniel
-	 */
-	static public class Owner extends Contract.Owner<DepositAccount> {
-	}
-
 	double balance = 0.0;
 
 }

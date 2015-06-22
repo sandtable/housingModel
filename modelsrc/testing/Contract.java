@@ -1,26 +1,29 @@
 package testing;
 
-import java.util.IdentityHashMap;
-
 import sim.engine.SimState;
 import sim.engine.Steppable;
+import utilities.IdentityHashSet;
 
-public class Contract<OWNER extends Contract.Owner<?>,ISSUER extends Contract.Issuer<?>> extends IntangibleAsset<OWNER> implements ITriggerable {
+public class Contract<CONTRACT extends Contract<CONTRACT>> extends IntangibleAsset<Contract.Owner<CONTRACT>> implements ITriggerable {
 
-	public Contract(OWNER iOwner, ISSUER iIssuer) {
-		this(iOwner, iIssuer, onDemand());
+	public Contract() {
+		this(null, null, onDemand());
 	}
-	
-	public Contract(OWNER iOwner, ISSUER iIssuer, ITrigger when) {
+
+	public Contract(Contract.Owner<CONTRACT> iOwner, Contract.Issuer<CONTRACT> iIssuer, ITrigger when) {
 		super(iOwner);
 		issuer = iIssuer;
 		trigger = when;
 	}
 	
 	public void trigger() { 
-		// default behaviour: do nothing
+		owner.trigger((CONTRACT)this);
 	}
-
+	
+	public void schedule() {
+		trigger.schedule(this);
+	}
+		
 	/***
 	public Class<? extends IAssetHolder> ownerType() {
 		return(IAssetHolder.class);
@@ -33,31 +36,42 @@ public class Contract<OWNER extends Contract.Owner<?>,ISSUER extends Contract.Is
 //	static public class Issuer<	OWNER extends Owner<OWNER,ISSUER,CONTRACT>,
 //								ISSUER extends Issuer<OWNER,ISSUER,CONTRACT>,
 //								CONTRACT extends Contract<OWNER,ISSUER>> {
-		static public class Issuer<CONTRACT extends Contract<? extends Owner<CONTRACT>,? extends Issuer<CONTRACT>>> {
+		static public class Issuer<CONTRACT extends Contract<CONTRACT>> extends IdentityHashSet<CONTRACT> {
 		// honour contract
 		public boolean honour(CONTRACT contract) {
-			return(false);
+			if(contract.issuer != this) return(false);
+			return(true);
 		}
 		
 		// issue contract
-		public void issue(CONTRACT newContract) {
-			contracts.put(newContract, newContract.owner);
-			newContract.owner.receive(newContract); 
-		}
-		
-		IdentityHashMap<CONTRACT, Object> contracts = new IdentityHashMap<>();
+		public void issue(CONTRACT newContract, Owner<CONTRACT> owner) {
+			newContract.issuer = this;
+			add(newContract);
+			owner.receive(newContract); 
+		}		
 	}
 		
 	/***
 	 * Agent module for deposit account holder
 	 * @author daniel
 	 */
-	static public class Owner<CONTRACT extends Contract<? extends Owner<CONTRACT>,? extends Issuer<CONTRACT>>> {
+	static public class Owner<CONTRACT extends Contract<CONTRACT>> extends IdentityHashSet<CONTRACT> {
 		public void receive(CONTRACT newContract) {
-			contracts.put(newContract, newContract.issuer);
+			newContract.owner = this;
+			add(newContract);
 		}
 		
-		IdentityHashMap<CONTRACT, Object> contracts = new IdentityHashMap<>();
+		public boolean destroy(CONTRACT contract) {
+			if(contract.owner != this) return(false);
+			remove(contract);
+			contract.issuer.remove(contract);
+			return(true);
+		}
+		
+		// receive this when a contract I own is triggered
+		public void trigger(CONTRACT contract) {
+			contract.issuer.honour(contract); // default behaviour...exercise the contract
+		}
 	}
 	
 	//////////////////////////////////////////////////////////
@@ -93,6 +107,6 @@ public class Contract<OWNER extends Contract.Owner<?>,ISSUER extends Contract.Is
 	}
 
 	
-	ISSUER 		issuer;
-	ITrigger	trigger;
+	Contract.Issuer<CONTRACT> 		issuer;
+	ITrigger				trigger;
 }
