@@ -4,20 +4,20 @@ import sim.engine.SimState;
 import sim.engine.Steppable;
 import utilities.IdentityHashSet;
 
-public class Contract<CONTRACT extends Contract<CONTRACT>> extends IntangibleAsset<Contract.Owner<CONTRACT>> implements ITriggerable {
+public class Contract<CONTRACT, OWNER extends Contract.IOwner<CONTRACT>, ISSUER extends Contract.IIssuer<CONTRACT>> extends IntangibleAsset<OWNER> implements ITriggerable {
 
 	public Contract() {
 		this(null, null, onDemand());
 	}
 
-	public Contract(Contract.Owner<CONTRACT> iOwner, Contract.Issuer<CONTRACT> iIssuer, ITrigger when) {
+	public Contract(OWNER iOwner, ISSUER iIssuer, ITrigger when) {
 		super(iOwner);
 		issuer = iIssuer;
 		trigger = when;
 	}
 	
 	public void trigger() { 
-		owner.trigger((CONTRACT)this);
+//		owner.trigger((CONTRACT)this);
 	}
 	
 	public void schedule() {
@@ -36,7 +36,7 @@ public class Contract<CONTRACT extends Contract<CONTRACT>> extends IntangibleAss
 //	static public class Issuer<	OWNER extends Owner<OWNER,ISSUER,CONTRACT>,
 //								ISSUER extends Issuer<OWNER,ISSUER,CONTRACT>,
 //								CONTRACT extends Contract<OWNER,ISSUER>> {
-		static public class Issuer<CONTRACT extends Contract<CONTRACT>> extends IdentityHashSet<CONTRACT> {
+	static public class Issuer<CONTRACT extends Contract<CONTRACT,?,?>> extends IdentityHashSet<CONTRACT> implements IIssuer<CONTRACT> {
 		// honour contract
 		public boolean honour(CONTRACT contract) {
 			if(contract.issuer != this) return(false);
@@ -44,24 +44,24 @@ public class Contract<CONTRACT extends Contract<CONTRACT>> extends IntangibleAss
 		}
 		
 		// issue contract
-		public void issue(CONTRACT newContract, Owner<CONTRACT> owner) {
-			newContract.issuer = this;
+		public void issue(CONTRACT newContract) {
+//			newContract.issuer = this;
 			add(newContract);
-			owner.receive(newContract); 
+			newContract.owner.receive(newContract); 
 		}		
 	}
-		
+	
 	/***
 	 * Agent module for deposit account holder
 	 * @author daniel
 	 */
-	static public class Owner<CONTRACT extends Contract<CONTRACT>> extends IdentityHashSet<CONTRACT> {
+	static public class Owner<CONTRACT extends Contract<CONTRACT,?,?>> extends IdentityHashSet<CONTRACT> implements IOwner<CONTRACT> {
 		public void receive(CONTRACT newContract) {
-			newContract.owner = this;
+//			newContract.owner = this;
 			add(newContract);
 		}
 		
-		public boolean destroy(CONTRACT contract) {
+		public boolean discard(CONTRACT contract) {
 			if(contract.owner != this) return(false);
 			remove(contract);
 			contract.issuer.remove(contract);
@@ -72,6 +72,22 @@ public class Contract<CONTRACT extends Contract<CONTRACT>> extends IntangibleAss
 		public void trigger(CONTRACT contract) {
 			contract.issuer.honour(contract); // default behaviour...exercise the contract
 		}
+	}
+	
+	static public interface IIssuer<CONTRACT> {
+//		void issue(CONTRACT newContract, IOwner owner);
+		boolean honour(CONTRACT contract);
+		boolean remove(CONTRACT contract);
+	}
+//	static public interface IContract {
+//		void trigger();
+//		IOwner owner();
+//		IIssuer issuer();
+//	}
+	static public interface IOwner<CONTRACT> {
+		void receive(CONTRACT newContract);
+		boolean discard(CONTRACT contract);
+		void trigger(CONTRACT contract);
 	}
 	
 	//////////////////////////////////////////////////////////
@@ -107,6 +123,6 @@ public class Contract<CONTRACT extends Contract<CONTRACT>> extends IntangibleAss
 	}
 
 	
-	Contract.Issuer<CONTRACT> 		issuer;
-	ITrigger				trigger;
+	ISSUER	 		issuer;
+	ITrigger		trigger;
 }
