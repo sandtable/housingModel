@@ -5,4 +5,8 @@ public class EconAgent {
 		// dispatch trigger to appropriate module or dump trigger
 		// or go directly to module...
 //	}
+	
+	public void myFunc(DepositAccountWithInterest d) {
+
+	}
 }

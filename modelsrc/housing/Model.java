@@ -9,6 +9,7 @@ import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.engine.Stoppable;
 import testing.EconAgent;
+import utilities.ModelTime;
 
 /**
  * This is the root object of the simulation. Upon creation it creates
@@ -113,6 +114,9 @@ public class Model extends SimState implements Steppable {
 		super.finish();
 	}
 	
+	public static ModelTime modelTime() {
+		return(new ModelTime(globalSchedule.getTime()));
+	}
 
 	////////////////////////////////////////////////////////////////////////
 

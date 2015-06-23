@@ -1,16 +1,14 @@
 package testing;
 
-import sim.engine.SimState;
-import sim.engine.Steppable;
 import utilities.IdentityHashSet;
 
-public class Contract<CONTRACT, OWNER extends Contract.IOwner<CONTRACT>, ISSUER extends Contract.IIssuer<CONTRACT>> extends IntangibleAsset<OWNER> implements ITriggerable {
+public class Contract<CONTRACT, ISSUER extends Contract.IIssuer<CONTRACT>, OWNER extends Contract.IOwner<CONTRACT>> extends IntangibleAsset<OWNER> implements ITriggerable {
 
-	public Contract() {
-		this(null, null, onDemand());
+	public Contract(ISSUER iIssuer, OWNER iOwner) {
+		this(iIssuer, iOwner, Triggers.onDemand());
 	}
 
-	public Contract(OWNER iOwner, ISSUER iIssuer, ITrigger when) {
+	public Contract(ISSUER iIssuer, OWNER iOwner, ITrigger when) {
 		super(iOwner);
 		issuer = iIssuer;
 		trigger = when;
@@ -44,11 +42,15 @@ public class Contract<CONTRACT, OWNER extends Contract.IOwner<CONTRACT>, ISSUER 
 		}
 		
 		// issue contract
-		public void issue(CONTRACT newContract) {
-//			newContract.issuer = this;
+		public boolean issue(CONTRACT newContract) {
+			if(newContract.issuer != this) return(false);
 			add(newContract);
-			newContract.owner.receive(newContract); 
-		}		
+			boolean accepted = newContract.owner.receive(newContract);
+			if(accepted) return(true);
+			remove(newContract);
+			return(false);
+		}
+		
 	}
 	
 	/***
@@ -56,9 +58,10 @@ public class Contract<CONTRACT, OWNER extends Contract.IOwner<CONTRACT>, ISSUER 
 	 * @author daniel
 	 */
 	static public class Owner<CONTRACT extends Contract<CONTRACT,?,?>> extends IdentityHashSet<CONTRACT> implements IOwner<CONTRACT> {
-		public void receive(CONTRACT newContract) {
-//			newContract.owner = this;
+		public boolean receive(CONTRACT newContract) {
+			if(newContract.owner != this) return(false);
 			add(newContract);
+			return(true);
 		}
 		
 		public boolean discard(CONTRACT contract) {
@@ -75,7 +78,7 @@ public class Contract<CONTRACT, OWNER extends Contract.IOwner<CONTRACT>, ISSUER 
 	}
 	
 	static public interface IIssuer<CONTRACT> {
-//		void issue(CONTRACT newContract, IOwner owner);
+//		boolean issue(CONTRACT newContract);
 		boolean honour(CONTRACT contract);
 		boolean remove(CONTRACT contract);
 	}
@@ -85,43 +88,10 @@ public class Contract<CONTRACT, OWNER extends Contract.IOwner<CONTRACT>, ISSUER 
 //		IIssuer issuer();
 //	}
 	static public interface IOwner<CONTRACT> {
-		void receive(CONTRACT newContract);
-		boolean discard(CONTRACT contract);
+		boolean receive(CONTRACT newContract);
+	//	boolean discard(CONTRACT contract);
 		void trigger(CONTRACT contract);
 	}
-	
-	//////////////////////////////////////////////////////////
-	// Standard triggers
-	//////////////////////////////////////////////////////////
-	static public ITrigger repeatingEvery(final double time) {
-		return(new ITrigger() {
-			@SuppressWarnings("serial")
-			@Override
-			public void schedule(final ITriggerable contract) {
-				housing.Model.globalSchedule.scheduleRepeating(time, new Steppable() {
-					@Override
-					public void step(SimState arg0) {
-						contract.trigger();
-					}
-					
-				});
-			}
-			
-		});
-	}
-	static public ITrigger yearly() {return(repeatingEvery(360.0));}
-	static public ITrigger monthly() {return(repeatingEvery(30.0));}
-	static public ITrigger weekly() {return(repeatingEvery(7.0));}
-	static public ITrigger daily() {return(repeatingEvery(1.0));}
-	
-	static public ITrigger onDemand() {
-		return(new ITrigger() {
-			@Override
-			public void schedule(ITriggerable contract) {
-			}
-		});
-	}
-
 	
 	ISSUER	 		issuer;
 	ITrigger		trigger;

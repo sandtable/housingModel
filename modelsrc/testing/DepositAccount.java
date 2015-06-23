@@ -1,7 +1,10 @@
 package testing;
 
-public class DepositAccount extends Contract<DepositAccount, DepositAccount.Owner, DepositAccount.Issuer> {
+public class DepositAccount extends Contract<DepositAccount, DepositAccount.Issuer, DepositAccount.Owner> {
 	
+	public DepositAccount(Issuer iIssuer, Owner iOwner) {
+		super(iIssuer, iOwner);
+	}
 	/***
 	 * Agent module for deposit account issuer
 	 * @author daniel
@@ -9,7 +12,7 @@ public class DepositAccount extends Contract<DepositAccount, DepositAccount.Owne
 	
 	static public class Issuer extends Contract.Issuer<DepositAccount> {
 		// honour contract
-		public boolean transfer(DepositAccount account, double amount, DepositAccount payee) {
+		public boolean transfer(DepositAccount account, long amount, DepositAccount payee) {
 			if(!contains(account)) return(false);
 			if(account.balance < amount) return(false);
 			account.balance -= amount;
@@ -18,14 +21,13 @@ public class DepositAccount extends Contract<DepositAccount, DepositAccount.Owne
 		}
 		
 		// open new account / issue contract
-		public void issue(DepositAccount.Owner holder) {
-			issue(new DepositAccount());
+		public boolean issue(DepositAccount.Owner holder) {
+			return(issue(new DepositAccount(this,holder)));
 		}
 		
 	}
 
 	static public class Owner extends Contract.Owner<DepositAccount> {}
 
-	double balance = 0.0;
-
+	long balance = 0; // balance in cents
 }
