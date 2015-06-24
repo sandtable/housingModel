@@ -2,39 +2,36 @@ package testing;
 
 import utilities.LongSupplier;
 
-public class PeriodicPayment extends Contract<PeriodicPayment, PeriodicPayment.Issuer, PeriodicPayment.Owner> {
+public class PeriodicPayment extends Contract<PeriodicPayment, PeriodicPayment.Issuer> {
 	
-	public PeriodicPayment(Issuer iIssuer, Owner iOwner, DepositAccount iFrom, DepositAccount iTo, ITrigger when, LongSupplier iAmount) {
+	public PeriodicPayment(Issuer iIssuer, Contract.IOwner<PeriodicPayment> iOwner, DepositAccount iFrom, DepositAccount iTo, ITrigger when, LongSupplier iAmount) {
 		super(iIssuer, iOwner, when);
-		from = iFrom;
-		to = iTo;
+		fromAC = iFrom;
+		toAC = iTo;
 		amount = iAmount;
 	}
-
-	@Override
-	public void trigger() {
-		owner.trigger(this);
+	
+	private void exercise() {
+		fromAC.issuer.transfer(contract.fromAC, contract.amount.getAsLong(), contract.toAC));
 	}
 	
 	static public class Issuer extends Contract.Issuer<PeriodicPayment> {
-		public boolean issue(Owner owner, DepositAccount iFrom, DepositAccount iTo, ITrigger when, LongSupplier iAmount) {
+		public boolean issue(Contract.IOwner<PeriodicPayment> owner, DepositAccount iFrom, DepositAccount iTo, ITrigger when, LongSupplier iAmount) {
 			return(issue(new PeriodicPayment(this,owner,iFrom, iTo, when, iAmount)));
 		}
 
-		public boolean issue(Owner iOwner, DepositAccount iFrom, DepositAccount iTo, ITrigger when, final long iAmount) {
+		public boolean issue(Contract.IOwner<PeriodicPayment> iOwner, DepositAccount iFrom, DepositAccount iTo, ITrigger when, final long iAmount) {
 			return(issue(iOwner, iFrom, iTo, when, new LongSupplier() {
 				public long getAsLong() {return(iAmount);}
 			}));
 		}
 
 		public boolean honour(PeriodicPayment contract) {
-			return(contract.from.issuer.transfer(contract.from, contract.amount.getAsLong(), contract.to));
+			return(contract.fromAC.issuer.transfer(contract.fromAC, contract.amount.getAsLong(), contract.toAC));
 		}
 	}
-	
-	static public class Owner extends Contract.Owner<PeriodicPayment> {}
-	
+		
 	LongSupplier amount;
-	DepositAccount from;
-	DepositAccount to;
+	DepositAccount fromAC;
+	DepositAccount toAC;
 }

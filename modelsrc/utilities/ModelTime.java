@@ -21,6 +21,10 @@ public class ModelTime {
 		time = t;
 	}
 
+	public ModelTime(ModelTime mt) {
+		time = mt.raw();
+	}
+
 	public ModelTime(double t, Units units) {
 		time = t*units.multiplier;
 	}

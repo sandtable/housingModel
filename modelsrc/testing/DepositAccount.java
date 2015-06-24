@@ -1,14 +1,18 @@
 package testing;
 
-public class DepositAccount extends Contract<DepositAccount, DepositAccount.Issuer, DepositAccount.Owner> {
+public class DepositAccount extends Contract<DepositAccount, DepositAccount.Issuer> {
 	
-	public DepositAccount(Issuer iIssuer, Owner iOwner) {
+	public DepositAccount(Issuer iIssuer, Contract.IOwner<DepositAccount> iOwner) {
 		super(iIssuer, iOwner);
 	}
 	/***
 	 * Agent module for deposit account issuer
 	 * @author daniel
 	 */
+	
+	private void transfer(DepositAccount toAC, long amount) {
+		
+	}
 	
 	static public class Issuer extends Contract.Issuer<DepositAccount> {
 		// honour contract
@@ -21,13 +25,12 @@ public class DepositAccount extends Contract<DepositAccount, DepositAccount.Issu
 		}
 		
 		// open new account / issue contract
-		public boolean issue(DepositAccount.Owner holder) {
+		public boolean issue(Contract.IOwner<DepositAccount> holder) {
 			return(issue(new DepositAccount(this,holder)));
 		}
 		
 	}
 
-	static public class Owner extends Contract.Owner<DepositAccount> {}
 
 	long balance = 0; // balance in cents
 }

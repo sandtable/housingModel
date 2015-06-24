@@ -1,27 +1,50 @@
 package testing;
 
+import java.util.ArrayList;
+
 import utilities.IdentityHashSet;
 
-public class Contract<CONTRACT, ISSUER extends Contract.IIssuer<CONTRACT>, OWNER extends Contract.IOwner<CONTRACT>> extends IntangibleAsset<OWNER> implements ITriggerable {
+public class Contract<AGREEMENT, ISSUER extends Contract.IIssuer<?>> extends IntangibleAsset<Contract.IOwner<AGREEMENT>> implements ITriggerable {
 
-	public Contract(ISSUER iIssuer, OWNER iOwner) {
-		this(iIssuer, iOwner, Triggers.onDemand());
+	public Contract(ISSUER iIssuer, Contract.IOwner<AGREEMENT> iOwner, AGREEMENT iAgreement) {
+		this(iIssuer, iOwner, iAgreement, Trigger.onDemand());
 	}
 
-	public Contract(ISSUER iIssuer, OWNER iOwner, ITrigger when) {
+	public Contract(ISSUER iIssuer, Contract.IOwner<AGREEMENT> iOwner, AGREEMENT iAgreement, ITrigger when) {
 		super(iOwner);
 		issuer = iIssuer;
 		trigger = when;
+		triggerHandlers = new ArrayList<>(2);
+		agreement = iAgreement;
 	}
 	
-	public void trigger() { 
-//		owner.trigger((CONTRACT)this);
+	public void trigger() {
+		if(triggerHandlers.size() == 0) {
+			// default behaviour:
+			exercise();
+		} else {
+			for(ITriggerable handler : triggerHandlers) {
+				handler.trigger();
+			}
+		}
+	}
+	
+	public void registerTriggerHandler(ITriggerable listener) {
+		triggerHandlers.add(listener);
 	}
 	
 	public void schedule() {
 		trigger.schedule(this);
 	}
+	
+	public boolean sendDemand() {
+		return(issuer.honour(this));
+	}
+	
+	private void exercise() {
 		
+	}
+	
 	/***
 	public Class<? extends IAssetHolder> ownerType() {
 		return(IAssetHolder.class);
@@ -34,7 +57,7 @@ public class Contract<CONTRACT, ISSUER extends Contract.IIssuer<CONTRACT>, OWNER
 //	static public class Issuer<	OWNER extends Owner<OWNER,ISSUER,CONTRACT>,
 //								ISSUER extends Issuer<OWNER,ISSUER,CONTRACT>,
 //								CONTRACT extends Contract<OWNER,ISSUER>> {
-	static public class Issuer<CONTRACT extends Contract<CONTRACT,?,?>> extends IdentityHashSet<CONTRACT> implements IIssuer<CONTRACT> {
+	static public class Issuer<AGREEMENT> extends IdentityHashSet<Contract<>> implements IIssuer<CONTRACT> {
 		// honour contract
 		public boolean honour(CONTRACT contract) {
 			if(contract.issuer != this) return(false);
@@ -57,7 +80,7 @@ public class Contract<CONTRACT, ISSUER extends Contract.IIssuer<CONTRACT>, OWNER
 	 * Agent module for deposit account holder
 	 * @author daniel
 	 */
-	static public class Owner<CONTRACT extends Contract<CONTRACT,?,?>> extends IdentityHashSet<CONTRACT> implements IOwner<CONTRACT> {
+	static public class Owner<CONTRACT extends Contract<CONTRACT,?>> extends IdentityHashSet<CONTRACT> implements IOwner<CONTRACT> {
 		public boolean receive(CONTRACT newContract) {
 			if(newContract.owner != this) return(false);
 			add(newContract);
@@ -77,10 +100,10 @@ public class Contract<CONTRACT, ISSUER extends Contract.IIssuer<CONTRACT>, OWNER
 		}
 	}
 	
-	static public interface IIssuer<CONTRACT> {
+	static public interface IIssuer<AGREEMENT> {
 //		boolean issue(CONTRACT newContract);
-		boolean honour(CONTRACT contract);
-		boolean remove(CONTRACT contract);
+		boolean honour(Contract<AGREEMENT,?> contract);
+		boolean remove(Contract<AGREEMENT,?> contract);
 	}
 //	static public interface IContract {
 //		void trigger();
@@ -90,9 +113,11 @@ public class Contract<CONTRACT, ISSUER extends Contract.IIssuer<CONTRACT>, OWNER
 	static public interface IOwner<CONTRACT> {
 		boolean receive(CONTRACT newContract);
 	//	boolean discard(CONTRACT contract);
-		void trigger(CONTRACT contract);
+//		void trigger(CONTRACT contract);
 	}
 	
 	ISSUER	 		issuer;
 	ITrigger		trigger;
+	ArrayList<ITriggerable>		triggerHandlers;
+	AGREEMENT		agreement;
 }
