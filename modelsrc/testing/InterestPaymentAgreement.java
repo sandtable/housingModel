@@ -41,7 +41,7 @@ public class InterestPaymentAgreement extends PaymentAgreement {
 	}
 
 	LongSupplier  balance;
-	PeriodicPayment interestPayment;
+//	PeriodicPayment interestPayment;
 	double annualInterestRate;
 	double unpaidInterest;
 	ModelTime unpaidInterestTimestamp;

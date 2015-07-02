@@ -1,123 +1,91 @@
 package testing;
 
-import java.util.ArrayList;
+import java.util.Iterator;
 
 import utilities.IdentityHashSet;
 
-public class Contract<AGREEMENT, ISSUER extends Contract.IIssuer<?>> extends IntangibleAsset<Contract.IOwner<AGREEMENT>> implements ITriggerable {
+public class Contract {
 
-	public Contract(ISSUER iIssuer, Contract.IOwner<AGREEMENT> iOwner, AGREEMENT iAgreement) {
-		this(iIssuer, iOwner, iAgreement, Trigger.onDemand());
+	public Contract() {
+		this(null);
+	}
+	
+	public Contract(IIssuer terminationHandler) {
+		issuer = terminationHandler;
+	}
+	
+	public void terminate() {
+		if(issuer != null) issuer.terminate(this);
+		issuer = null;
 	}
 
-	public Contract(ISSUER iIssuer, Contract.IOwner<AGREEMENT> iOwner, AGREEMENT iAgreement, ITrigger when) {
-		super(iOwner);
-		issuer = iIssuer;
-		trigger = when;
-		triggerHandlers = new ArrayList<>(2);
-		agreement = iAgreement;
+	public interface Set {
+		public Class<? extends Contract> getElementClass();
+		public Iterator<? extends Contract> iterator();
 	}
 	
-	public void trigger() {
-		if(triggerHandlers.size() == 0) {
-			// default behaviour:
-			exercise();
-		} else {
-			for(ITriggerable handler : triggerHandlers) {
-				handler.trigger();
-			}
-		}
-	}
-	
-	public void registerTriggerHandler(ITriggerable listener) {
-		triggerHandlers.add(listener);
-	}
-	
-	public void schedule() {
-		trigger.schedule(this);
-	}
-	
-	public boolean sendDemand() {
-		return(issuer.honour(this));
-	}
-	
-	private void exercise() {
-		
-	}
-	
-	/***
-	public Class<? extends IAssetHolder> ownerType() {
-		return(IAssetHolder.class);
-	}
-	***/
-	/***
-	 * Agent module for deposit account issuer
-	 * @author daniel
-	 */
-//	static public class Issuer<	OWNER extends Owner<OWNER,ISSUER,CONTRACT>,
-//								ISSUER extends Issuer<OWNER,ISSUER,CONTRACT>,
-//								CONTRACT extends Contract<OWNER,ISSUER>> {
-	static public class Issuer<AGREEMENT> extends IdentityHashSet<Contract<>> implements IIssuer<CONTRACT> {
-		// honour contract
-		public boolean honour(CONTRACT contract) {
-			if(contract.issuer != this) return(false);
-			return(true);
+	static public class HashSet<CONTRACT extends Contract> extends IdentityHashSet<CONTRACT> implements Set {
+		public HashSet(Class<CONTRACT> clazz) {
+			contractClazz = clazz;
 		}
 		
-		// issue contract
-		public boolean issue(CONTRACT newContract) {
-			if(newContract.issuer != this) return(false);
+		public Class<? extends Contract> getElementClass() {
+			return(contractClazz);
+		}
+		
+		Class<CONTRACT> contractClazz;
+	}
+	
+	static public class Issuer<CONTRACT extends Contract> extends HashSet<CONTRACT> implements IIssuer {
+		public Issuer(Class<CONTRACT> contractClazz) {
+			super(contractClazz);
+		}
+		public boolean issue(CONTRACT newContract, Owner<CONTRACT> owner) {
 			add(newContract);
-			boolean accepted = newContract.owner.receive(newContract);
+			boolean accepted = owner.receive(newContract, this);
 			if(accepted) return(true);
 			remove(newContract);
 			return(false);
 		}
 		
+		@SuppressWarnings("unchecked")
+		public boolean terminate(Contract contract) {
+			if(contains(contract)) {
+				return(super.remove((CONTRACT)contract));
+			}
+			return(false);
+		}
 	}
 	
 	/***
 	 * Agent module for deposit account holder
 	 * @author daniel
 	 */
-	static public class Owner<CONTRACT extends Contract<CONTRACT,?>> extends IdentityHashSet<CONTRACT> implements IOwner<CONTRACT> {
-		public boolean receive(CONTRACT newContract) {
-			if(newContract.owner != this) return(false);
+	static public class Owner<CONTRACT extends Contract> extends HashSet<CONTRACT> implements IOwner<CONTRACT> {
+		public Owner(Class<CONTRACT> contractClazz) {
+			super(contractClazz);
+		}
+		
+		public boolean receive(CONTRACT newContract, IIssuer from) {
 			add(newContract);
 			return(true);
 		}
 		
 		public boolean discard(CONTRACT contract) {
-			if(contract.owner != this) return(false);
 			remove(contract);
-			contract.issuer.remove(contract);
+			contract.terminate();
 			return(true);
 		}
-		
-		// receive this when a contract I own is triggered
-		public void trigger(CONTRACT contract) {
-			contract.issuer.honour(contract); // default behaviour...exercise the contract
-		}
 	}
 	
-	static public interface IIssuer<AGREEMENT> {
-//		boolean issue(CONTRACT newContract);
-		boolean honour(Contract<AGREEMENT,?> contract);
-		boolean remove(Contract<AGREEMENT,?> contract);
+	static public interface IIssuer {
+		boolean terminate(Contract contract);
 	}
-//	static public interface IContract {
-//		void trigger();
-//		IOwner owner();
-//		IIssuer issuer();
-//	}
+
 	static public interface IOwner<CONTRACT> {
-		boolean receive(CONTRACT newContract);
-	//	boolean discard(CONTRACT contract);
-//		void trigger(CONTRACT contract);
+		boolean receive(CONTRACT newContract, IIssuer from);
 	}
 	
-	ISSUER	 		issuer;
-	ITrigger		trigger;
-	ArrayList<ITriggerable>		triggerHandlers;
-	AGREEMENT		agreement;
+	IIssuer	 		issuer; // should be EconAgent?
+
 }

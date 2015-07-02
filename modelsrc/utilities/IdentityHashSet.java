@@ -2,6 +2,9 @@ package utilities;
 
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
+
+import testing.Contract;
 
 public class IdentityHashSet<E> {
 	public IdentityHashSet() {
@@ -18,6 +21,10 @@ public class IdentityHashSet<E> {
 	
 	public boolean contains(Object element) {
 		return(data.containsKey(element));
+	}
+	
+	public Iterator<E> iterator() {
+		return(data.keySet().iterator());
 	}
 	
 	//HashSet<E>				test;

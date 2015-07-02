@@ -1,8 +1,7 @@
 package testing;
 
-import utilities.LongSupplier;
-
 public class PaymentAgreement {
+	
 	public PaymentAgreement(DepositAccountAgreement iPayerAC, DepositAccountAgreement iPayeeAC) {
 		payerAC= iPayerAC;
 		payeeAC = iPayeeAC;
