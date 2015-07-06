@@ -2,7 +2,6 @@ package testing;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.function.Consumer;
 
 import testing.Contract.IIssuer;
 
@@ -91,10 +90,10 @@ public class EconAgent extends ArrayList<Contract.Set> implements Contract.IOwne
 			contractIterator.remove();
 		}
 
-		@Override
-		public void forEachRemaining(Consumer<? super T> action) {
-			while(hasNext()) action.accept(next());
-		}
+//		@Override
+//		public void forEachRemaining(Consumer<? super T> action) {
+//			while(hasNext()) action.accept(next());
+//		}
 		
 		@SuppressWarnings("unchecked")
 		private void nextModule() {
