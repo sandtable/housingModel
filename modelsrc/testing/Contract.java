@@ -61,14 +61,17 @@ public class Contract {
 	 * Agent module for deposit account holder
 	 * @author daniel
 	 */
-	static public class Owner<CONTRACT extends Contract> extends HashSet<CONTRACT> implements IOwner<CONTRACT> {
+	static public class Owner<CONTRACT extends Contract> extends HashSet<CONTRACT> implements IOwner {
 		public Owner(Class<CONTRACT> contractClazz) {
 			super(contractClazz);
 		}
 		
-		public boolean receive(CONTRACT newContract, IIssuer from) {
-			add(newContract);
-			return(true);
+		public boolean receive(Contract newContract, IIssuer from) {
+			if(newContract.getClass() == contractClazz) {
+				add((CONTRACT)newContract);
+				return(true);				
+			}
+			return(false);
 		}
 		
 		public boolean discard(CONTRACT contract) {
@@ -82,8 +85,8 @@ public class Contract {
 		boolean terminate(Contract contract);
 	}
 
-	static public interface IOwner<CONTRACT> {
-		boolean receive(CONTRACT newContract, IIssuer from);
+	static public interface IOwner {
+		boolean receive(Contract newContract, IIssuer from);
 	}
 	
 	IIssuer	 		issuer; // should be EconAgent?

@@ -4,18 +4,48 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
-public class EconAgent extends ArrayList<Contract.Set> {
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3312378780978236238L;
+import testing.Contract.IIssuer;
+
+public class EconAgent extends ArrayList<Contract.Set> implements Contract.IOwner, Contract.IIssuer {	
+
+	public boolean receive(Contract newContract, IIssuer from) {
+		for(Contract.Set module : this) {
+			if(Contract.IOwner.class.isAssignableFrom(module.getClass())) {
+				if(((Contract.IOwner)module).receive(newContract, from)) {
+					return(true);
+				}
+			}
+		}
+		return(false);
+	}
+
+	public boolean terminate(Contract contract) {
+		for(Contract.Set module : this) {
+			if(Contract.IIssuer.class.isAssignableFrom(module.getClass())) {
+				if(((Contract.IIssuer)module).terminate(contract)) {
+					return(true);
+				}
+			}
+		}
+		return(false);
+	}
+		
+	/***
+	public <T> T getInterface(Class<T> clazz) {
+		for(Contract.Set module : this) {
+			if(clazz.isAssignableFrom(module.getClass())) {
+				return((T)module);
+			}
+		}
+		return(null);
+	}
+	***/
 	
 	/***
 	 * @return an iterator that iterates over all contracts that belong to
 	 * type T
 	 */
-	<T> Iterator<T> iteratorOf(Class<T> runtimeType) {
+	public <T> Iterator<T> iteratorOf(Class<T> runtimeType) {
 		return(new TypeFilteredIterator<T>(runtimeType));
 	}
 
@@ -23,7 +53,7 @@ public class EconAgent extends ArrayList<Contract.Set> {
 	 * @return An iterable container that contains all the contracts that
 	 * belong to type T
 	 */
-	<T> Iterable<T> setOf(Class<T> runtimeType) {
+	public <T> Iterable<T> setOf(Class<T> runtimeType) {
 		return(new TypeFilteredIterable<T>(runtimeType));
 	}
 
@@ -63,7 +93,7 @@ public class EconAgent extends ArrayList<Contract.Set> {
 
 		@Override
 		public void forEachRemaining(Consumer<? super T> action) {
-			
+			while(hasNext()) action.accept(next());
 		}
 		
 		@SuppressWarnings("unchecked")
@@ -85,4 +115,5 @@ public class EconAgent extends ArrayList<Contract.Set> {
 		Iterator<Contract.Set> moduleIterator;
 		Contract.Set currentModule;
 	}
+	private static final long serialVersionUID = 3312378780978236238L;
 }
