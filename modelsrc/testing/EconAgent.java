@@ -5,29 +5,27 @@ import java.util.Iterator;
 
 import testing.Contract.IIssuer;
 
-public class EconAgent extends ArrayList<Contract.Set> implements Contract.IOwner, Contract.IIssuer {	
+public class EconAgent extends ArrayList<Message.IReceiver> {	
 
-	public boolean receive(Contract newContract, IIssuer from) {
-		for(Contract.Set module : this) {
-			if(Contract.IOwner.class.isAssignableFrom(module.getClass())) {
-				if(((Contract.IOwner)module).receive(newContract, from)) {
-					return(true);
-				}
+	public boolean receive(Message message) {
+		for(Message.IReceiver module : this) {
+			if(module.receive(message)) {
+				return(true);
 			}
 		}
 		return(false);
 	}
 
-	public boolean terminate(Contract contract) {
-		for(Contract.Set module : this) {
-			if(Contract.IIssuer.class.isAssignableFrom(module.getClass())) {
-				if(((Contract.IIssuer)module).terminate(contract)) {
-					return(true);
-				}
-			}
-		}
-		return(false);
-	}
+//	public boolean terminate(Contract contract) {
+//		for(Contract.Set module : this) {
+//			if(Contract.IIssuer.class.isAssignableFrom(module.getClass())) {
+//				if(((Contract.IIssuer)module).terminate(contract)) {
+//					return(true);
+//				}
+//			}
+//		}
+//		return(false);
+//	}
 		
 	/***
 	public <T> T getInterface(Class<T> clazz) {

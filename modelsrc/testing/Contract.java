@@ -4,7 +4,7 @@ import java.util.Iterator;
 
 import utilities.IdentityHashSet;
 
-public class Contract {
+public class Contract extends Message {
 
 	public Contract() {
 		this(null);
