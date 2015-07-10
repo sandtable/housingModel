@@ -1,12 +1,20 @@
 package testing;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-
-import testing.Contract.IIssuer;
 
 public class EconAgent extends ArrayList<Message.IReceiver> {	
 
+	public EconAgent() {
+		
+	}
+	
+	public EconAgent(Message.IReceiver... modules) {
+		int i;
+		for(i=0; i<modules.length; ++i) {
+			add(modules[i]);
+		}
+	}
+	
 	public boolean receive(Message message) {
 		for(Message.IReceiver module : this) {
 			if(module.receive(message)) {
@@ -42,28 +50,28 @@ public class EconAgent extends ArrayList<Message.IReceiver> {
 	 * @return an iterator that iterates over all contracts that belong to
 	 * type T
 	 */
-	public <T> Iterator<T> iteratorOf(Class<T> runtimeType) {
-		return(new TypeFilteredIterator<T>(runtimeType));
-	}
+//	public <T> Iterator<T> iteratorOf(Class<T> runtimeType) {
+//		return(new TypeFilteredIterator<T>(runtimeType));
+//	}
 
 	/***
 	 * @return An iterable container that contains all the contracts that
 	 * belong to type T
 	 */
-	public <T> Iterable<T> setOf(Class<T> runtimeType) {
-		return(new TypeFilteredIterable<T>(runtimeType));
-	}
+//	public <T> Iterable<T> setOf(Class<T> elementType) {
+//		return(new FlattenedIterable<T>(new IterableOfType<Iterable<T> >(Iterable.class, this)));
+//	}
 
-	public class TypeFilteredIterable<T> implements Iterable<T> {
-		public TypeFilteredIterable(Class<T> clazz) {
-			elementClazz = clazz;
-		}
-		public Iterator<T> iterator() {
-			return(new TypeFilteredIterator<T>(elementClazz));
-		}
-		Class<T> elementClazz;
-	}
-	
+//	public class TypeFilteredIterable<T> implements Iterable<T> {
+//		public TypeFilteredIterable(Class<T> clazz) {
+//			elementClazz = clazz;
+//		}
+//		public Iterator<T> iterator() {
+//			return(new TypeFilteredIterator<T>(elementClazz));
+//		}
+//		Class<T> elementClazz;
+//	}
+	/***
 	public class TypeFilteredIterator<T> implements Iterator<T> {
 		public TypeFilteredIterator(Class<T> iclazz) {
 			classFilter = iclazz;
@@ -112,5 +120,6 @@ public class EconAgent extends ArrayList<Message.IReceiver> {
 		Iterator<Contract.Set> moduleIterator;
 		Contract.Set currentModule;
 	}
+	***/
 	private static final long serialVersionUID = 3312378780978236238L;
 }
