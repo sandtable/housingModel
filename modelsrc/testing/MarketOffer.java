@@ -11,7 +11,8 @@ public class MarketOffer extends Contract {
 	 * @param h The house that is for sale.
 	 * @param p The initial list price for the house.
 	 ***********************************************/
-	public MarketOffer(House h, long p) {
+	public MarketOffer(IIssuer issuer, House h, long p) {
+		super(issuer);
 		house = h;
 		setPrice(p);
 		initialListedPrice = currentPrice;

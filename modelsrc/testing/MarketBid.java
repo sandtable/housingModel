@@ -7,7 +7,7 @@ public class MarketBid extends Contract {
 	}
 	
 	public interface IIssuer extends Contract.IIssuer {
-		void completePurchase(MarketBid bid, MarketOffer offer, DepositAccountAgreement depositAccount);
+		void completePurchase(MarketBid bid, MarketOffer offer, DepositAccount depositAccount);
 	}
 		
 	long price;

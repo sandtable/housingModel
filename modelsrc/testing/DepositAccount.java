@@ -1,12 +1,12 @@
 package testing;
 
-public class DepositAccountAgreement extends Contract {
+public class DepositAccount extends Contract {
 
-	public DepositAccountAgreement() {
+	public DepositAccount() {
 		super(tmpBank);
 	}
 	
-	public void transfer(DepositAccountAgreement payee, long amount) {
+	public void transfer(DepositAccount payee, long amount) {
 	//	if(balance < amount) throw(new Throwable("Insufficient Funds"));
 		balance -= amount;
 		payee.balance += amount;

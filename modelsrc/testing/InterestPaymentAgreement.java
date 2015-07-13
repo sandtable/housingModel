@@ -4,8 +4,8 @@ import housing.Model;
 import utilities.LongSupplier;
 import utilities.ModelTime;
 
-public class InterestPaymentAgreement extends PaymentAgreement {
-	public InterestPaymentAgreement(DepositAccountAgreement sourceAC, DepositAccountAgreement payeeAC, final DepositAccountAgreement interestBearingAC, double iAnnualInterest) {
+public class InterestPaymentAgreement extends PaymentAgreement implements ITriggerable {
+	public InterestPaymentAgreement(DepositAccount sourceAC, DepositAccount payeeAC, final DepositAccount interestBearingAC, double iAnnualInterest) {
 		this(sourceAC,payeeAC, new LongSupplier() {
 			@Override
 			public long getAsLong() {
@@ -15,7 +15,7 @@ public class InterestPaymentAgreement extends PaymentAgreement {
 		}, iAnnualInterest);
 	}
 	
-	public InterestPaymentAgreement(DepositAccountAgreement sourceAC, DepositAccountAgreement payeeAC, LongSupplier iBalance, double iAnnualInterest) {
+	public InterestPaymentAgreement(DepositAccount sourceAC, DepositAccount payeeAC, LongSupplier iBalance, double iAnnualInterest) {
 		super(sourceAC,payeeAC);
 		annualInterestRate = iAnnualInterest;
 		unpaidInterest = 0.0;
@@ -28,9 +28,9 @@ public class InterestPaymentAgreement extends PaymentAgreement {
 		return((long)unpaidInterest);
 	}
 	
-	public void honour() throws Throwable {
+	public void trigger() {
 		updateUnpaidInterest();
-		super.honour();
+		super.trigger();
 		unpaidInterest -= amount();
 	}
 	

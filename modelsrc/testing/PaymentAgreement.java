@@ -1,24 +1,23 @@
 package testing;
 
-public class PaymentAgreement {
+abstract public class PaymentAgreement implements ITriggerable {
 	
-	public PaymentAgreement(DepositAccountAgreement iPayerAC, DepositAccountAgreement iPayeeAC) {
+	public PaymentAgreement(DepositAccount iPayerAC, DepositAccount iPayeeAC) {
 		payerAC= iPayerAC;
 		payeeAC = iPayeeAC;
 //		amount = iAmount;
 	}
 	
-	public void honour() throws Throwable {
+	public void trigger() {
 		payerAC.transfer(payeeAC, amount());
 	}
 	
-	public long amount() {
-		return(0);
-	}
+	// Override this to return the amount of the payment
+	abstract public long amount();
 	
 //	LongSupplier 				amount;
-	DepositAccountAgreement 	payerAC;
-	DepositAccountAgreement 	payeeAC;
+	DepositAccount 	payerAC;
+	DepositAccount 	payeeAC;
 
 
 }

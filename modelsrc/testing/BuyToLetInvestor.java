@@ -38,13 +38,13 @@ public class BuyToLetInvestor implements IAgentTrait, MarketBid.IIssuer, MarketO
 
 	@Override
 	public void completePurchase(MarketBid bid, MarketOffer offer,
-			DepositAccountAgreement depositAccount) {
+			DepositAccount depositAccount) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	int									desiredPortfolioSize;
-	IdentityHashSet<MortgageAgreement> 	mortgages;
+	IdentityHashSet<Mortgage> 	mortgages;
 	HashSet<House>						houses;
 	MarketBid							activeBid;
 	MarketOffer							activeOffer;

@@ -26,7 +26,7 @@ public class Renter implements MarketBid.IIssuer, IAgentTrait {
 	
 	@Override
 	public void completePurchase(MarketBid bid, MarketOffer offer,
-			DepositAccountAgreement depositAccount) {
+			DepositAccount depositAccount) {
 		// TODO Auto-generated method stub
 		
 	}

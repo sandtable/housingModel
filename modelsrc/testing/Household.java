@@ -9,9 +9,9 @@ public class Household extends EconAgent {
 				);
 	}
 	
-	public boolean receive(DepositAccountAgreement a) {
+	public boolean receive(DepositAccount a) {
 		return(depositAccountHolderTrait.receive(a));
 	}
 	
-	Contract.Owner<DepositAccountAgreement> depositAccountHolderTrait;
+	Contract.Owner<DepositAccount> depositAccountHolderTrait;
 }

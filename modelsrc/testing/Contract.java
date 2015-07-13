@@ -3,12 +3,19 @@ package testing;
 import java.util.Iterator;
 
 import utilities.IdentityHashSet;
-
+/***
+ * A contract is something that may sit on an economic agent's balance
+ * sheet. A contract has a defined issuer and owner, in contrast to an
+ * Agreement which refers to issuer and owner only by pronoun (you and I).
+ * 
+ * @author daniel
+ *
+ */
 public class Contract extends Message {
 
-	public Contract() {
-		this(null);
-	}
+//	public Contract() {
+//		this(null);
+//	}
 	
 	public Contract(IIssuer terminationHandler) {
 		issuer = terminationHandler;
@@ -19,12 +26,12 @@ public class Contract extends Message {
 		issuer = null;
 	}
 
-	public interface Set {
-		public Class<? extends Contract> getElementClass();
-		public Iterator<? extends Contract> iterator();
-	}
+//	public interface Set {
+//		public Class<? extends Contract> getElementClass();
+//		public Iterator<? extends Contract> iterator();
+//	}
 	
-	static public class HashSet<CONTRACT extends Contract> extends IdentityHashSet<CONTRACT> implements Set {
+	static public class HashSet<CONTRACT extends Contract> extends IdentityHashSet<CONTRACT> {
 		public HashSet(Class<CONTRACT> clazz) {
 			contractClazz = clazz;
 		}

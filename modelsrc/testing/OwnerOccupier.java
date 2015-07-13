@@ -12,7 +12,7 @@ public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, MarketOffe
 		
 	}
 	
-	public void completePurchase(MarketBid bid, MarketOffer offer, DepositAccountAgreement depositAccount) {
+	public void completePurchase(MarketBid bid, MarketOffer offer, DepositAccount depositAccount) {
 		// successful bid
 		home = offer.house;
 		// get mortgage
@@ -47,5 +47,5 @@ public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, MarketOffe
 	OccupierMarketBid			activeBid = null;
 	MarketOffer			activeOffer = null;
 	housing.House		home = null;
-	MortgageAgreement 	mortgage = null;
+	Mortgage 	mortgage = null;
 }
