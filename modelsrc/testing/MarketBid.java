@@ -1,12 +1,13 @@
 package testing;
 
 public class MarketBid extends Contract {
-	public MarketBid(long iPrice) {
+	public MarketBid(IIssuer issuer, long iPrice) {
+		super(issuer);
 		price = iPrice;
 	}
 	
 	public interface IIssuer extends Contract.IIssuer {
-		void completeHousePurchase(housing.House house, DepositAccountAgreement depositAccount);
+		void completePurchase(MarketBid bid, MarketOffer offer, DepositAccountAgreement depositAccount);
 	}
 		
 	long price;

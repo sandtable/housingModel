@@ -15,8 +15,8 @@ public class IdentityHashSet<E> {
 		return(data.put(element, dummy));
 	}
 	
-	public boolean remove(E element) {
-		return(data.remove(element));
+	public boolean remove(Object element) {
+		return(data.remove(element) != null);
 	}
 	
 	public boolean contains(Object element) {

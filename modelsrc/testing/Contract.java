@@ -42,18 +42,14 @@ public class Contract extends Message {
 		}
 		public boolean issue(CONTRACT newContract, Owner<CONTRACT> owner) {
 			add(newContract);
-			boolean accepted = owner.receive(newContract, this);
+			boolean accepted = owner.receive(newContract);
 			if(accepted) return(true);
 			remove(newContract);
 			return(false);
 		}
 		
-		@SuppressWarnings("unchecked")
 		public boolean terminate(Contract contract) {
-			if(contains(contract)) {
-				return(super.remove((CONTRACT)contract));
-			}
-			return(false);
+			return(super.remove(contract));
 		}
 	}
 	
@@ -66,7 +62,7 @@ public class Contract extends Message {
 			super(contractClazz);
 		}
 		
-		public boolean receive(Contract newContract, IIssuer from) {
+		public boolean receive(Contract newContract) {
 			if(newContract.getClass() == contractClazz) {
 				add((CONTRACT)newContract);
 				return(true);				
@@ -74,7 +70,7 @@ public class Contract extends Message {
 			return(false);
 		}
 		
-		public boolean discard(CONTRACT contract) {
+		public boolean discard(Contract contract) {
 			remove(contract);
 			contract.terminate();
 			return(true);
@@ -86,7 +82,7 @@ public class Contract extends Message {
 	}
 
 	static public interface IOwner {
-		boolean receive(Contract newContract, IIssuer from);
+		boolean receive(Contract newContract);
 	}
 	
 	IIssuer	 		issuer; // should be EconAgent?

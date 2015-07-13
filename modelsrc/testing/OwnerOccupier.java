@@ -1,6 +1,6 @@
 package testing;
 
-public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer {
+public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, MarketOffer.IIssuer {
 
 	@Override
 	public boolean receive(Message message) {
@@ -12,18 +12,31 @@ public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer {
 		
 	}
 	
-	public void completeHousePurchase(housing.House house, DepositAccountAgreement depositAccount) {
+	public void completePurchase(MarketBid bid, MarketOffer offer, DepositAccountAgreement depositAccount) {
 		// successful bid
-		home = house;
+		home = offer.house;
 		// get mortgage
 		// transfer activeBid.price to depositAccount
 	}
 	
+	public void completeSale(MarketOffer offer) {
+		if(offer != activeOffer) {
+			System.out.println("Strange, completing house sale on offer I didn't make");
+		}
+		if(home == offer.house) {
+			home = null;
+			// bid on market
+		}
+	}
+	
 	public boolean terminate(Contract contract) {
-		if(contract instanceof MarketBid) {
+		if(contract == activeBid) {
 			activeBid = null;
 			return(true);
-		} else if(contract instanceof MortgageAgreement) {
+		} else if(contract == activeOffer) {
+			activeOffer = null;
+			return(true);
+		} else if(contract == mortgage) {
 			mortgage = null;
 			return(true);
 		}
@@ -31,8 +44,8 @@ public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer {
 	}
 
 	
-	OOMarketBid			activeBid;
-	housing.House		home;
-	MortgageAgreement 	mortgage;
-	
+	OccupierMarketBid			activeBid = null;
+	MarketOffer			activeOffer = null;
+	housing.House		home = null;
+	MortgageAgreement 	mortgage = null;
 }

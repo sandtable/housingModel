@@ -2,27 +2,37 @@ package testing;
 
 import java.util.ArrayList;
 
-public class EconAgent extends ArrayList<Message.IReceiver> {	
+public class EconAgent {	
 
 	public EconAgent() {
 		
 	}
 	
-	public EconAgent(Message.IReceiver... modules) {
+	public EconAgent(IAgentTrait... iTraits) {
 		int i;
-		for(i=0; i<modules.length; ++i) {
-			add(modules[i]);
+		traits = new ArrayList<IAgentTrait>(iTraits.length);
+		for(i=0; i<iTraits.length; ++i) {
+			addTrait(iTraits[i]);
 		}
+	}
+
+	public void addTrait(IAgentTrait trait) {
+		traits.add(trait);		
+	}
+	public void removeTrait(IAgentTrait trait) {
+		traits.remove(trait);		
 	}
 	
-	public boolean receive(Message message) {
-		for(Message.IReceiver module : this) {
-			if(module.receive(message)) {
-				return(true);
-			}
-		}
-		return(false);
-	}
+	ArrayList<IAgentTrait> traits;
+	
+//	public boolean receive(Message message) {
+//		for(Message.IReceiver module : this) {
+//			if(module.receive(message)) {
+//				return(true);
+//			}
+//		}
+//		return(false);
+//	}
 
 //	public boolean terminate(Contract contract) {
 //		for(Contract.Set module : this) {
@@ -121,5 +131,4 @@ public class EconAgent extends ArrayList<Message.IReceiver> {
 		Contract.Set currentModule;
 	}
 	***/
-	private static final long serialVersionUID = 3312378780978236238L;
 }
