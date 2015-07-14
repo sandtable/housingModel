@@ -20,7 +20,7 @@ public class InterestPaymentAgreement extends PaymentAgreement implements ITrigg
 		annualInterestRate = iAnnualInterest;
 		unpaidInterest = 0.0;
 		balance = iBalance;
-		unpaidInterestTimestamp = Model.modelTime();
+		unpaidInterestTimestamp = Model.timeNow();
 	}
 	
 	@Override
@@ -35,7 +35,7 @@ public class InterestPaymentAgreement extends PaymentAgreement implements ITrigg
 	}
 	
 	public void updateUnpaidInterest() {
-		ModelTime newTimestamp = Model.modelTime();
+		ModelTime newTimestamp = Model.timeNow();
 		unpaidInterest += balance.getAsLong()*annualInterestRate*(newTimestamp.inYears() - unpaidInterestTimestamp.inYears());
 		unpaidInterestTimestamp = newTimestamp;
 	}

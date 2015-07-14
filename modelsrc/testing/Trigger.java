@@ -20,7 +20,7 @@ public abstract class Trigger implements ITrigger {
 		@SuppressWarnings("serial")
 		@Override
 		public void schedule(final ITriggerable listener) {
-			stopper = housing.Model.globalSchedule.scheduleRepeating(housing.Model.modelTime().raw(),
+			stopper = housing.Model.globalSchedule.scheduleRepeating(housing.Model.timeNow().raw(),
 					new Steppable() {
 						@Override
 						public void step(SimState arg0) {

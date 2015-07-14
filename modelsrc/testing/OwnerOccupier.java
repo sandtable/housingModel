@@ -1,10 +1,13 @@
 package testing;
 
-public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, MarketOffer.IIssuer {
+public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, MarketOffer.IIssuer, Message.IReceiver {
 
 	@Override
 	public boolean receive(Message message) {
-		// what messages could we receive?
+		if(message instanceof IntrospectMessage) {
+			introspect();
+			return(true);
+		}
 		return false;
 	}
 	

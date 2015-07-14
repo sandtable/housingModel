@@ -17,7 +17,7 @@ public class MarketOffer extends Contract {
 		setPrice(p);
 		initialListedPrice = currentPrice;
 	//	quality = house.quality;
-		tInitialListing = Model.modelTime();
+		tInitialListing = Model.timeNow();
 	}
 	
 	/***********************************************

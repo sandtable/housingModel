@@ -12,18 +12,7 @@ public class BuyToLetInvestor implements IAgentTrait, MarketBid.IIssuer, MarketO
 		activeBid = null;
 		activeOffer = null;
 	}
-	
-	@Override
-	public boolean receive(Message message) {
-		// TODO Auto-generated method stub
-		return false;
-	}
 
-	@Override
-	public void introspect() {
-		// TODO Auto-generated method stub
-		
-	}
 	@Override
 	public boolean terminate(Contract contract) {
 		// TODO Auto-generated method stub

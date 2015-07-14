@@ -5,25 +5,54 @@ import java.util.ArrayList;
 public class EconAgent {	
 
 	public EconAgent() {
-		
+		traits =  new ArrayList<>();
+		messageReceivers = new ArrayList<>();
 	}
 	
 	public EconAgent(IAgentTrait... iTraits) {
 		int i;
-		traits = new ArrayList<IAgentTrait>(iTraits.length);
+		traits = new ArrayList<>(iTraits.length);
+		messageReceivers = new ArrayList<>(iTraits.length);
 		for(i=0; i<iTraits.length; ++i) {
 			addTrait(iTraits[i]);
 		}
 	}
 
 	public void addTrait(IAgentTrait trait) {
-		traits.add(trait);		
+		traits.add(trait);
+		if(trait instanceof Message.IReceiver) {
+			messageReceivers.add((Message.IReceiver)trait);
+		}
 	}
+	
 	public void removeTrait(IAgentTrait trait) {
-		traits.remove(trait);		
+		traits.remove(trait);
+		if(trait instanceof Message.IReceiver) {
+			messageReceivers.remove(trait);
+		}
+	}
+	
+	public <T> T getTrait(Class<T> type) {
+		for(IAgentTrait trait : traits) {
+			if(type.isInstance(trait)) {
+				return(type.cast(trait));
+			}
+		}
+		return(null);
+	}
+	
+	public boolean receive(Message message) {
+		for(Message.IReceiver receiver : messageReceivers) {
+			if(receiver.receive(message)) {
+				return(true);
+			}
+		}
+		return(false);
 	}
 	
 	ArrayList<IAgentTrait> traits;
+	ArrayList<Message.IReceiver> messageReceivers;
+	
 	
 //	public boolean receive(Message message) {
 //		for(Message.IReceiver module : this) {

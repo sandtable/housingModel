@@ -33,8 +33,8 @@ public class Model extends SimState implements Steppable {
 		rentalMarket = new HouseRentalMarket();
 		collectors = new Collectors();
 		recorder = new Recorder();
-		rand = new MersenneTwisterFast(seed);
 		globalSchedule = schedule;
+		rand = new MersenneTwisterFast(seed);
 	}
 
 	public void init() {
@@ -114,7 +114,7 @@ public class Model extends SimState implements Steppable {
 		super.finish();
 	}
 	
-	public static ModelTime modelTime() {
+	public static ModelTime timeNow() {
 		return(new ModelTime(globalSchedule.getTime()));
 	}
 
@@ -135,7 +135,8 @@ public class Model extends SimState implements Steppable {
 	public static HouseRentalMarket	rentalMarket;
 	public static ArrayList<Household>	households;
 	public static Demographics		demographics;
-	public static MersenneTwisterFast			rand;
+	public static MersenneTwisterFast			rand = new MersenneTwisterFast(0);
+;
 	
 	public static Collectors		collectors;// = new Collectors();
 	public static Recorder			recorder; // records info to file

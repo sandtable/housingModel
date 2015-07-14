@@ -1,5 +1,5 @@
 package testing;
 
-public interface IAgentTrait extends Message.IReceiver {
-	public void introspect();
+public interface IAgentTrait {
+	// public void introspect(); do this via message
 }

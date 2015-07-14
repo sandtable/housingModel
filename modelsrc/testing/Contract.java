@@ -48,6 +48,7 @@ public class Contract extends Message {
 			super(contractClazz);
 		}
 		public boolean issue(CONTRACT newContract, Owner<CONTRACT> owner) {
+			if(owner == null) return(false);
 			add(newContract);
 			boolean accepted = owner.receive(newContract);
 			if(accepted) return(true);
@@ -64,12 +65,12 @@ public class Contract extends Message {
 	 * Agent module for deposit account holder
 	 * @author daniel
 	 */
-	static public class Owner<CONTRACT extends Contract> extends HashSet<CONTRACT> implements IOwner {
+	static public class Owner<CONTRACT extends Contract> extends HashSet<CONTRACT> implements Message.IReceiver, IAgentTrait {
 		public Owner(Class<CONTRACT> contractClazz) {
 			super(contractClazz);
 		}
 		
-		public boolean receive(Contract newContract) {
+		public boolean receive(Message newContract) {
 			if(newContract.getClass() == contractClazz) {
 				add((CONTRACT)newContract);
 				return(true);				
@@ -84,12 +85,8 @@ public class Contract extends Message {
 		}
 	}
 	
-	static public interface IIssuer {
+	static public interface IIssuer extends IAgentTrait {
 		boolean terminate(Contract contract);
-	}
-
-	static public interface IOwner {
-		boolean receive(Contract newContract);
 	}
 	
 	IIssuer	 		issuer; // should be EconAgent?

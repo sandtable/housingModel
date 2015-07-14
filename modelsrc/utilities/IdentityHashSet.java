@@ -9,10 +9,11 @@ import testing.Contract;
 public class IdentityHashSet<E> {
 	public IdentityHashSet() {
 		data = new IdentityHashMap<>();
+		dummy = new Boolean(false);
 	}
 	
-	public boolean add(E element) {
-		return(data.put(element, dummy));
+	public void add(E element) {
+		data.put(element, dummy);
 	}
 	
 	public boolean remove(Object element) {
@@ -26,8 +27,13 @@ public class IdentityHashSet<E> {
 	public Iterator<E> iterator() {
 		return(data.keySet().iterator());
 	}
+
+	public E first() {
+		return(data.keySet().iterator().next());
+	}
+	
 	
 	//HashSet<E>				test;
-	IdentityHashMap<E,Boolean>	data;
-	Boolean						dummy=new Boolean(false);
+	public IdentityHashMap<E,Boolean>	data;
+	public Boolean						dummy;//=new Boolean(false);
 }

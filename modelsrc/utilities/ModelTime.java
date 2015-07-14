@@ -28,6 +28,14 @@ public class ModelTime {
 	public ModelTime(double t, Units units) {
 		time = t*units.multiplier;
 	}
+	
+	public ModelTime minus(ModelTime other) {
+		return(new ModelTime(raw() - other.raw()));
+	}
+
+	public ModelTime plus(ModelTime other) {
+		return(new ModelTime(raw() + other.raw()));
+	}
 
 	public double inDays() {return(time/Units.DAYS.multiplier);}
 	public double inWeeks() {return(time/Units.WEEKS.multiplier);}

@@ -2,15 +2,17 @@ package testing;
 
 import housing.House;
 
-public class Renter implements MarketBid.IIssuer, IAgentTrait {
+public class Renter implements MarketBid.IIssuer, IAgentTrait, Message.IReceiver {
 	
 	@Override
 	public boolean receive(Message message) {
-		// TODO Auto-generated method stub
+		if(message instanceof IntrospectMessage) {
+			introspect();
+			return(true);
+		}
 		return false;
 	}
 
-	@Override
 	public void introspect() {
 		// TODO Auto-generated method stub
 		
