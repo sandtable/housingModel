@@ -10,26 +10,17 @@ public class Model extends SimState implements ITriggerable {
 	public Model(long seed) {
 		super(seed);
 		root = this;
-		init();
-	}
-	
-	public void init() {
 		bank = new Bank();
 		firm = new Firm(bank);
 		households = new ArrayList<>(2);
-    	households.add(new Household(bank, firm.getPayrollAC()));
-    	households.add(new Household(bank, firm.getPayrollAC()));
+    	households.add(new Household(bank, firm.getSalesAC()));
+    	households.add(new Household(bank, firm.getSalesAC()));
+    	firm.employ(households.get(0));
+    	firm.employ(households.get(1));
 	}
 
 	public void start() {
-    	Household household1 = households.get(0);
-    	Household household2 = households.get(1);
-
     	test();
-    	
-    	firm.employ(household1);
-    	firm.employ(household2);
-
     	Trigger.monthly().schedule(this);
 	}
 	

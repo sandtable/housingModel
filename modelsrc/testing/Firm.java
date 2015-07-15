@@ -12,6 +12,10 @@ public class Firm extends EconAgent {
 	public DepositAccount getPayrollAC() {
 		return(depositAccounts.first());
 	}
+
+	public DepositAccount getSalesAC() {
+		return(depositAccounts.first());
+	}
 	
 	public boolean employ(EconAgent newEmployee) {
 		return(employerTrait.issue(newEmployee.getTrait(Employee.class)));
