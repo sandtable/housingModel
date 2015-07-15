@@ -1,15 +1,20 @@
 package testing;
 
 public class Household extends EconAgent {
-	public Household() {
-			super(new DepositAccount.Owner()
-				  );
+	public Household(Bank bank, DepositAccount consumptionAC) {
+			DepositAccount.Owner depositAccounts = new DepositAccount.Owner();
+			addTrait(depositAccounts);
+			bank.openAccount(depositAccounts);
 			Lifecycle life = new Lifecycle();
+			Employee employee = new Employee(life, bankAccount());
+			Consumer consumer = new Consumer(bankAccount(), consumptionAC, employee);
 			addTrait(life);
-			addTrait(new Employee(life, this));
+			addTrait(employee);
+			addTrait(consumer);
 //			new Renter(),
 //			new OwnerOccupier(),
 //			new BuyToLetInvestor()
+			
 	}
 	
 	DepositAccount bankAccount() {

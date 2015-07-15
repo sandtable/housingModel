@@ -3,10 +3,10 @@ package testing;
 import utilities.ModelTime;
 
 public class Employee extends Contract.Owner<LabourContract> implements LabourContract.IOwner {
-	public Employee(Lifecycle iLifecycle, Household iHousehold) {
+	public Employee(Lifecycle iLifecycle, DepositAccount iBankAccount) {
 		super(LabourContract.class);
 		lifecycle = iLifecycle;
-		household = iHousehold;
+		bankAccount = iBankAccount;
 	}
 
 	@Override
@@ -16,8 +16,17 @@ public class Employee extends Contract.Owner<LabourContract> implements LabourCo
 
 	@Override
 	public DepositAccount account() {
-		return(household.bankAccount());
+		return(bankAccount);
 	}
+	
+	public long monthlyIncome() {
+		long income = 0;
+		for(LabourContract incomeStream : this) {
+			income += incomeStream.payment.amount();
+		}
+		return(income);
+	}
+	
 	Lifecycle lifecycle;
-	Household household;
+	DepositAccount bankAccount;
 }

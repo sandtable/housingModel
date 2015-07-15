@@ -3,8 +3,9 @@ package testing;
 import utilities.ModelTime;
 
 public class Employer extends Contract.Issuer<LabourContract> implements LabourContract.IIssuer {
-	public Employer(Firm parent) {
+	public Employer(Firm iParent) {
 		super(LabourContract.class);
+		parent = iParent;
 	}
 
 	public boolean issue(Employee newEmployee) {

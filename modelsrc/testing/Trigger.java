@@ -20,7 +20,7 @@ public abstract class Trigger implements ITrigger {
 		@SuppressWarnings("serial")
 		@Override
 		public void schedule(final ITriggerable listener) {
-			stopper = housing.Model.globalSchedule.scheduleRepeating(housing.Model.timeNow().raw(),
+			stopper = Model.root.schedule.scheduleRepeating(Model.root.timeNow().raw(),
 					new Steppable() {
 						@Override
 						public void step(SimState arg0) {
@@ -87,12 +87,12 @@ public abstract class Trigger implements ITrigger {
 	}
 	
 	static public Trigger timeIs(ModelTime time) {
-		final ModelTime t = new ModelTime(time.raw());
+		final ModelTime t = new ModelTime(time);
 		return(new Trigger() {
 			@SuppressWarnings("serial")
 			@Override
 			public void schedule(final ITriggerable listener) {
-				housing.Model.globalSchedule.scheduleOnce(t.raw(), new Steppable() {
+				Model.root.schedule.scheduleOnce(t.raw(), new Steppable() {
 					@Override
 					public void step(SimState arg0) {
 						listener.trigger();
@@ -103,12 +103,12 @@ public abstract class Trigger implements ITrigger {
 	}
 
 	static public Trigger after(ModelTime time) {
-		final ModelTime t = new ModelTime(Math.nextUp(time.raw()));
+		final ModelTime t = new ModelTime(Math.nextUp(time.raw()),ModelTime.Units.RAW);
 		return(new Trigger() {
 			@SuppressWarnings("serial")
 			@Override
 			public void schedule(final ITriggerable listener) {
-				housing.Model.globalSchedule.scheduleOnceIn(t.raw(), new Steppable() {
+				Model.root.schedule.scheduleOnceIn(t.raw(), new Steppable() {
 					@Override
 					public void step(SimState arg0) {
 						listener.trigger();

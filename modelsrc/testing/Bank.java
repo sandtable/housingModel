@@ -11,11 +11,9 @@ public class Bank extends EconAgent {
 		
 		//mortgages = new Contract.Owner<>(MortgageAgreement.class);
 	}
-	
-	public void issueDepositAccounts(Iterable<Household> households) {
-		for(Household household : households) {
-			depositAccounts.issue(household.getTrait(DepositAccount.Owner.class));
-		}
+		
+	public boolean openAccount(DepositAccount.Owner accountHolder) {
+		return(depositAccounts.issue(accountHolder));
 	}
 	
 	DepositAccount.Issuer		depositAccounts;

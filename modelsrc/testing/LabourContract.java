@@ -1,12 +1,11 @@
 package testing;
 
-import housing.Model;
 import utilities.ModelTime;
 
 public class LabourContract extends Contract {
 	public LabourContract(final IIssuer issuer, final IOwner payee) {
 		super(issuer);
-		percentile = Model.rand.nextDouble();
+		percentile = Model.root.random.nextDouble();
 		payment = new PaymentAgreement(issuer.account(), payee.account()) {
 			public long amount() {
 				return(issuer.monthlyWage(payee.age(), percentile));

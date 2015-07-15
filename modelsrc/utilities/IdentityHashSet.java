@@ -1,12 +1,9 @@
 package utilities;
 
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 
-import testing.Contract;
-
-public class IdentityHashSet<E> {
+public class IdentityHashSet<E> implements Iterable<E> {
 	public IdentityHashSet() {
 		data = new IdentityHashMap<>();
 		dummy = new Boolean(false);

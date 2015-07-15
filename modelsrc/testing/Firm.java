@@ -1,11 +1,12 @@
 package testing;
 
 public class Firm extends EconAgent {
-	public Firm() {
+	public Firm(Bank bank) {
 		depositAccounts = new DepositAccount.Owner();
 		employerTrait = new Employer(this);
 		addTrait(depositAccounts);
 		addTrait(employerTrait);
+		bank.openAccount(depositAccounts);
 	}
 	
 	public DepositAccount getPayrollAC() {

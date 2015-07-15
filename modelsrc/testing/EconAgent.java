@@ -2,12 +2,13 @@ package testing;
 
 import java.util.ArrayList;
 
+import utilities.ModelTime;
+
 public class EconAgent {	
 
-	public EconAgent() {
-		traits =  new ArrayList<>();
-		messageReceivers = new ArrayList<>();
-	}
+//	public EconAgent() {
+//		this([]);
+//	}
 	
 	public EconAgent(IAgentTrait... iTraits) {
 		int i;
@@ -16,6 +17,13 @@ public class EconAgent {
 		for(i=0; i<iTraits.length; ++i) {
 			addTrait(iTraits[i]);
 		}
+		final EconAgent me = this;
+		Trigger.repeatingEvery(ModelTime.month()).schedule(new ITriggerable() {
+			@Override
+			public void trigger() {
+				me.receive(IntrospectMessage.instance);
+			}
+		});
 	}
 
 	public void addTrait(IAgentTrait trait) {
@@ -42,12 +50,26 @@ public class EconAgent {
 	}
 	
 	public boolean receive(Message message) {
+		if(message instanceof IntrospectMessage) {
+			introspect();
+			return(true);
+		}
 		for(Message.IReceiver receiver : messageReceivers) {
 			if(receiver.receive(message)) {
 				return(true);
 			}
 		}
 		return(false);
+	}
+	
+	void introspect() {
+		for(Message.IReceiver receiver : messageReceivers) {
+			receiver.receive(IntrospectMessage.instance);
+		}		
+	}
+	
+	public Model root() {
+		return(Model.root);
 	}
 	
 	ArrayList<IAgentTrait> traits;

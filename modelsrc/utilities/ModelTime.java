@@ -1,7 +1,10 @@
 package utilities;
 
+import testing.Model;
+
 public class ModelTime {
 	public enum Units {
+		RAW(1.0),
 		DAY(1.0),
 		DAYS(1.0),
 		WEEK(7.0),
@@ -16,11 +19,11 @@ public class ModelTime {
 		}
 		double multiplier;
 	}
-	
-	public ModelTime(double t) {
+
+	ModelTime(double t) {
 		time = t;
 	}
-
+	
 	public ModelTime(ModelTime mt) {
 		time = mt.raw();
 	}
@@ -66,6 +69,11 @@ public class ModelTime {
 	}
 	static public ModelTime day() {
 		return(ModelTime.days(1.0));
+	}
+	static public ModelTime now() {
+		ModelTime timenow = new ModelTime(Model.root.schedule.getTime());
+		if(timenow.time < 0.0) timenow.time = 0.0;
+		return(timenow);
 	}
 	
 	double time;

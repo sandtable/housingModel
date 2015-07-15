@@ -115,7 +115,9 @@ public class Model extends SimState implements Steppable {
 	}
 	
 	public static ModelTime timeNow() {
-		return(new ModelTime(globalSchedule.getTime()));
+		double scheduleTime = globalSchedule.getTime();
+		if(scheduleTime < 0.0) scheduleTime = 0.0;
+		return(new ModelTime(scheduleTime,ModelTime.Units.RAW));
 	}
 
 	////////////////////////////////////////////////////////////////////////

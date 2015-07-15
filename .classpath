@@ -9,7 +9,7 @@
 	<classpathentry kind="lib" path="lib/jcommon-1.0.21.jar"/>
 	<classpathentry kind="lib" path="lib/jfreechart-1.0.17.jar"/>
 	<classpathentry kind="lib" path="lib/jmf.jar"/>
-	<classpathentry kind="lib" path="lib/mason.18.jar"/>
 	<classpathentry kind="lib" path="lib/portfolio.jar"/>
+	<classpathentry kind="lib" path="lib/mason.19.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
