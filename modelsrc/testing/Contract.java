@@ -21,9 +21,12 @@ public class Contract extends Message {
 		issuer = terminationHandler;
 	}
 	
-	public void terminate() {
-		if(issuer != null) issuer.terminate(this);
-		issuer = null;
+	public boolean terminate() {
+		if(issuer != null && issuer.terminate(this)) {
+			issuer = null;
+			return(true);
+		}
+		return(false);
 	}
 
 //	public interface Set {
@@ -80,8 +83,15 @@ public class Contract extends Message {
 		
 		public boolean discard(Contract contract) {
 			remove(contract);
-			contract.terminate();
-			return(true);
+			return(contract.terminate());
+		}
+		
+		public boolean discardAll() {
+			boolean result = true;
+			for(Contract c : this) {
+				result = result && discard(c);
+			}
+			return(result);
 		}
 	}
 	

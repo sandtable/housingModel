@@ -39,6 +39,10 @@ public class ModelTime {
 	public ModelTime plus(ModelTime other) {
 		return(new ModelTime(raw() + other.raw()));
 	}
+	
+	public boolean isBefore(ModelTime other) {
+		return(time < other.time);
+	}
 
 	public double inDays() {return(time/Units.DAYS.multiplier);}
 	public double inWeeks() {return(time/Units.WEEKS.multiplier);}
