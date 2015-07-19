@@ -23,6 +23,15 @@ public class InvestmentAccount extends DepositAccount implements ITriggerable {
 		}
 	}
 	
-	Trigger.RepeatingTrigger interestPaymentTrigger;
+	@Override
+	public boolean terminate() {
+		if(super.terminate()) {
+			interestPaymentTrigger.stop();
+			return(true);
+		}
+		return(false);
+	}
+	
+	Trigger.Repeating interestPaymentTrigger;
 	InterestPaymentAgreement interestPayment;
 }

@@ -11,7 +11,17 @@ public class LabourContract extends Contract {
 				return(issuer.monthlyWage(payee.age(), percentile));
 			}
 		};
-		Trigger.monthly().schedule(payment);
+		trigger = Trigger.monthly();
+		trigger.schedule(payment);
+	}
+	
+	@Override
+	public boolean terminate() {
+		if(super.terminate()) {
+			trigger.stop();
+			return(true);
+		}
+		return(false);
 	}
 	
 	
@@ -28,4 +38,5 @@ public class LabourContract extends Contract {
 	PaymentAgreement	payment;
 	double				percentile; // wage percentile: proxy for skill of worker?
 	IOwner				payee;
+	Trigger.Repeating	trigger;
 }

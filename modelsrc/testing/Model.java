@@ -12,11 +12,12 @@ public class Model extends SimState implements ITriggerable {
 		root = this;
 		bank = new Bank();
 		firm = new Firm(bank);
-		households = new ArrayList<>(2);
-    	households.add(new Household(bank, firm.getSalesAC()));
-    	households.add(new Household(bank, firm.getSalesAC()));
-    	firm.employ(households.get(0));
-    	firm.employ(households.get(1));
+		households = new SetOfHouseholds();
+    	households.add(newHousehold());
+    	households.add(newHousehold());
+    	for(Household h : households) {
+    		firm.employ(h);
+    	}
 	}
 
 	public void start() {
@@ -25,8 +26,8 @@ public class Model extends SimState implements ITriggerable {
 	}
 	
 	public void test() {
-    	Household household1 = households.get(0);
-    	Household household2 = households.get(1);
+    	Household household1 = households.first();
+    	Household household2 = households.last();
 
     	bank.endowmentAccount.transfer(household1.bankAccount(), 100);
     	bank.endowmentAccount.transfer(household2.bankAccount(), 55);
@@ -40,8 +41,8 @@ public class Model extends SimState implements ITriggerable {
 	@Override
 	public void trigger() {
 		System.out.println("Time = "+timeNow().raw());
-    	System.out.println("Household 1 = "+households.get(0).bankAccount().balance);
-    	System.out.println("Household 2 = "+households.get(1).bankAccount().balance);
+    	System.out.println("Household 1 = "+households.first().bankAccount().balance);
+    	System.out.println("Household 2 = "+households.last().bankAccount().balance);
 	}
 
 	
@@ -51,9 +52,13 @@ public class Model extends SimState implements ITriggerable {
 		return(new ModelTime(scheduleTime,ModelTime.Units.RAW));
 	}
 	
+	public Household newHousehold() {
+		return(new Household(bank, firm.getSalesAC()));
+	}
+	
 	Bank					bank;
 	Firm					firm;
-	ArrayList<Household> 	households;
+	SetOfHouseholds		 	households;
 
 
 	static public Model root;

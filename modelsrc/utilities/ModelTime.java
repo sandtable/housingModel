@@ -44,6 +44,11 @@ public class ModelTime {
 		return(time < other.time);
 	}
 
+	public ModelTime incrementBy(ModelTime i) {
+		time += i.time;
+		return(this);
+	}
+	
 	public double inDays() {return(time/Units.DAYS.multiplier);}
 	public double inWeeks() {return(time/Units.WEEKS.multiplier);}
 	public double inMonths() {return(time/Units.MONTHS.multiplier);}

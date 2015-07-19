@@ -1,7 +1,8 @@
 package testing;
 
-import java.util.Iterator;
-// import java.util.function.DoubleUnaryOperator; // not compatible with Java 1.7
+
+import java.util.Comparator;
+import java.util.TreeSet;
 
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
@@ -10,60 +11,69 @@ import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
+//import testing.Demographics.Birth;
 import utilities.DoubleUnaryOperator;
 import utilities.ModelTime;
 import utilities.Pdf;
 
-public class Demographics {
-		
-	static class Birth implements ITriggerable {
-		public void trigger() {
-			Model.root.households.add(new Household(Model.root.bank, Model.root.firm.getSalesAC()));
-		}
-	}
+public class SetOfHouseholds extends TreeSet<Household> implements ITriggerable {
 	
-	static class Death implements ITriggerable {
-		public Death(Household h) {
-			terminalHousehold = h;
-		}
-		public void trigger() {
-			// put this in last will and testement? WillExecutor?
-			terminalHousehold.transferAllWealthTo(Model.root.households.get(Model.root.random.nextInt(Model.root.households.size())));
-			terminalHousehold.asDepositAccountOwner.discardAll();
-			terminalHousehold.asEmployee.discardAll();
-			Model.root.households.remove(terminalHousehold);
-		}
-		Household terminalHousehold;
+	public SetOfHouseholds() {
+		super(new Comparator<Household>() {
+			public int compare(Household h0, Household h1) {
+				return((int)Math.signum(h0.asLifecycle.birthday.raw() - h1.asLifecycle.birthday.raw()));
+			}
+		});
+		nextBirthEvent().schedule(this);
 	}
 	
 	/***
-	 * Add new birth and death events for the next 12 month period
+	 * Triggered at each household birth event
 	 */
-	public void addEvents() {
-		Model model = Model.root;
-		// --- birth
-		int nBirths;
+	public void trigger() {
+		add(Model.root.newHousehold());
+		nextBirthEvent().schedule(this);
+	}
+	
+	public Trigger nextBirthEvent() {
+		Model model = Model.root;		
+		double birthsPerYear;
+		
 		if(model.timeNow().isBefore(ModelTime.years(SPINUP_YEARS))) {
 			// --- still in spinup phase of simulation
-			nBirths = (int)(spinupBirthRatePerHousehold.getEntry((int)(model.timeNow().inYears()))*TARGET_POPULATION/12.0 + 0.5);
+			birthsPerYear = spinupBirthRatePerHousehold.getEntry((int)(model.timeNow().inYears()))*TARGET_POPULATION;
 		} else {
 			// --- in projection phase of simulation
-			nBirths = (int)(futureBirthRate(model.timeNow().inYears()) + 0.5);
+			birthsPerYear = futureBirthRate(model.timeNow().inMonths());
 		}
-		while(--nBirths >= 0) {
-			Trigger.timeIs(model.timeNow().plus(ModelTime.years(model.random.nextDouble()))).schedule(new Birth());
+		double delay = -Math.log(1.0 - model.random.nextDouble())/birthsPerYear; // inverse CDF of exponential distribution
+		return(Trigger.timeIs(model.timeNow().plus(ModelTime.years(delay))));
+	}
+
+	
+	@Override
+	public boolean add(final Household h) {
+		if(super.add(h)) {
+			// schedule death
+			final SetOfHouseholds set = this;
+			Trigger.timeIs(h.asLifecycle.deathday).schedule(new ITriggerable() {
+				public void trigger() {
+					set.kill(h);
+				}
+			});
 		}
-		
-		// --- death
-//		Iterator<Household> iterator = Model.households.iterator();
-//		while(iterator.hasNext()) {
-//		    Household h = iterator.next();
-//			if(Model.rand.nextDouble() < probDeathGivenAge(h.lifecycle.age)/12.0) {
-				// --- inheritance
-//				iterator.remove();
-//				h.transferAllWealthTo(Model.households.get(Model.rand.nextInt(Model.households.size())));
-//			}
-//		}
+		return(false);
+	}
+	
+	public boolean kill(Household h) {
+		if(h == null) return(false);
+		remove(h);
+		h.asLifecycle.birthday.incrementBy(ModelTime.years(25)); // rough way of finding younger beneficiary
+		Household beneficiary = this.floor(h);
+		h.transferAllWealthTo(beneficiary);	
+		h.asDepositAccountOwner.discardAll();
+		h.asEmployee.discardAll();
+		return(true);
 	}
 	
 	/***
@@ -75,12 +85,12 @@ public class Demographics {
 		RealVector birthDist 		 = new ArrayRealVector(SPINUP_YEARS);
 		RealMatrix M			 	 = new Array2DRowRealMatrix(SPINUP_YEARS, SPINUP_YEARS);
 		RealMatrix timeStep 		 = new Array2DRowRealMatrix(SPINUP_YEARS, SPINUP_YEARS);
-		double baseAge	= Lifecycle.pdfAgeOfNewHousehold.start;
+		double baseAge	= Lifecycle.pdfHouseholdAgeAtBirth.start;
 		int i,j;
 		
 		// --- setup vectors
 		for(i=0; i<SPINUP_YEARS; ++i) {
-			birthDist.setEntry(i, Lifecycle.pdfAgeOfNewHousehold.p(baseAge+i));
+			birthDist.setEntry(i, Lifecycle.pdfHouseholdAgeAtBirth.p(baseAge+i));
 			targetDemographic.setEntry(i,pdfAge.p(baseAge+i));
 		}
 		
@@ -88,7 +98,7 @@ public class Demographics {
 		for(i=0; i<SPINUP_YEARS; ++i) {
 			for(j=0; j<SPINUP_YEARS; ++j) {
 				if(i == j+1) {
-					timeStep.setEntry(i,j,1.0-probDeathGivenAge(j + baseAge));
+					timeStep.setEntry(i,j,1.0-Lifecycle.probDeathGivenAge(j + baseAge));
 				} else {
 					timeStep.setEntry(i,j,0.0);					
 				}
@@ -104,7 +114,7 @@ public class Demographics {
 		DecompositionSolver solver = new LUDecomposition(M).getSolver();
 		return(solver.solve(targetDemographic));
 	}
-	
+
 	/****
 	 * Birth rates into the future
 	 * @param t	time (months) into the future
@@ -113,15 +123,6 @@ public class Demographics {
 	public static double futureBirthRate(double t) {
 		return(TARGET_POPULATION * 0.012);
 	}
-	
-	/***
-	 * Probability that a household 'dies' per year given age of the representative householder
-	 * Death of a household may occur by marriage, death of single occupant, moving together
-	 */
-	public static double probDeathGivenAge(double age) {
-		return(futureBirthRate(0)*1.0/TARGET_POPULATION);
-	}
-	
 	
 	/**
 	 * Target probability density of age of representative householder
@@ -138,8 +139,10 @@ public class Demographics {
 			return(0.0);	
 		}
 	});
+
 	
 	public static final int TARGET_POPULATION = 5000;  	// target number of households
 	public static final int SPINUP_YEARS = 80;			// number of years to spinup
 	public static RealVector spinupBirthRatePerHousehold = spinupBirthRate(); // birth rate per year by year per household-at-year-0
+	private static final long serialVersionUID = 2235358345257196878L;
 }

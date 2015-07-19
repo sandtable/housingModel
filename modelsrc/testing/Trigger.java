@@ -12,8 +12,8 @@ import utilities.ModelTime;
  */
 public abstract class Trigger implements ITrigger {
 			
-	static public class RepeatingTrigger extends Trigger {
-		public RepeatingTrigger(ModelTime t) {
+	static public class Repeating extends Trigger {
+		public Repeating(ModelTime t) {
 			period = new ModelTime(t);
 		}
 		
@@ -56,7 +56,7 @@ public abstract class Trigger implements ITrigger {
 	}
 	
 	static public class Until extends Trigger implements ITriggerable {
-		public Until(RepeatingTrigger iBaseTrigger, ITrigger iEndTrigger) {
+		public Until(Repeating iBaseTrigger, ITrigger iEndTrigger) {
 			baseTrigger = iBaseTrigger;
 			endTrigger = iEndTrigger;
 		}
@@ -78,12 +78,12 @@ public abstract class Trigger implements ITrigger {
 		}
 		
 		ITriggerable 			listener;
-		RepeatingTrigger		baseTrigger;
+		Repeating		baseTrigger;
 		ITrigger				endTrigger;
 	}
 	
-	static public RepeatingTrigger repeatingEvery(ModelTime time) {
-		return(new RepeatingTrigger(time));
+	static public Repeating repeatingEvery(ModelTime time) {
+		return(new Repeating(time));
 	}
 	
 	static public Trigger timeIs(ModelTime time) {
@@ -118,10 +118,10 @@ public abstract class Trigger implements ITrigger {
 		});
 	}
 
-	static public RepeatingTrigger yearly() {return(repeatingEvery(ModelTime.year()));}
-	static public RepeatingTrigger monthly() {return(repeatingEvery(ModelTime.month()));}
-	static public RepeatingTrigger weekly() {return(repeatingEvery(ModelTime.week()));}
-	static public RepeatingTrigger daily() {return(repeatingEvery(ModelTime.day()));}
+	static public Repeating yearly() {return(repeatingEvery(ModelTime.year()));}
+	static public Repeating monthly() {return(repeatingEvery(ModelTime.month()));}
+	static public Repeating weekly() {return(repeatingEvery(ModelTime.week()));}
+	static public Repeating daily() {return(repeatingEvery(ModelTime.day()));}
 
 	
 	static public ITrigger onDemand() {
