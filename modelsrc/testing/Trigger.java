@@ -3,6 +3,7 @@ package testing;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.engine.Stoppable;
+import testing.IMessage.IReceiver;
 import utilities.ModelTime;
 
 /***
@@ -10,28 +11,85 @@ import utilities.ModelTime;
  * @author daniel
  *
  */
-public abstract class Trigger implements ITrigger {
-			
-	static public class Repeating extends Trigger {
+public class Trigger {
+	
+	@SuppressWarnings("serial")
+	static abstract public class StoppableSteppableTrigger implements Stoppable, Steppable, ITrigger {
+		public StoppableSteppableTrigger() {
+			active = false;
+			listener = null;
+		}
+		
+		@Override
+		public void step(SimState arg0) {
+			if(active) listener.trigger();
+		}
+		
+		@Override
+		public void stop() {
+			active = false;
+		}
+
+		@Override
+		public void schedule(ITriggerable iListener) {
+			active = true;
+			listener = iListener;
+			sendToSchedule();
+		}
+		
+		@Override
+		public void schedule(final IMessage message, final IMessage.IReceiver handler) {
+			schedule(new ITriggerable() {
+				public void trigger() {
+					handler.receive(message);
+				}
+			});
+		}
+
+		abstract public void sendToSchedule(); // actually put this object on the schedule
+		
+		boolean 		active;
+		ITriggerable 	listener;
+	}
+	
+	@SuppressWarnings("serial")
+	static public class Once extends StoppableSteppableTrigger {
+		public Once(ModelTime triggerTime) {
+			time = triggerTime.raw();
+		}
+		@Override
+		public void sendToSchedule() {
+			Model.root.schedule.scheduleOnce(time, this);
+		}
+		double time;
+	}
+
+	@SuppressWarnings("serial")
+	static public class OnceAfter extends StoppableSteppableTrigger {
+		public OnceAfter(ModelTime triggerDelay) {
+			delay = Math.nextUp(triggerDelay.raw());
+		}
+		@Override
+		public void sendToSchedule() {
+			Model.root.schedule.scheduleOnceIn(delay, this);
+		}
+		double delay;
+	}
+
+	@SuppressWarnings("serial")
+	static public class Repeating extends StoppableSteppableTrigger {
 		public Repeating(ModelTime t) {
 			period = new ModelTime(t);
 		}
 		
-		@SuppressWarnings("serial")
-		@Override
-		public void schedule(final ITriggerable listener) {
-			stopper = Model.root.schedule.scheduleRepeating(Model.root.timeNow().raw(),
-					new Steppable() {
-						@Override
-						public void step(SimState arg0) {
-							listener.trigger();
-						}					
-					},
-					period.raw());
+		public void sendToSchedule() {
+			stopper = Model.root.schedule.scheduleRepeating(ModelTime.now().raw(),this,period.raw());
 		}
 		
+		@Override
 		public void stop() {
-			stopper.stop();
+			super.stop();
+			if(stopper != null) stopper.stop();
 		}
 
 		/**
@@ -39,7 +97,7 @@ public abstract class Trigger implements ITrigger {
 		 * @return A trigger that triggers when this triggers and 'end' hasn't triggered
 		 * since scheduling
 		 */
-		public Trigger until(ITrigger end) {
+		public ITrigger until(ITrigger end) {
 			return(new Until(this, end));
 		}
 		/**
@@ -47,7 +105,7 @@ public abstract class Trigger implements ITrigger {
 		 * @return A trigger that triggers when this triggers and time is less
 		 * than or equal to the time at scheduling + duration
 		 */
-		public Trigger continuingFor(ModelTime duration) {
+		public ITrigger continuingFor(ModelTime duration) {
 			return(until(after(duration)));
 		}			
 		
@@ -55,83 +113,61 @@ public abstract class Trigger implements ITrigger {
 		final ModelTime		period;
 	}
 	
-	static public class Until extends Trigger implements ITriggerable {
+	static public class Until implements ITrigger {
 		public Until(Repeating iBaseTrigger, ITrigger iEndTrigger) {
 			baseTrigger = iBaseTrigger;
 			endTrigger = iEndTrigger;
 		}
 
 		@Override
-		public void trigger() {
-			listener.trigger();
+		public void schedule(ITriggerable listener) {
+			scheduleEndTrigger();
+			baseTrigger.schedule(listener);
 		}
 
 		@Override
-		public void schedule(ITriggerable iListener) {
+		public void schedule(IMessage message, IReceiver handler) {
+			scheduleEndTrigger();
+			baseTrigger.schedule(message, handler);
+		}
+		
+		@Override
+		public void stop() {
+			baseTrigger.stop();
+			endTrigger.stop();
+		}
+		
+		void scheduleEndTrigger() {
 			endTrigger.schedule(new ITriggerable() {
 				public void trigger() {
 					baseTrigger.stop();
 				}
-			});
-			listener = iListener;
-			baseTrigger.schedule(this);
+			});			
 		}
 		
-		ITriggerable 			listener;
 		Repeating		baseTrigger;
-		ITrigger				endTrigger;
+		ITrigger		endTrigger;
 	}
 	
-	static public Repeating repeatingEvery(ModelTime time) {
-		return(new Repeating(time));
-	}
-	
-	static public Trigger timeIs(ModelTime time) {
-		final ModelTime t = new ModelTime(time);
-		return(new Trigger() {
-			@SuppressWarnings("serial")
-			@Override
-			public void schedule(final ITriggerable listener) {
-				Model.root.schedule.scheduleOnce(t.raw(), new Steppable() {
-					@Override
-					public void step(SimState arg0) {
-						listener.trigger();
-					}
-				});
-			}
-		});
-	}
-
-	static public Trigger after(ModelTime time) {
-		final ModelTime t = new ModelTime(Math.nextUp(time.raw()),ModelTime.Units.RAW);
-		return(new Trigger() {
-			@SuppressWarnings("serial")
-			@Override
-			public void schedule(final ITriggerable listener) {
-				Model.root.schedule.scheduleOnceIn(t.raw(), new Steppable() {
-					@Override
-					public void step(SimState arg0) {
-						listener.trigger();
-					}
-				});
-			}
-		});
-	}
-
-	static public Repeating yearly() {return(repeatingEvery(ModelTime.year()));}
-	static public Repeating monthly() {return(repeatingEvery(ModelTime.month()));}
-	static public Repeating weekly() {return(repeatingEvery(ModelTime.week()));}
-	static public Repeating daily() {return(repeatingEvery(ModelTime.day()));}
-
+	static public Repeating repeatingEvery(ModelTime time) 	{return(new Repeating(time));}
+	static public Once 		timeIs(ModelTime time) 			{return(new Once(time));}
+	static public OnceAfter after(ModelTime time) 			{return(new OnceAfter(time));}
+	static public Repeating yearly() 						{return(repeatingEvery(ModelTime.year()));}
+	static public Repeating monthly() 						{return(repeatingEvery(ModelTime.month()));}
+	static public Repeating weekly() 						{return(repeatingEvery(ModelTime.week()));}
+	static public Repeating daily() 						{return(repeatingEvery(ModelTime.day()));}
 	
 	static public ITrigger onDemand() {
-		return(new Trigger() {
+		return(new ITrigger() {
 			@Override
 			public void schedule(ITriggerable contract) {
 			}
+			@Override
+			public void stop() {
+			}
+			@Override
+			public void schedule(IMessage message, IReceiver handler) {
+			}
 		});
-	}
-	
-	void test() {
 	}
 }

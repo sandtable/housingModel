@@ -4,32 +4,34 @@ import utilities.DoubleUnaryOperator;
 import utilities.ModelTime;
 import utilities.Pdf;
 
-public class Lifecycle implements IAgentTrait, Message.IReceiver {
+public class Lifecycle implements IAgentTrait, IMessage.IReceiver {
 	
 //	public Lifecycle() {
 		// prior distribution over age of new households
 //		this(ModelTime.years(pdfAgeOfNewHousehold.nextDouble()));
 //	}
 	
-	public Lifecycle() {
+	public Lifecycle(IMessage.IReceiver me) {
 		ModelTime birthAge = ModelTime.years(pdfHouseholdAgeAtBirth.nextDouble());
 		ModelTime deathAge;
 		do {
 			deathAge = ModelTime.years(pdfHouseholdAgeAtDeath.nextDouble());
 		} while(deathAge.isBefore(birthAge));
-		birthday = Model.root.timeNow().minus(birthAge);
+		birthday = ModelTime.now().minus(birthAge);
 		deathday = birthday.plus(deathAge);
+		// schedule death
+		Trigger.timeIs(deathday).schedule(Message.die, me);
 	}
 	
 	@Override
-	public boolean receive(Message message) {
+	public boolean receive(IMessage message) {
 		return false;
 	}
-	
+		
 	public ModelTime age() {
-		return(Model.root.timeNow().minus(birthday));
+		return(ModelTime.now().minus(birthday));
 	}
-
+	
 	/**
 	 * Probability density by age of the representative householder given that
 	 * the household is newly formed.
@@ -81,6 +83,6 @@ public class Lifecycle implements IAgentTrait, Message.IReceiver {
 		}
 	}, 50);
 
-	ModelTime birthday;
-	ModelTime deathday;	// time of death of this household (decided at birth)
+	ModelTime 	birthday;
+	ModelTime 	deathday;	// time of death of this household (decided at birth)
 }

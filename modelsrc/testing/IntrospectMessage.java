@@ -1,6 +1,6 @@
 package testing;
 
-public class IntrospectMessage extends Message {
+public class IntrospectMessage implements IMessage {
 	private IntrospectMessage() {	
 	}
 	

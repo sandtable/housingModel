@@ -1,7 +1,5 @@
 package testing;
 
-import java.util.ArrayList;
-
 import sim.engine.SimState;
 import utilities.ModelTime;
 
@@ -12,6 +10,7 @@ public class Model extends SimState implements ITriggerable {
 		root = this;
 		bank = new Bank();
 		firm = new Firm(bank);
+		government = new Government(bank, firm.getSalesAC());
 		households = new SetOfHouseholds();
     	households.add(newHousehold());
     	households.add(newHousehold());
@@ -56,9 +55,10 @@ public class Model extends SimState implements ITriggerable {
 		return(new Household(bank, firm.getSalesAC()));
 	}
 	
-	Bank					bank;
-	Firm					firm;
-	SetOfHouseholds		 	households;
+	Bank			bank;
+	Firm			firm;
+	Government		government;	
+	SetOfHouseholds	households;
 
 
 	static public Model root;

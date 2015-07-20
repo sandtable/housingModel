@@ -44,10 +44,10 @@ public class ModelTime {
 		return(time < other.time);
 	}
 
-	public ModelTime incrementBy(ModelTime i) {
-		time += i.time;
-		return(this);
-	}
+//	public ModelTime incrementBy(ModelTime i) {
+//		time += i.time;
+//		return(this);
+//	}
 	
 	public double inDays() {return(time/Units.DAYS.multiplier);}
 	public double inWeeks() {return(time/Units.WEEKS.multiplier);}
@@ -80,10 +80,8 @@ public class ModelTime {
 		return(ModelTime.days(1.0));
 	}
 	static public ModelTime now() {
-		ModelTime timenow = new ModelTime(Model.root.schedule.getTime());
-		if(timenow.time < 0.0) timenow.time = 0.0;
-		return(timenow);
+		return(Model.root.timeNow());
 	}
 	
-	double time;
+	final double time;
 }

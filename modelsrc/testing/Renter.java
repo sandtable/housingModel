@@ -2,10 +2,10 @@ package testing;
 
 import housing.House;
 
-public class Renter implements MarketBid.IIssuer, IAgentTrait, Message.IReceiver {
+public class Renter implements MarketBid.IIssuer, IAgentTrait, IMessage.IReceiver {
 	
 	@Override
-	public boolean receive(Message message) {
+	public boolean receive(IMessage message) {
 		if(message instanceof IntrospectMessage) {
 			introspect();
 			return(true);
@@ -33,6 +33,6 @@ public class Renter implements MarketBid.IIssuer, IAgentTrait, Message.IReceiver
 		
 	}
 
-	OccupierMarketBid	rentalBid;
+	OOMarketBid	rentalBid;
 	House 				home;
 }

@@ -1,9 +1,11 @@
 package testing;
 
-public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, MarketOffer.IIssuer, Message.IReceiver {
+import utilities.ModelTime;
+
+public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, MarketOffer.IIssuer, IMessage.IReceiver {
 
 	@Override
-	public boolean receive(Message message) {
+	public boolean receive(IMessage message) {
 		if(message instanceof IntrospectMessage) {
 			introspect();
 			return(true);
@@ -13,6 +15,10 @@ public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, MarketOffe
 	
 	public void introspect() {
 		
+	}
+	
+	public void die(IMessage.IReceiver beneficiary) {
+		beneficiary.receive(home); 
 	}
 	
 	public void completePurchase(MarketBid bid, MarketOffer offer, DepositAccount depositAccount) {
@@ -46,9 +52,21 @@ public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, MarketOffe
 		return(false);
 	}
 
+	////////////////////////////////////////////////////////
+	// Behaviour
+	////////////////////////////////////////////////////////
 	
-	OccupierMarketBid			activeBid = null;
+	public boolean decideToSellHome() {
+		if(Model.root.random.nextDouble() < P_SELL) return(true);
+		return false;
+	}
+
+	public double P_SELL = 1.0/(7.0*12.0);  // monthly probability of selling home
+	
+	OOMarketBid			activeBid = null;
 	MarketOffer			activeOffer = null;
-	housing.House		home = null;
-	Mortgage 	mortgage = null;
+	House				home = null;
+	Mortgage 			mortgage = null;
+	boolean				houseForSale = false;
+	ModelTime			lastIntrospectionTime;
 }

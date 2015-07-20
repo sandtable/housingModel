@@ -1,8 +1,6 @@
 package testing;
 
 import utilities.ModelTime;
-import housing.House;
-import housing.Model;
 
 public class MarketOffer extends Contract {
 	/***********************************************
@@ -17,7 +15,7 @@ public class MarketOffer extends Contract {
 		setPrice(p);
 		initialListedPrice = currentPrice;
 	//	quality = house.quality;
-		tInitialListing = Model.timeNow();
+		tInitialListing = ModelTime.now();
 	}
 	
 	/***********************************************

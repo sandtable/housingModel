@@ -25,6 +25,16 @@ public class DepositAccount extends Contract {
 
 	static public class Owner extends Contract.Owner<DepositAccount> {
 		public Owner() {super(DepositAccount.class);}
+		@Override
+		public boolean receive(IMessage message) {
+			if(message instanceof Message.Die) {
+				for(DepositAccount ac : this) {
+					ac.transfer(Model.root.government.bankAccount(), ac.balance);
+				}
+			}
+			return(super.receive(message));
+		}
+		
 	}
 
 //	Object issuer; // for systemic risk

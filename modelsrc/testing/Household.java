@@ -6,14 +6,15 @@ public class Household extends EconAgent {
 			asDepositAccountOwner = new DepositAccount.Owner();
 			addTrait(asDepositAccountOwner);
 			bank.openAccount(asDepositAccountOwner);
-			asLifecycle = new Lifecycle();
+			asLifecycle = new Lifecycle(this);
 			asEmployee = new Employee(asLifecycle, bankAccount());
 			asConsumer = new Consumer(bankAccount(), consumptionAC, asEmployee);
+			asOwnerOccupier = new OwnerOccupier();
 			addTrait(asLifecycle);
 			addTrait(asEmployee);
 			addTrait(asConsumer);
+			addTrait(asOwnerOccupier);
 //			new Renter(),
-//			new OwnerOccupier(),
 //			new BuyToLetInvestor()
 			
 	}
@@ -21,9 +22,13 @@ public class Household extends EconAgent {
 	/////////////////////////////////////////////////////////
 	// Inheritance behaviour
 	/////////////////////////////////////////////////////////
-
-	public void transferAllWealthTo(Household beneficiary) {
-		bankAccount().transfer(beneficiary.bankAccount(), bankAccount().balance);
+	
+	public void die() {
+		bankAccount().transfer(Model.root.government.bankAccount(), bankAccount().balance);
+		asDepositAccountOwner.discardAll();
+		asEmployee.discardAll();
+		asOwnerOccupier.die(Model.root.government);
+		Model.root.households.remove(this);
 		// TODO: transfer houses and terminate mortgages (should use bank account to pay off mortgages)
 /***		
 		for(House h : housePayments.keySet()) {
@@ -52,5 +57,7 @@ public class Household extends EconAgent {
 	public Employee asEmployee;
 	public Consumer asConsumer;
 	public Lifecycle asLifecycle;
+	public OwnerOccupier asOwnerOccupier;
 	public DepositAccount.Owner asDepositAccountOwner;
+
 }

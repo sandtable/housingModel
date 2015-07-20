@@ -11,7 +11,7 @@ import utilities.IdentityHashSet;
  * @author daniel
  *
  */
-public class Contract extends Message {
+public class Contract implements IMessage {
 
 //	public Contract() {
 //		this(null);
@@ -68,14 +68,17 @@ public class Contract extends Message {
 	 * Agent module for deposit account holder
 	 * @author daniel
 	 */
-	static public class Owner<CONTRACT extends Contract> extends HashSet<CONTRACT> implements Message.IReceiver, IAgentTrait {
+	static public class Owner<CONTRACT extends Contract> extends HashSet<CONTRACT> implements IMessage.IReceiver, IAgentTrait {
 		public Owner(Class<CONTRACT> contractClazz) {
 			super(contractClazz);
 		}
 		
-		public boolean receive(Message newContract) {
-			if(newContract.getClass() == contractClazz) {
-				add((CONTRACT)newContract);
+		public boolean receive(IMessage newContract) {
+			if(newContract instanceof Message.Die) {
+				discardAll();
+				return(true);
+			} else if(newContract.getClass() == contractClazz) {
+				add(contractClazz.cast(newContract));
 				return(true);				
 			}
 			return(false);

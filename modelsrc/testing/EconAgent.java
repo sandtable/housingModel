@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import utilities.ModelTime;
 
-public class EconAgent {	
+public class EconAgent implements IMessage.IReceiver {	
 
 //	public EconAgent() {
 //		this([]);
@@ -28,14 +28,14 @@ public class EconAgent {
 
 	public void addTrait(IAgentTrait trait) {
 		traits.add(trait);
-		if(trait instanceof Message.IReceiver) {
-			messageReceivers.add((Message.IReceiver)trait);
+		if(trait instanceof IMessage.IReceiver) {
+			messageReceivers.add((IMessage.IReceiver)trait);
 		}
 	}
 	
 	public void removeTrait(IAgentTrait trait) {
 		traits.remove(trait);
-		if(trait instanceof Message.IReceiver) {
+		if(trait instanceof IMessage.IReceiver) {
 			messageReceivers.remove(trait);
 		}
 	}
@@ -49,12 +49,12 @@ public class EconAgent {
 		return(null);
 	}
 	
-	public boolean receive(Message message) {
-		if(message instanceof IntrospectMessage) {
-			introspect();
+	public boolean receive(IMessage message) {
+		if(message instanceof IBroadcastMessage) {
+			broadcast(message);
 			return(true);
 		}
-		for(Message.IReceiver receiver : messageReceivers) {
+		for(IMessage.IReceiver receiver : messageReceivers) {
 			if(receiver.receive(message)) {
 				return(true);
 			}
@@ -62,9 +62,9 @@ public class EconAgent {
 		return(false);
 	}
 	
-	void introspect() {
-		for(Message.IReceiver receiver : messageReceivers) {
-			receiver.receive(IntrospectMessage.instance);
+	void broadcast(IMessage message) {
+		for(IMessage.IReceiver receiver : messageReceivers) {
+			receiver.receive(message);
 		}		
 	}
 	
@@ -73,7 +73,7 @@ public class EconAgent {
 	}
 	
 	ArrayList<IAgentTrait> traits;
-	ArrayList<Message.IReceiver> messageReceivers;
+	ArrayList<IMessage.IReceiver> messageReceivers;
 	
 	
 //	public boolean receive(Message message) {

@@ -2,17 +2,17 @@ package testing;
 
 import utilities.ModelTime;
 
-public class Consumer implements IAgentTrait, Message.IReceiver {
+public class Consumer implements IAgentTrait, IMessage.IReceiver {
 
 	public Consumer(DepositAccount iMyAccount, DepositAccount iShopsAccount, Employee iEmployeeTrait) {
 		myAccount = iMyAccount;
 		shopsAccount = iShopsAccount;
-		lastConsumption = Model.root.timeNow();
+		lastConsumption = ModelTime.now();
 		employeeTrait = iEmployeeTrait;
 	}
 	
 	@Override
-	public boolean receive(Message message) {
+	public boolean receive(IMessage message) {
 		if(message instanceof IntrospectMessage) {
 			consume();
 			return(true);
@@ -29,7 +29,7 @@ public class Consumer implements IAgentTrait, Message.IReceiver {
 	public void consume() {
 		double monthlyConsumption;
 		long consumption;
-		ModelTime now = Model.root.timeNow();
+		ModelTime now = ModelTime.now();
 		
 		monthlyConsumption = 
 				10.0*Math.max((myAccount.balance/100.0 - Math.exp(4.07*Math.log(employeeTrait.monthlyIncome()*0.12)-33.1 + 0.2*Model.root.random.nextGaussian())),0.0);

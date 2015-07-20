@@ -35,47 +35,21 @@ public class SetOfHouseholds extends TreeSet<Household> implements ITriggerable 
 		nextBirthEvent().schedule(this);
 	}
 	
-	public Trigger nextBirthEvent() {
+	public ITrigger nextBirthEvent() {
 		Model model = Model.root;		
 		double birthsPerYear;
 		
-		if(model.timeNow().isBefore(ModelTime.years(SPINUP_YEARS))) {
+		if(ModelTime.now().isBefore(ModelTime.years(SPINUP_YEARS))) {
 			// --- still in spinup phase of simulation
-			birthsPerYear = spinupBirthRatePerHousehold.getEntry((int)(model.timeNow().inYears()))*TARGET_POPULATION;
+			birthsPerYear = spinupBirthRatePerHousehold.getEntry((int)(ModelTime.now().inYears()))*TARGET_POPULATION;
 		} else {
 			// --- in projection phase of simulation
-			birthsPerYear = futureBirthRate(model.timeNow().inMonths());
+			birthsPerYear = futureBirthRate(ModelTime.now().inMonths());
 		}
 		double delay = -Math.log(1.0 - model.random.nextDouble())/birthsPerYear; // inverse CDF of exponential distribution
-		return(Trigger.timeIs(model.timeNow().plus(ModelTime.years(delay))));
+		return(Trigger.timeIs(ModelTime.now().plus(ModelTime.years(delay))));
 	}
-
-	
-	@Override
-	public boolean add(final Household h) {
-		if(super.add(h)) {
-			// schedule death
-			final SetOfHouseholds set = this;
-			Trigger.timeIs(h.asLifecycle.deathday).schedule(new ITriggerable() {
-				public void trigger() {
-					set.kill(h);
-				}
-			});
-		}
-		return(false);
-	}
-	
-	public boolean kill(Household h) {
-		if(h == null) return(false);
-		remove(h);
-		h.asLifecycle.birthday.incrementBy(ModelTime.years(25)); // rough way of finding younger beneficiary
-		Household beneficiary = this.floor(h);
-		h.transferAllWealthTo(beneficiary);	
-		h.asDepositAccountOwner.discardAll();
-		h.asEmployee.discardAll();
-		return(true);
-	}
-	
+		
 	/***
 	 * Calculates the birth rate over time so that at the end
 	 * of spinup period we hit the target population and age distribution

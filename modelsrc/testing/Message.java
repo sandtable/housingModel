@@ -1,7 +1,9 @@
 package testing;
 
 public class Message {
-	static public interface IReceiver {
-		boolean receive(Message message);
-	}
+	static public class Introspect implements IMessage {private Introspect() {}}
+	static public class Die implements IBroadcastMessage {private Die() {}}
+
+	public static Die die = new Die();
+	public static Introspect introspect = new Introspect();
 }

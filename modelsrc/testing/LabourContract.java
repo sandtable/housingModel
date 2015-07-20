@@ -25,7 +25,7 @@ public class LabourContract extends Contract {
 	}
 	
 	
-	static public interface IOwner extends Message.IReceiver, IAgentTrait {
+	static public interface IOwner extends IMessage.IReceiver, IAgentTrait {
 		public ModelTime age();
 		public DepositAccount account();
 	}
