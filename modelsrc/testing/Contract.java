@@ -84,15 +84,18 @@ public class Contract implements IMessage {
 			return(false);
 		}
 		
-		public boolean discard(Contract contract) {
-			remove(contract);
-			return(contract.terminate());
+		@Override
+		public boolean remove(Object contract) {
+			if(!super.remove(contract) ) {
+				return(false);
+			}
+			return(((Contract)contract).terminate());
 		}
 		
 		public boolean discardAll() {
 			boolean result = true;
 			for(Contract c : this) {
-				result = result && discard(c);
+				result = result && remove(c);
 			}
 			return(result);
 		}

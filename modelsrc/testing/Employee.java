@@ -11,7 +11,11 @@ public class Employee extends Contract.Owner<LabourContract> implements LabourCo
 
 	@Override
 	public ModelTime age() {
-		return(lifecycle.age());
+		if(lifecycle != null) {
+			return(lifecycle.age());
+		} else {
+			return(ModelTime.years(25.0));
+		}
 	}
 
 	@Override

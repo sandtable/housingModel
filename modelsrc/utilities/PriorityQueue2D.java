@@ -17,7 +17,8 @@ import java.util.TreeSet;
  * @author daniel
  *
  */
-public class PriorityQueue2D<E extends PriorityQueue2D.Comparable<E>> {
+//public class PriorityQueue2D<E extends PriorityQueue2D.Comparable<E>> {
+public class PriorityQueue2D<E> {
 	public interface Comparable<T> {
 		/***
 		 * @return (-1, 0, 1) if this is (less than, equal to, greater than) other
@@ -25,9 +26,36 @@ public class PriorityQueue2D<E extends PriorityQueue2D.Comparable<E>> {
 		public int XCompareTo(T other);
 		public int YCompareTo(T other);
 	}
-	
-	public PriorityQueue2D() {
+
+	public interface XYComparator<T> {
+		/***
+		 * @return (-1, 0, 1) if arg0 is (less than, equal to, greater than) arg1
+		 */
+		public int XCompare(T arg0, T arg1);
+		public int YCompare(T arg0, T arg1);
+	}
+
+	public PriorityQueue2D(XYComparator<E> iComparator) {
+		comparator = iComparator;
 		uncoveredElements = new TreeSet<E>(new Comparator<E>() {
+			@Override
+			public int compare(E arg0, E arg1) {
+				return(comparator.XCompare(arg0,arg1));
+			}
+
+		});
+		ySortedElements = new TreeSet<E>(new Comparator<E>() {
+			@Override
+			public int compare(E arg0, E arg1) {
+				return(comparator.YCompare(arg0,arg1));
+			}
+
+		});
+	}
+
+	/***
+	public PriorityQueue2D() {
+		uncoveredElements = new TreeSet<E extends PriorityQueue2D.Comparable<E>>(new Comparator<E>() {
 			@Override
 			public int compare(E arg0, E arg1) {
 				return(arg0.XCompareTo(arg1));
@@ -42,6 +70,7 @@ public class PriorityQueue2D<E extends PriorityQueue2D.Comparable<E>> {
 
 		});
 	}
+	***/
 	
 	public boolean add(E element) {
 		ySortedElements.add(element);
@@ -49,7 +78,7 @@ public class PriorityQueue2D<E extends PriorityQueue2D.Comparable<E>> {
 			uncoveredElements.add(element);
 			// remove any members of uncoveredElements that are covered by the new element
 			E nextHigher = uncoveredElements.higher(element);
-			while(nextHigher != null && element.YCompareTo(nextHigher) == 1) {
+			while(nextHigher != null && comparator.YCompare(element, nextHigher) == 1) {
 				uncoveredElements.remove(nextHigher);
 				nextHigher = uncoveredElements.higher(element);
 			}
@@ -90,7 +119,7 @@ public class PriorityQueue2D<E extends PriorityQueue2D.Comparable<E>> {
 		if(nextxLower == null) { // removing the lowest uncovered element
 			inclusive = true;
 			nextxLower = ySortedElements.first();
-			if(element.YCompareTo(nextxLower) == -1) { // y-least element doesn't cover anything
+			if(comparator.YCompare(element, nextxLower) == -1) { // y-least element doesn't cover anything
 				return;
 			}
 		}
@@ -100,7 +129,7 @@ public class PriorityQueue2D<E extends PriorityQueue2D.Comparable<E>> {
 			uncoveredElements.add(nextxHigher);
 		}
 		for(E e : ySortedElements.subSet(nextxLower, inclusive, element, true).descendingSet()) {
-			if(e.XCompareTo(nextxHigher) == -1) {
+			if(comparator.XCompare(e, nextxHigher) == -1) {
 				uncoveredElements.add(e);
 				nextxHigher = e;
 			}
@@ -124,7 +153,7 @@ public class PriorityQueue2D<E extends PriorityQueue2D.Comparable<E>> {
 		if(nextLower == null) {
 			return(true);
 		}
-		if(nextLower.YCompareTo(element) == -1) {
+		if(comparator.YCompare(nextLower, element) == -1) {
 			return(true);
 		}
 		return(false);
@@ -137,4 +166,5 @@ public class PriorityQueue2D<E extends PriorityQueue2D.Comparable<E>> {
 	
 	TreeSet<E> uncoveredElements; // x-sorted
 	TreeSet<E> ySortedElements;
+	XYComparator<E> comparator;
 }

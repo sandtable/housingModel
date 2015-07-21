@@ -4,25 +4,25 @@ import java.util.TreeSet;
 
 public class TestPriorityQueue2D {
 	
-	static class MyClass implements PriorityQueue2D.Comparable<MyClass> {
+	static class MyComparator implements PriorityQueue2D.XYComparator<MyClass> {
+		@Override
+		public int XCompare(MyClass arg0, MyClass arg1) {
+			return((int)Math.signum(arg0.x-arg1.x));
+		}
+		@Override
+		public int YCompare(MyClass arg0, MyClass arg1) {
+			return((int)Math.signum(arg0.y-arg1.y));
+		}
+	}
+	
+	static class MyClass {
 		public MyClass(double ix, double iy) {
 			x = ix; y = iy;
 		}
-		
-		@Override
-		public int XCompareTo(MyClass other) {
-			return((int)Math.signum(x-other.x));
-		}
-
-		@Override
-		public int YCompareTo(MyClass other) {
-			return((int)Math.signum(y-other.y));
-		}
-
 		double x;
 		double y;
 	}
-	
+	/***
 	static class MyClass2 implements Comparable<MyClass2> {
 		public MyClass2(double ix) {
 			x = ix;
@@ -34,9 +34,9 @@ public class TestPriorityQueue2D {
 		}
 		double x;
 	}
-	
+	***/
     public static void main(String[] args) {
-    	PriorityQueue2D<MyClass>	myObj = new PriorityQueue2D<MyClass>();
+    	PriorityQueue2D<MyClass>	myObj = new PriorityQueue2D<MyClass>(new MyComparator());
     	int i;
     	
     	for(i = 0; i<1000; ++i) {

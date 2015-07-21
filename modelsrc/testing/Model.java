@@ -10,6 +10,7 @@ public class Model extends SimState implements ITriggerable {
 		root = this;
 		bank = new Bank();
 		firm = new Firm(bank);
+		saleMarket = new HouseSaleMarket();
 		government = new Government(bank, firm.getSalesAC());
 		households = new SetOfHouseholds();
     	households.add(newHousehold());
@@ -52,14 +53,14 @@ public class Model extends SimState implements ITriggerable {
 	}
 	
 	public Household newHousehold() {
-		return(new Household(bank, firm.getSalesAC()));
+		return(new Household(bank, firm.getSalesAC(), saleMarket));
 	}
 	
 	Bank			bank;
 	Firm			firm;
 	Government		government;	
 	SetOfHouseholds	households;
-
+	HouseSaleMarket	saleMarket;
 
 	static public Model root;
 	private static final long serialVersionUID = 1714518191380607106L;

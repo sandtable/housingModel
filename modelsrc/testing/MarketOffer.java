@@ -1,8 +1,9 @@
 package testing;
 
 import utilities.ModelTime;
+import utilities.PriorityQueue2D;
 
-public class MarketOffer extends Contract {
+public class MarketOffer extends Contract implements Market.IQualityPriceSupplier, HouseSaleMarket.IYeildPriceSupplier {
 	/***********************************************
 	 * Construct a new record.
 	 * 
@@ -28,14 +29,36 @@ public class MarketOffer extends Contract {
 		currentPrice = p;
 	}
 
+	@Override
+	public long getPrice() {
+		return(currentPrice);
+	}
+
+	@Override
+	public double getYeild() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
 	public int getQuality() {
 		return(house.quality);
 	}
 	
-//	public double doubleValue() {
-//		return(currentPrice);
-//	}
-
+	public boolean isUnderOffer() {
+		return(currentMatch != null);
+	}
+	
+	public Market.Match matchWith(MarketBid bid) {
+		if(currentMatch != null) return(null);
+		currentMatch = new Market.Match(this, bid);
+		return(currentMatch);
+	}
+	
+	public void unMatch() {
+		currentMatch = null;
+	}
+	
 	public static interface IIssuer extends Contract.IIssuer {
 		void completeSale(MarketOffer offer);
 	}
@@ -44,5 +67,7 @@ public class MarketOffer extends Contract {
 	// public int			quality;
 	public long 		initialListedPrice;
 	public long			currentPrice;
-	public ModelTime	tInitialListing; // time of initial listing
+	public ModelTime	tInitialListing; 	// time of initial list
+//	public MarketBid	currentBid;			// if non-null the house is currently 'under offer'
+	Market.Match 		currentMatch;			// if non-null the house is currently 'under offer'
 }

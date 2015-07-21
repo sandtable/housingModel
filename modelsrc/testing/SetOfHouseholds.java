@@ -19,12 +19,12 @@ import utilities.Pdf;
 public class SetOfHouseholds extends TreeSet<Household> implements ITriggerable {
 	
 	public SetOfHouseholds() {
-		super(new Comparator<Household>() {
-			public int compare(Household h0, Household h1) {
-				return((int)Math.signum(h0.asLifecycle.birthday.raw() - h1.asLifecycle.birthday.raw()));
-			}
-		});
-		nextBirthEvent().schedule(this);
+//		super(new Comparator<Household>() {
+//			public int compare(Household h0, Household h1) {
+//				return((int)Math.signum(h0.asLifecycle.birthday.raw() - h1.asLifecycle.birthday.raw()));
+//			}
+//		});
+		// nextBirthEvent().schedule(this); // set birth going
 	}
 	
 	/***
