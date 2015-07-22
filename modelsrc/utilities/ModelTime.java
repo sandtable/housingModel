@@ -1,6 +1,6 @@
 package utilities;
 
-import testing.Model;
+import development.Model;
 
 public class ModelTime {
 	public enum Units {

@@ -3,12 +3,13 @@ package housing;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+
+import development.EconAgent;
 import ec.util.MersenneTwisterFast;
 import sim.engine.Schedule;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.engine.Stoppable;
-import testing.EconAgent;
 import utilities.ModelTime;
 
 /**
