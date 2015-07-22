@@ -45,7 +45,6 @@ public abstract class Market extends EconAgent {
 				Match match = Market.this.offers.matchBid(bid);
 				if(match != null) {
 					add((MarketBid)contract);
-					match.schedule(match, Market.this);
 					return(true);
 				}
 			}
@@ -87,7 +86,7 @@ public abstract class Market extends EconAgent {
 				matchedOffer.unMatch();
 			}
 			Match match = matchedOffer.matchWith(bid);
-			match.schedule(match, this);
+			match.schedule(match, Market.this);
 			return(match);
 		}
 		
