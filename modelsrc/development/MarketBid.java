@@ -6,12 +6,16 @@ public class MarketBid extends Contract {
 		price = iPrice;
 	}
 	
-	public interface IIssuer extends Contract.IIssuer {
-		void completePurchase(MarketBid bid, MarketOffer offer, DepositAccount depositAccount);
-	}
-
 	public long getPrice() {
 		return(price);
+	}
+	
+	public IIssuer getIssuer() {
+		return((IIssuer)issuer);
+	}
+	
+	public interface IIssuer extends Contract.IIssuer {
+		void completePurchase(MarketBid bid, MarketOffer offer);		
 	}
 	
 	long price;

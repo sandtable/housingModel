@@ -31,7 +31,7 @@ public class SetOfHouseholds extends TreeSet<Household> implements ITriggerable 
 	 * Triggered at each household birth event
 	 */
 	public void trigger() {
-		add(Model.root.newHousehold());
+		add(new Household());
 		nextBirthEvent().schedule(this);
 	}
 	

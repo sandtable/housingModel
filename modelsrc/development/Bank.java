@@ -18,6 +18,6 @@ public class Bank extends EconAgent {
 	
 	DepositAccount.Issuer		depositAccounts;
 	DepositAccount.Owner		internalAccounts;
-	DepositAccount				endowmentAccount; // account from which we can endow people with cash
+	public DepositAccount		endowmentAccount; // account from which we can endow people with cash
 	//Contract.Owner<Mortgage>		 mortgages;
 }

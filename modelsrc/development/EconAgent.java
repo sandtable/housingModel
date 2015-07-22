@@ -18,12 +18,12 @@ public class EconAgent implements IMessage.IReceiver {
 			addTrait(iTraits[i]);
 		}
 		final EconAgent me = this;
-		Trigger.repeatingEvery(ModelTime.month()).schedule(new ITriggerable() {
-			@Override
-			public void trigger() {
-				me.receive(IntrospectMessage.instance);
-			}
-		});
+//		Trigger.repeatingEvery(ModelTime.month()).schedule(new ITriggerable() {
+//			@Override
+//			public void trigger() {
+//				me.receive(IntrospectMessage.instance);
+//			}
+//		});
 	}
 
 	public void addTrait(IAgentTrait trait) {

@@ -8,15 +8,16 @@ public class MarketOffer extends Contract implements Market.IQualityPriceSupplie
 	 * Construct a new record.
 	 * 
 	 * @param h The house that is for sale.
-	 * @param p The initial list price for the house.
+	 * @param price The initial list price for the house.
 	 ***********************************************/
-	public MarketOffer(IIssuer issuer, House h, long p) {
+	public MarketOffer(IIssuer issuer, House iHouse, long price, DepositAccount iPayinAC) {
 		super(issuer);
-		house = h;
-		setPrice(p);
+		house = iHouse;
+		setPrice(price);
 		initialListedPrice = currentPrice;
 	//	quality = house.quality;
 		tInitialListing = ModelTime.now();
+		payinAC = iPayinAC;
 	}
 	
 	/***********************************************
@@ -38,6 +39,10 @@ public class MarketOffer extends Contract implements Market.IQualityPriceSupplie
 	public double getYeild() {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+	
+	IIssuer getIssuer() {
+		return((IIssuer)issuer);
 	}
 
 	@Override
@@ -63,6 +68,17 @@ public class MarketOffer extends Contract implements Market.IQualityPriceSupplie
 		void completeSale(MarketOffer offer);
 	}
 	
+	public static class Issuer extends Contract.Issuer<MarketOffer> implements IIssuer {
+		public Issuer() {
+			super(MarketOffer.class);
+		}
+
+		@Override
+		public void completeSale(MarketOffer offer) {
+			offer.house.owner.remove(offer.house);
+		}
+	}
+	
 	public House 		house;
 	// public int			quality;
 	public long 		initialListedPrice;
@@ -70,4 +86,5 @@ public class MarketOffer extends Contract implements Market.IQualityPriceSupplie
 	public ModelTime	tInitialListing; 	// time of initial list
 //	public MarketBid	currentBid;			// if non-null the house is currently 'under offer'
 	Market.Match 		currentMatch;			// if non-null the house is currently 'under offer'
+	DepositAccount		payinAC;
 }

@@ -28,7 +28,8 @@ public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, MarketOffe
 		beneficiary.receive(home); 
 	}
 	
-	public void completePurchase(MarketBid bid, MarketOffer offer, DepositAccount depositAccount) {
+	@Override
+	public void completePurchase(MarketBid bid, MarketOffer offer) {
 		// successful bid
 		home = offer.house;
 		// get mortgage

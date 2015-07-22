@@ -1,7 +1,12 @@
 package development;
 
 
+
 public class Household extends EconAgent {
+	public Household() {
+		this(Model.root.bank, Model.root.firm.getSalesAC(), Model.root.houseSaleMarket);
+	}
+	
 	public Household(Bank bank, DepositAccount consumptionAC, HouseSaleMarket saleMarket) {
 			asDepositAccountOwner = new DepositAccount.Owner();
 			addTrait(asDepositAccountOwner);
@@ -29,7 +34,7 @@ public class Household extends EconAgent {
 		asDepositAccountOwner.discardAll();
 		asEmployee.discardAll();
 		asOwnerOccupier.die(Model.root.government);
-		Model.root.households.remove(this);
+		Model.root.setOfHouseholds.remove(this);
 		// TODO: transfer houses and terminate mortgages (should use bank account to pay off mortgages)
 /***		
 		for(House h : housePayments.keySet()) {
@@ -51,7 +56,7 @@ public class Household extends EconAgent {
 	}
 
 	
-	DepositAccount bankAccount() {
+	public DepositAccount bankAccount() {
 		return(getTrait(DepositAccount.Owner.class).first());
 	}
 	

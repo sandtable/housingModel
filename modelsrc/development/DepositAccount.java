@@ -1,5 +1,6 @@
 package development;
 
+
 public class DepositAccount extends Contract {
 
 	public DepositAccount() {
@@ -39,7 +40,7 @@ public class DepositAccount extends Contract {
 
 //	Object issuer; // for systemic risk
 
-	long balance = 0; // balance in cents
+	public long balance = 0; // balance in cents
 	
 	static Contract.IIssuer tmpBank = new Contract.IIssuer() {
 		public boolean terminate(Contract o) {return(true);}

@@ -1,1 +1,15 @@
 /bin/
+/coreIndicator-advancesToBTL.csv
+/coreIndicator-advancesToFTB.csv
+/coreIndicator-advancesToMovers.csv
+/coreIndicator-btlLTV.csv
+/coreIndicator-creditGrowth.csv
+/coreIndicator-debtToIncome.csv
+/coreIndicator-housePriceGrowth.csv
+/coreIndicator-housingTransactions.csv
+/coreIndicator-interestRateSpread.csv
+/coreIndicator-mortgageApprovals.csv
+/coreIndicator-ooDebtToIncome.csv
+/coreIndicator-ooLTI.csv
+/coreIndicator-priceToIncome.csv
+/coreIndicator-rentalYield.csv

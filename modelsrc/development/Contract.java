@@ -55,12 +55,12 @@ public class Contract implements IMessage {
 			add(newContract);
 			boolean accepted = owner.receive(newContract);
 			if(accepted) return(true);
-			remove(newContract);
+			discard(newContract);
 			return(false);
 		}
 		
 		public boolean terminate(Contract contract) {
-			return(super.remove(contract));
+			return(super.discard(contract));
 		}
 	}
 	
@@ -85,8 +85,8 @@ public class Contract implements IMessage {
 		}
 		
 		@Override
-		public boolean remove(Object contract) {
-			if(!super.remove(contract) ) {
+		public boolean discard(Object contract) {
+			if(!super.discard(contract) ) {
 				return(false);
 			}
 			return(((Contract)contract).terminate());
@@ -95,7 +95,7 @@ public class Contract implements IMessage {
 		public boolean discardAll() {
 			boolean result = true;
 			for(Contract c : this) {
-				result = result && remove(c);
+				result = result && discard(c);
 			}
 			return(result);
 		}

@@ -1,5 +1,6 @@
 package development;
 
+
 /************************************************
  * Class representing a house.
  * Use this to represent the intrinsic properties of the house.

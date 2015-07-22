@@ -14,8 +14,9 @@ public interface IHouseOwner {
 //	public void completeHouseSale(HouseSaleRecord sale);
 	
 	/** Called when a tenant moves out of a house that the agent owns **/
-	public void endOfLettingAgreement(House h);
+//	public void endOfLettingAgreement(House h);
 
-	public void completeHouseLet(House house);
+//	public void completeHouseLet(House house);
+	public boolean remove(House house); // give up ownership
 	
 }

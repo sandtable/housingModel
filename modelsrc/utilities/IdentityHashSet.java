@@ -13,7 +13,7 @@ public class IdentityHashSet<E> implements Iterable<E> {
 		data.put(element, dummy);
 	}
 	
-	public boolean remove(Object element) {
+	public boolean discard(Object element) {
 		return(data.remove(element) != null);
 	}
 	
@@ -27,6 +27,10 @@ public class IdentityHashSet<E> implements Iterable<E> {
 
 	public E first() {
 		return(data.keySet().iterator().next());
+	}
+	
+	public int size() {
+		return(data.size());
 	}
 	
 	
