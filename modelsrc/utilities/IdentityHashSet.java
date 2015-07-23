@@ -13,8 +13,11 @@ public class IdentityHashSet<E> implements Iterable<E> {
 		data.put(element, dummy);
 	}
 	
-	public boolean discard(Object element) {
-		return(data.remove(element) != null);
+//	public boolean discard(Object element) {
+//		return(data.remove(element) != null);
+//	}
+	public boolean remove(Object element) {
+		return(data.remove(element));
 	}
 	
 	public boolean contains(Object element) {

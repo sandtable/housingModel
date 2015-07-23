@@ -32,6 +32,7 @@ public class MarketTest extends Model {
 		public boolean receive(IMessage message) {
 			if(message instanceof House) {
 				System.out.println("got house");
+				home = (House)message;
 				return(true);
 			}
 			return(super.receive(message));
@@ -39,6 +40,7 @@ public class MarketTest extends Model {
 		
 		OOMarketBid.Issuer 		asMarketBidder;
 		DepositAccount.Owner 	asDepositAccountOwner;
+		House					home;
 	}
 	
 	public MarketTest(long seed) {
@@ -47,12 +49,20 @@ public class MarketTest extends Model {
 		houseSaleMarket = new HouseSaleMarket();
 		construction = new Construction(bank);
 		Household1 = new HouseholdStub(bank);
+		Household2 = new HouseholdStub(bank);
+		Household3 = new HouseholdStub(bank);
 	}
 
 	public void start() {
 		construction.buildHouse();
 		System.out.println(houseSaleMarket.offers.size());
-		Household1.asMarketBidder.issue(new OOMarketBid(Household1.asMarketBidder, 50000000, 0), houseSaleMarket.bids);
+		Household1.asMarketBidder.issue(50000000, 0, houseSaleMarket.bids);
+		Household2.asMarketBidder.issue(55000000, 0, houseSaleMarket.bids);
+	}
+	
+	public void finish() {
+		System.out.println("Household1 "+(Household1.home != null));
+		System.out.println("Household2 "+(Household2.home != null));
 	}
 		
     public static void main(String[] args) {
@@ -60,6 +70,6 @@ public class MarketTest extends Model {
     }
     
     HouseholdStub 		Household1;
-    OOMarketBid.Issuer 	Household2;
-    OOMarketBid.Issuer 	Household3;    
+    HouseholdStub	 	Household2;
+    HouseholdStub	 	Household3;    
 }

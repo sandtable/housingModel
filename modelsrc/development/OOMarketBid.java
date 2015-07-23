@@ -22,6 +22,10 @@ public class OOMarketBid extends MarketBid implements Market.IQualityPriceSuppli
 //			DepositAccount payoutAC = me.getTrait(DepositAccount.Owner.class).first();
 //			payoutAC.transfer(offer.payinAC, offer.getPrice());
 //		}
+
+		public void issue(long price, int quality, IMessage.IReceiver recipient) {
+			issue(new OOMarketBid(this, price, quality), recipient);
+		}
 		
 		public boolean receive(DemandForPayment d) {
 			return(me.receive(d));

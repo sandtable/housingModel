@@ -17,17 +17,19 @@ public abstract class Market extends EconAgent {
 		return(0.0);
 	}
 
+	/**
 	@Override
 	public boolean receive(IMessage message) {
 		if(message instanceof Match) {
 			// a match has completed its wait
 			Match match = (Match)message;
 			match.offer.getIssuer().completeSale(match.offer, match.bid.getIssuer());
+			// --- 
 			return(true);
 		}
 		return(super.receive(message));
 	}
-	
+	**/
 	// --- override these to make sub-classed bids and offers traits
 	abstract public Bids newBids();
 	abstract public Offers newOffers();
@@ -36,7 +38,7 @@ public abstract class Market extends EconAgent {
 		public Bids() {
 			super(MarketBid.class);
 		}
-		
+
 		@Override
 		public boolean receive(IMessage contract) {
 			if(contract instanceof OOMarketBid) {
@@ -63,15 +65,20 @@ public abstract class Market extends EconAgent {
 			if(message instanceof MarketOffer) {
 				MarketOffer offer = (MarketOffer)message;
 				OOqueue.add(offer);
-	//		} else if(message instanceof Match) {
+			} else if(message instanceof Match) {
 				// a match has completed its wait
-	//			doTransaction((Match)message);
+				Match match = (Match)message;
+				match.offer.getIssuer().completeSale(match.offer, match.bid.getIssuer());
+				discard(match.offer);
+				Market.this.bids.discard(match.bid);
+				return(true);
 			}
+
 			return(super.receive(message));
 		}
 	
 		public Match matchBid(OOMarketBid bid) {
-			MarketOffer matchedOffer = (MarketOffer)OOqueue.poll(bid);
+			MarketOffer matchedOffer = (MarketOffer)OOqueue.peek(bid);
 			if(matchedOffer == null) {
 				return(null);
 			}
@@ -85,7 +92,7 @@ public abstract class Market extends EconAgent {
 				matchedOffer.unMatch();
 			}
 			Match match = matchedOffer.matchWith(bid);
-			match.schedule(match, Market.this);
+			match.schedule(match, this);
 			return(match);
 		}
 		

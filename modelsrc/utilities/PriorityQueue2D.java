@@ -86,13 +86,31 @@ public class PriorityQueue2D<E> {
 		return(true);
 	}
 	
+	/***
+	 * Finds and removes the object that is the Y-greatest entry that is not 
+	 * X-greater than xGreatestBoundary.
+	 * 
+	 * @param xGreatestBoundary - object that defines the X value we can't go above
+	 * @return the Y-greatest entry that is not X-greater than xGreatestBoundary.
+	 */
 	public E poll(E xGreatestBoundary) {
-		E head = uncoveredElements.floor(xGreatestBoundary);
+		E head = peek(xGreatestBoundary);
 		if(head == null) return(null);
 		removeUncovered(head);
 		return(head);
 	}
 
+	/***
+	 * Finds the object that is the Y-greatest entry that is not 
+	 * X-greater than xGreatestBoundary, leaving the object in the collection.
+	 * 
+	 * @param xGreatestBoundary - object that defines the X value we can't go above
+	 * @return the Y-greatest entry that is not X-greater than xGreatestBoundary.
+	 */
+	public E peek(E xGreatestBoundary) {
+		return(uncoveredElements.floor(xGreatestBoundary));		
+	}
+	
 	public boolean remove(E element) {
 		if(uncoveredElements.contains(element)) {
 			removeUncovered(element);

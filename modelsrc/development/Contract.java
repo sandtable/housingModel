@@ -50,17 +50,17 @@ public class Contract implements IMessage {
 		public Issuer(Class<CONTRACT> contractClazz) {
 			super(contractClazz);
 		}
-		public boolean issue(CONTRACT newContract, Owner<CONTRACT> owner) {
+		public boolean issue(CONTRACT newContract, IMessage.IReceiver owner) {
 			if(owner == null) return(false);
 			add(newContract);
 			boolean accepted = owner.receive(newContract);
 			if(accepted) return(true);
-			discard(newContract);
+			remove(newContract);
 			return(false);
 		}
 		
 		public boolean terminate(Contract contract) {
-			return(super.discard(contract));
+			return(remove(contract));
 		}
 	}
 	
@@ -83,10 +83,9 @@ public class Contract implements IMessage {
 			}
 			return(false);
 		}
-		
-		@Override
+				
 		public boolean discard(Object contract) {
-			if(!super.discard(contract) ) {
+			if(!remove(contract) ) {
 				return(false);
 			}
 			return(((Contract)contract).terminate());
@@ -102,7 +101,7 @@ public class Contract implements IMessage {
 	}
 	
 	static public interface IIssuer extends IAgentTrait {
-		boolean terminate(Contract contract);
+		boolean terminate(Contract contract); // termination of the contract early or after execution
 	}
 	
 	IIssuer	 		issuer; // should be EconAgent?
