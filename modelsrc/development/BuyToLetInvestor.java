@@ -1,9 +1,8 @@
 package development;
 
 import java.util.HashSet;
-
+import development.MarketBid.IIssuer;
 import utilities.IdentityHashSet;
-import housing.House;
 
 public class BuyToLetInvestor implements IAgentTrait, MarketBid.IIssuer, MarketOffer.IIssuer {
 
@@ -20,13 +19,21 @@ public class BuyToLetInvestor implements IAgentTrait, MarketBid.IIssuer, MarketO
 	}
 
 	@Override
-	public void completePurchase(MarketBid bid, MarketOffer offer) {
+	public void completeSale(MarketOffer offer, IIssuer recipient) {
 		// TODO Auto-generated method stub
 		
 	}
+
 	@Override
-	public void completeSale(MarketOffer offer) {
-		// TODO Auto-generated method stub		
+	public boolean receive(House h) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean receive(DemandForPayment d) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	int							desiredPortfolioSize;

@@ -15,7 +15,7 @@ public class Household extends EconAgent {
 //			asEmployee = new Employee(asLifecycle, bankAccount());
 			asEmployee = new Employee(null, bankAccount());
 			asConsumer = new Consumer(bankAccount(), consumptionAC, asEmployee);
-			asOwnerOccupier = new OwnerOccupier(saleMarket,asEmployee);
+			asOwnerOccupier = new OwnerOccupier(saleMarket,asEmployee,bankAccount());
 	//		addTrait(asLifecycle);
 			addTrait(asEmployee);
 			addTrait(asConsumer);

@@ -22,8 +22,7 @@ public abstract class Market extends EconAgent {
 		if(message instanceof Match) {
 			// a match has completed its wait
 			Match match = (Match)message;
-			match.offer.getIssuer().completeSale(match.offer);
-			match.bid.getIssuer().completePurchase(match.bid, match.offer);
+			match.offer.getIssuer().completeSale(match.offer, match.bid.getIssuer());
 			return(true);
 		}
 		return(super.receive(message));

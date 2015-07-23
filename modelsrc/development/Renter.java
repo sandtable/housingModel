@@ -1,7 +1,5 @@
 package development;
 
-import housing.House;
-
 public class Renter implements MarketBid.IIssuer, IAgentTrait, IMessage.IReceiver {
 	
 	@Override
@@ -26,12 +24,17 @@ public class Renter implements MarketBid.IIssuer, IAgentTrait, IMessage.IReceive
 		return(false);
 	}
 	
-	@Override
-	public void completePurchase(MarketBid bid, MarketOffer offer) {
-		// TODO Auto-generated method stub
-		
-	}
-
 	OOMarketBid	rentalBid;
 	House 				home;
+	@Override
+	public boolean receive(House h) {
+		home = h;
+		return false;
+	}
+
+	@Override
+	public boolean receive(DemandForPayment d) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

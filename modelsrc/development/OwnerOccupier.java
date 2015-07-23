@@ -1,11 +1,13 @@
 package development;
 
+import development.MarketOffer.Issuer;
 import utilities.ModelTime;
 
-public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, MarketOffer.IIssuer, IMessage.IReceiver {
-	public OwnerOccupier(HouseSaleMarket iSaleMarket, Employee iEmployeeTrait) {
+public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, IMessage.IReceiver {
+	public OwnerOccupier(HouseSaleMarket iSaleMarket, Employee iEmployeeTrait, DepositAccount ac) {
 		saleMarket = iSaleMarket;
 		employeeTrait = iEmployeeTrait;
+		marketOfferIssuer = new MarketOffer.Issuer(ac);
 	}
 	
 	@Override
@@ -27,15 +29,7 @@ public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, MarketOffe
 	public void die(IMessage.IReceiver beneficiary) {
 		beneficiary.receive(home); 
 	}
-	
-	@Override
-	public void completePurchase(MarketBid bid, MarketOffer offer) {
-		// successful bid
-		home = offer.house;
-		// get mortgage
-		// transfer activeBid.price to depositAccount
-	}
-	
+		
 	public void completeSale(MarketOffer offer) {
 		if(offer != activeOffer) {
 			System.out.println("Strange, completing house sale on offer I didn't make");
@@ -79,6 +73,17 @@ public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, MarketOffe
 		final double SIGMA = 5.6*12.0*100.0;//5.6;	// scale
 		return((long)(SIGMA*monthlyIncome*Math.exp(EPSILON*Model.root.random.nextGaussian())/(1.0 - A*hpa)));
 	}
+	@Override
+	public boolean receive(House h) {
+		home = h;
+		return true;
+	}
+
+	@Override
+	public boolean receive(DemandForPayment d) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 	public double P_SELL = 1.0/(7.0*12.0);  // monthly probability of selling home
 	
@@ -90,4 +95,5 @@ public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, MarketOffe
 	ModelTime			lastIntrospectionTime;
 	HouseSaleMarket		saleMarket;
 	Employee			employeeTrait;
+	MarketOffer.Issuer   marketOfferIssuer;
 }

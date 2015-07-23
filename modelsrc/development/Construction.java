@@ -1,14 +1,15 @@
 package development;
 
 
-public class Construction extends EconAgent implements IHouseOwner, MarketOffer.IIssuer {
+public class Construction extends EconAgent implements IHouseOwner {
 
 	public Construction(Bank bank) {
 		super(new DepositAccount.Owner());
 		bank.openAccount(getTrait(DepositAccount.Owner.class));
 		bankAccount = getTrait(DepositAccount.Owner.class).first();
+		marketOfferIssuer = new MarketOffer.Issuer(bankAccount);
 		housesPerHousehold = 4100.0/5000.0;
-		housingStock = 0;
+		housingStock = 0; 
 	}
 	
 	public void init() {
@@ -32,24 +33,12 @@ public class Construction extends EconAgent implements IHouseOwner, MarketOffer.
 		newBuild.owner = this;
 		++housingStock;
 		price = Data.HousingMarket.referencePrice(newBuild.quality);
-		Model.root.houseSaleMarket.receive(new MarketOffer(this, newBuild, price, bankAccount));
+		marketOfferIssuer.issue(newBuild, price);
 	}
 	
 	@Override
 	public boolean remove(House house) {
 		return(true);
-	}
-
-	@Override
-	public boolean terminate(Contract contract) {
-		// --- sale has been terminated
-		--housingStock;
-		return true;
-	}
-
-	@Override
-	public void completeSale(MarketOffer offer) {
-		// no need to do anything
 	}
 
 //	@Override
@@ -59,4 +48,5 @@ public class Construction extends EconAgent implements IHouseOwner, MarketOffer.
 	public double 	housesPerHousehold; 	// target number of houses per household
 	public int 		housingStock;			// total number of houses built
 	DepositAccount  bankAccount;
+	MarketOffer.Issuer marketOfferIssuer;
 }

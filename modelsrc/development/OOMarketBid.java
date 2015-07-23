@@ -17,11 +17,18 @@ public class OOMarketBid extends MarketBid implements Market.IQualityPriceSuppli
 			me = iMe;
 		}
 
-		@Override
-		public void completePurchase(MarketBid bid, MarketOffer offer) {
-			DepositAccount payoutAC = me.getTrait(DepositAccount.Owner.class).first();
-			payoutAC.transfer(offer.payinAC, offer.getPrice());
-			me.receive(offer.house);
+//		@Override
+//		public void completePurchase(MarketBid bid, MarketOffer offer) {
+//			DepositAccount payoutAC = me.getTrait(DepositAccount.Owner.class).first();
+//			payoutAC.transfer(offer.payinAC, offer.getPrice());
+//		}
+		
+		public boolean receive(DemandForPayment d) {
+			return(me.receive(d));
+		}
+		
+		public boolean receive(House h) {
+			return(me.receive(h));
 		}
 		
 		EconAgent me;

@@ -32,6 +32,10 @@ public class DepositAccount extends Contract {
 				for(DepositAccount ac : this) {
 					ac.transfer(Model.root.government.bankAccount(), ac.balance);
 				}
+				return(true);
+			} else if(message instanceof DemandForPayment) {
+				((DemandForPayment)message).pay(first());
+				return(true);
 			}
 			return(super.receive(message));
 		}
