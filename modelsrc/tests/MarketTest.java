@@ -8,9 +8,10 @@ import development.House;
 import development.HouseSaleMarket;
 import development.IMessage;
 import development.ITriggerable;
-import development.Market;
+import development.HousingMarket;
 import development.Model;
 import development.OOMarketBid;
+import development.RentalMarket;
 import development.Trigger;
 import sim.engine.SimState;
 import sim.engine.Steppable;
@@ -46,7 +47,8 @@ public class MarketTest extends Model {
 	public MarketTest(long seed) {
 		super(seed);
 		bank = new Bank();
-		houseSaleMarket = new HouseSaleMarket();
+		saleMarket = new HouseSaleMarket();
+		rentalMarket = new RentalMarket();
 		construction = new Construction(bank);
 		Household1 = new HouseholdStub(bank);
 		Household2 = new HouseholdStub(bank);
@@ -55,9 +57,9 @@ public class MarketTest extends Model {
 
 	public void start() {
 		construction.buildHouse();
-		System.out.println(houseSaleMarket.offers.size());
-		Household1.asMarketBidder.issue(50000000, 0, houseSaleMarket.bids);
-		Household2.asMarketBidder.issue(55000000, 0, houseSaleMarket.bids);
+		System.out.println(saleMarket.offers.size());
+		Household1.asMarketBidder.issue(50000000, 0, saleMarket.bids);
+		Household2.asMarketBidder.issue(55000000, 0, saleMarket.bids);
 	}
 	
 	public void finish() {

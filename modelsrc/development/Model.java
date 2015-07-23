@@ -21,7 +21,8 @@ public class Model extends SimState {
 	public Firm				firm;
 	public Government 		government;
 	public SetOfHouseholds	setOfHouseholds;
-	public HouseSaleMarket	houseSaleMarket;
+	public HouseSaleMarket	saleMarket;
+	public RentalMarket		rentalMarket;
 	public Construction		construction;
 
 	static public Model root;

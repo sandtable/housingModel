@@ -1,52 +1,82 @@
 package development;
 
-import java.util.HashMap;
-
-import development.Market.Match;
 import utilities.PriorityQueue2D;
 
-public class HouseSaleMarket extends Market {
+public class HouseSaleMarket extends HousingMarket {
 
 	@Override
-	public Market.Offers newOffers() {
+	public HousingMarket.Offers newOffers() {
 		return(this.new Offers());
 	}
 
 	@Override
-	public Market.Bids newBids() {
+	public HousingMarket.Bids newBids() {
 		return(this.new Bids());
 	}
 
-	static interface IYeildPriceSupplier {
-		double getYeild();
-		long getPrice();
+	@Override
+	public long referencePrice(int quality) {
+		return(Data.HousingMarket.referenceSalePrice(quality));
 	}
 
-	public class OOBids extends Contract.Owner<OOMarketBid> {
-		public OOBids() {
-			super(OOMarketBid.class);
-		}
-		
+	public Match matchBid(BTLMarketBid bid) {
+		return(setupMatch((MarketOffer)((HouseSaleMarket.Offers)offers).BTLqueue.peek(bid), bid));
+	}
+	
+
+	public class Bids extends HousingMarket.Bids {		
 		@Override
 		public boolean receive(IMessage contract) {
-			if(super.receive(contract)) {
-				// match bid with current offers
-				// Market.this.offers blah blah
+			if(contract instanceof BTLMarketBid) {
+				BTLMarketBid bid = (BTLMarketBid)contract;
+				Match match = HouseSaleMarket.this.matchBid(bid);
+				if(match != null) {
+					add((MarketBid)contract);
+					return(true);
+				}
+			}
+			return(super.receive(contract));
+		}
+	}
+
+	
+
+	public class Offers extends HousingMarket.Offers {
+		public Offers() {
+			BTLqueue = new PriorityQueue2D<>(new IYeildPriceSupplier.Comparator());
+		}
+
+		@Override
+		public void add(MarketOffer offer) {
+			super.add(offer);
+			BTLqueue.add(offer);
+		}
+
+		@Override
+		public boolean discard(Object offer) {
+			if(super.discard(offer)) {
+				return(BTLqueue.remove(offer));
 			}
 			return(false);
 		}
-		HashMap<MarketBid,Match>	bidMatches;
+
+		PriorityQueue2D<HouseSaleMarket.IYeildPriceSupplier>	BTLqueue; // offers sorted by yeild
 	}
 
 	
-
-	public class Offers extends Market.Offers {
-		public Match matchBid(BTLMarketBid bid) {
-			return(setupMatch((MarketOffer)BTLqueue.poll(bid), bid));
+	static interface IYeildPriceSupplier {
+		double getYeild();
+		long getPrice();
+		public static class Comparator implements PriorityQueue2D.XYComparator<IYeildPriceSupplier> {
+			@Override
+			public int XCompare(IYeildPriceSupplier arg0, IYeildPriceSupplier arg1) {
+				return(Long.signum(arg0.getPrice() - arg1.getPrice()));
+			}
+			@Override
+			public int YCompare(IYeildPriceSupplier arg0, IYeildPriceSupplier arg1) {
+				return((int)Math.signum(arg0.getYeild() - arg1.getYeild()));
+			}
 		}
-
-		PriorityQueue2D<HouseSaleMarket.IYeildPriceSupplier>	BTLqueue;
 	}
-	
-	public OOBids ooBids;
+
 }

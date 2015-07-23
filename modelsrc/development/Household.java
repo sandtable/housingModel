@@ -4,7 +4,7 @@ package development;
 
 public class Household extends EconAgent {
 	public Household() {
-		this(Model.root.bank, Model.root.firm.getSalesAC(), Model.root.houseSaleMarket);
+		this(Model.root.bank, Model.root.firm.getSalesAC(), Model.root.saleMarket);
 	}
 	
 	public Household(Bank bank, DepositAccount consumptionAC, HouseSaleMarket saleMarket) {

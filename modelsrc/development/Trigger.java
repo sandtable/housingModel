@@ -71,7 +71,7 @@ public class Trigger {
 		}
 		@Override
 		public void sendToSchedule() {
-			Model.root.schedule.scheduleOnceIn(delay, this);
+			Model.root.schedule.scheduleOnce(ModelTime.now().raw()+delay, this);
 		}
 		double delay;
 	}
@@ -149,14 +149,47 @@ public class Trigger {
 		ITrigger		endTrigger;
 	}
 	
+	/***
+	 * Implements a trigger that triggers as a Poisson process with a given
+	 * rate parameter r. i.e. probability of going time t between triggers
+	 * is given by P(t) = e^-rt
+	 * @author daniel
+	 *
+	 */
+	@SuppressWarnings("serial")
+	static public class PoissonProcess extends OnceAfter {
+		public PoissonProcess(double rate, ModelTime.Units perWhat) {
+			super(new ModelTime(0.0,ModelTime.Units.RAW));
+			rate = rate/perWhat.raw();
+			delay = nextDelay();
+		}
+		
+		@Override
+		public void step(SimState arg0) {
+			if(active) {
+				listener.trigger();
+				delay = nextDelay();
+				sendToSchedule();
+			}
+		}
+		
+		/** return: a random delay between events with exponential distribution */
+		double nextDelay() {
+			return(-Math.log(1.0 - Model.root.random.nextDouble())/rate);
+		}
+		
+		double rate;
+	}
+
 	static public Repeating repeatingEvery(ModelTime time) 	{return(new Repeating(time));}
 	static public Once 		timeIs(ModelTime time) 			{return(new Once(time));}
 	static public OnceAfter after(ModelTime time) 			{return(new OnceAfter(time));}
 	static public Repeating yearly() 						{return(repeatingEvery(ModelTime.year()));}
+	static public Repeating quarterly()						{return(repeatingEvery(ModelTime.quarter()));}
 	static public Repeating monthly() 						{return(repeatingEvery(ModelTime.month()));}
 	static public Repeating weekly() 						{return(repeatingEvery(ModelTime.week()));}
 	static public Repeating daily() 						{return(repeatingEvery(ModelTime.day()));}
-	
+	static public PoissonProcess   poisson(double rate, ModelTime.Units perWhat)		{return(new PoissonProcess(rate,perWhat));}
 	static public ITrigger onDemand() {
 		return(new ITrigger() {
 			@Override

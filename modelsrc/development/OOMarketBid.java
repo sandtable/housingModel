@@ -2,10 +2,10 @@ package development;
 
 import java.util.HashMap;
 
-import development.Market.Match;
+import development.HousingMarket.Match;
 import utilities.PriorityQueue2D;
 
-public class OOMarketBid extends MarketBid implements Market.IQualityPriceSupplier {	
+public class OOMarketBid extends MarketBid implements HousingMarket.IQualityPriceSupplier {	
 	public OOMarketBid(IIssuer issuer, long iPrice, int iMinQuality) {
 		super(issuer, iPrice);
 		minQuality = iMinQuality;

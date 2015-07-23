@@ -3,7 +3,7 @@ package development;
 import utilities.ModelTime;
 import utilities.PriorityQueue2D;
 
-public class MarketOffer extends Contract implements Market.IQualityPriceSupplier, HouseSaleMarket.IYeildPriceSupplier {
+public class MarketOffer extends Contract implements HousingMarket.IQualityPriceSupplier, HouseSaleMarket.IYeildPriceSupplier {
 	/***********************************************
 	 * Construct a new record.
 	 * 
@@ -37,8 +37,10 @@ public class MarketOffer extends Contract implements Market.IQualityPriceSupplie
 
 	@Override
 	public double getYeild() {
-		// TODO Auto-generated method stub
-		return 0;
+		return(
+				Model.root.rentalMarket.getAverageSalePrice(getQuality())/
+				getPrice()
+				);
 	}
 	
 	IIssuer getIssuer() {
@@ -54,9 +56,9 @@ public class MarketOffer extends Contract implements Market.IQualityPriceSupplie
 		return(currentMatch != null);
 	}
 	
-	public Market.Match matchWith(MarketBid bid) {
+	public HousingMarket.Match matchWith(MarketBid bid) {
 		if(currentMatch != null) return(null);
-		currentMatch = new Market.Match(this, bid);
+		currentMatch = new HousingMarket.Match(this, bid);
 		return(currentMatch);
 	}
 	
@@ -75,7 +77,7 @@ public class MarketOffer extends Contract implements Market.IQualityPriceSupplie
 		}
 		
 		public void issue(House house, long price) {
-			Model.root.houseSaleMarket.receive(new MarketOffer(this, house, price));
+			Model.root.saleMarket.receive(new MarketOffer(this, house, price));
 		}
 
 		@Override
@@ -89,11 +91,8 @@ public class MarketOffer extends Contract implements Market.IQualityPriceSupplie
 	}
 	
 	public House 		house;
-	// public int			quality;
 	public long 		initialListedPrice;
 	public long			currentPrice;
 	public ModelTime	tInitialListing; 	// time of initial list
-//	public MarketBid	currentBid;			// if non-null the house is currently 'under offer'
-	Market.Match 		currentMatch;			// if non-null the house is currently 'under offer'
-	//DepositAccount		payinAC;
+	HousingMarket.Match currentMatch;		// if non-null the house is currently 'under offer'
 }

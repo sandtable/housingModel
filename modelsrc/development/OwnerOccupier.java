@@ -1,6 +1,5 @@
 package development;
 
-import development.MarketOffer.Issuer;
 import utilities.ModelTime;
 
 public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, IMessage.IReceiver {
@@ -21,7 +20,7 @@ public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, IMessage.I
 	
 	public void introspect() {
 		if(houseForSale == false && decideToSellHome()) {
-			long price = desiredPurchasePrice(employeeTrait.monthlyIncome(), saleMarket.hpa());
+			long price = desiredPurchasePrice(employeeTrait.monthlyIncome(), saleMarket.getHPIAppreciation());
 			saleMarket.receive(new OOMarketBid(this, price, home.quality));
 		}
 	}
@@ -68,7 +67,7 @@ public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, IMessage.I
 	 *  of house price appreciation.
 	 ****************************/
 	public long desiredPurchasePrice(double monthlyIncome, double hpa) {
-		final double A = 0.0;//0.48;			// sensitivity to house price appreciation
+		final double A = 0.0;//0.48/12.0;			// sensitivity to house price appreciation
 		final double EPSILON = 0.36;//0.36;//0.48;//0.365; // S.D. of noise
 		final double SIGMA = 5.6*12.0*100.0;//5.6;	// scale
 		return((long)(SIGMA*monthlyIncome*Math.exp(EPSILON*Model.root.random.nextGaussian())/(1.0 - A*hpa)));

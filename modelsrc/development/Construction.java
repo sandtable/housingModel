@@ -32,7 +32,7 @@ public class Construction extends EconAgent implements IHouseOwner {
 		newBuild = new House();
 		newBuild.owner = this;
 		++housingStock;
-		price = Data.HousingMarket.referencePrice(newBuild.quality);
+		price = Data.HousingMarket.referenceSalePrice(newBuild.quality);
 		marketOfferIssuer.issue(newBuild, price);
 	}
 	

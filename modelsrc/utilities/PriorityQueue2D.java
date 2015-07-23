@@ -111,9 +111,10 @@ public class PriorityQueue2D<E> {
 		return(uncoveredElements.floor(xGreatestBoundary));		
 	}
 	
-	public boolean remove(E element) {
+	@SuppressWarnings("unchecked")
+	public boolean remove(Object element) {
 		if(uncoveredElements.contains(element)) {
-			removeUncovered(element);
+			removeUncovered((E)element);
 		} else {
 			ySortedElements.remove(element);
 		}

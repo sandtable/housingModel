@@ -14,9 +14,10 @@ public class ModelTime {
 		YEAR(360.0),
 		YEARS(360.0);
 		
-		Units(double d) {
-			multiplier = d;
-		}
+		Units(double d) {multiplier = d;}
+
+		public double raw() {return(multiplier);}
+		
 		double multiplier;
 	}
 
@@ -69,6 +70,9 @@ public class ModelTime {
 	}
 	static public ModelTime year() {
 		return(ModelTime.years(1.0));
+	}
+	static public ModelTime quarter() {
+		return(ModelTime.months(3.0));
 	}
 	static public ModelTime month() {
 		return(ModelTime.months(1.0));
