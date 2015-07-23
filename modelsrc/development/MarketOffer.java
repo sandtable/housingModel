@@ -69,8 +69,9 @@ public class MarketOffer extends Contract implements Market.IQualityPriceSupplie
 	}
 	
 	public static class Issuer extends Contract.Issuer<MarketOffer> implements IIssuer {
-		public Issuer(DepositAccount payeeAC) {
+		public Issuer(DepositAccount iPayeeAC) {
 			super(MarketOffer.class);
+			payeeAC = iPayeeAC;
 		}
 		
 		public void issue(House house, long price) {
