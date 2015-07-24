@@ -24,6 +24,7 @@ public class Model extends SimState {
 	public HouseSaleMarket	saleMarket;
 	public RentalMarket		rentalMarket;
 	public Construction		construction;
+	public CentralBank		centralBank;
 
 	static public Model root;
 	private static final long serialVersionUID = 1714518191380607106L;

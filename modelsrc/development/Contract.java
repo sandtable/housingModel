@@ -35,7 +35,7 @@ public class Contract implements IMessage {
 //	}
 	
 	static public class HashSet<CONTRACT extends Contract> extends IdentityHashSet<CONTRACT> {
-		public HashSet(Class<CONTRACT> clazz) {
+		public HashSet(Class<? extends Contract> clazz) {
 			contractClazz = clazz;
 		}
 		
@@ -43,7 +43,7 @@ public class Contract implements IMessage {
 			return(contractClazz);
 		}
 		
-		Class<CONTRACT> contractClazz;
+		Class<? extends Contract> contractClazz;
 	}
 	
 	static public class Issuer<CONTRACT extends Contract> extends HashSet<CONTRACT> implements IIssuer {
@@ -69,7 +69,7 @@ public class Contract implements IMessage {
 	 * @author daniel
 	 */
 	static public class Owner<CONTRACT extends Contract> extends HashSet<CONTRACT> implements IMessage.IReceiver, IAgentTrait {
-		public Owner(Class<CONTRACT> contractClazz) {
+		public Owner(Class<? extends Contract> contractClazz) {
 			super(contractClazz);
 		}
 		
@@ -78,7 +78,7 @@ public class Contract implements IMessage {
 				discardAll();
 				return(true);
 			} else if(newContract.getClass() == contractClazz) {
-				add(contractClazz.cast(newContract));
+				add((CONTRACT)(newContract));
 				return(true);				
 			}
 			return(false);

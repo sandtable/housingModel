@@ -1,6 +1,5 @@
 package development;
 
-import housing.Model;
 import utilities.LongSupplier;
 import utilities.ModelTime;
 
@@ -20,12 +19,16 @@ public class InterestPaymentAgreement extends PaymentAgreement implements ITrigg
 		annualInterestRate = iAnnualInterest;
 		unpaidInterest = 0.0;
 		balance = iBalance;
-		unpaidInterestTimestamp = Model.timeNow();
+		resetInterestTimer();
 	}
 	
 	@Override
 	public long amount() {
 		return((long)unpaidInterest);
+	}
+	
+	public void resetInterestTimer() {
+		unpaidInterestTimestamp = ModelTime.now();		
 	}
 	
 	public void trigger() {
@@ -35,7 +38,7 @@ public class InterestPaymentAgreement extends PaymentAgreement implements ITrigg
 	}
 	
 	public void updateUnpaidInterest() {
-		ModelTime newTimestamp = Model.timeNow();
+		ModelTime newTimestamp = ModelTime.now();
 		unpaidInterest += balance.getAsLong()*annualInterestRate*(newTimestamp.inYears() - unpaidInterestTimestamp.inYears());
 		unpaidInterestTimestamp = newTimestamp;
 	}

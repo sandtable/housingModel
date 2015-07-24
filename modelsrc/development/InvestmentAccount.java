@@ -8,10 +8,15 @@ import utilities.ModelTime;
  *
  */
 public class InvestmentAccount extends DepositAccount implements ITriggerable {
-	public InvestmentAccount(DepositAccount sourceAC, double annualInterest, ModelTime interestPeriod) {
+	/***
+	 * @param sourceAC 			source of interest payments
+	 * @param annualInterest
+	 * @param interestPeriod	period between interest payments
+	 */
+	public InvestmentAccount(InvestmentAccount.IIssuer accountIssuer, DepositAccount sourceAC, double annualInterest, ModelTime interestPeriod) {
+		super(accountIssuer);
 		interestPaymentTrigger = Trigger.repeatingEvery(interestPeriod);
 		interestPayment = new InterestPaymentAgreement(sourceAC, this, this, annualInterest);
-		interestPaymentTrigger.schedule(this);
 	}
 	
 	public void trigger() {
@@ -21,6 +26,12 @@ public class InvestmentAccount extends DepositAccount implements ITriggerable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	/*** start interest payments ***/
+	public void activate() {
+		interestPayment.resetInterestTimer();
+		interestPaymentTrigger.schedule(this);
 	}
 	
 	@Override

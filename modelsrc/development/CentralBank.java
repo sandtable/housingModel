@@ -30,20 +30,24 @@ public class CentralBank {
 //			firstTimeBuyerLTVLimit = 0.95;
 //		}
 	}
-	
-	public double loanToIncomeRegulation(Mortgage.Borrower h, boolean isHome) {
+
+	public double loanToIncomeRegulation(boolean isHome, boolean isFirstTimeBuyer) {
 		if(isHome) {
-			if(h.isFirstTimeBuyer()) {
+			if(isFirstTimeBuyer) {
 				return(firstTimeBuyerLTILimit);
 			}
 			return(ownerOccupierLTILimit);
 		}
 		return(buyToLetLTILimit);
 	}
+	
+	public double loanToIncomeRegulation(Mortgage m) {
+		return(loanToIncomeRegulation(!m.isBuyToLet, m.isFirstTimeBuyer));
+	}
 
-	public double loanToValueRegulation(Mortgage.Borrower h, boolean isHome) {
+	public double loanToValueRegulation(boolean isHome, boolean isFirstTimeBuyer) {
 		if(isHome) {
-			if(h.isFirstTimeBuyer()) {
+			if(isFirstTimeBuyer) {
 				return(firstTimeBuyerLTVLimit);
 			}
 			return(ownerOccupierLTVLimit);
@@ -51,6 +55,10 @@ public class CentralBank {
 		return(buyToLetLTVLimit);
 	}
 
+	public double loanToValueRegulation(Mortgage m) {
+		return(loanToValueRegulation(!m.isBuyToLet, m.isFirstTimeBuyer));
+	}
+	
 	public double ownerOccupierLTILimit;	// LTI upper limit for owner-occupiers
 	public double ownerOccupierLTVLimit;	// LTV upper limit for owner-occupiers
 	public double buyToLetLTILimit;			// LTI upper limit for Buy-to-let investors

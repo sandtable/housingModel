@@ -3,11 +3,7 @@ package development;
 
 public class DepositAccount extends Contract {
 
-	public DepositAccount() {
-		super(tmpBank);
-	}
-
-	public DepositAccount(DepositAccount.Issuer issuer) {
+	public DepositAccount(DepositAccount.IIssuer issuer) {
 		super(issuer);
 	}
 	
@@ -26,6 +22,9 @@ public class DepositAccount extends Contract {
 
 	static public class Owner extends Contract.Owner<DepositAccount> {
 		public Owner() {super(DepositAccount.class);}
+		public Owner(Class<? extends Contract> class1) {
+			super(class1);
+		}
 		@Override
 		public boolean receive(IMessage message) {
 			if(message instanceof Message.Die) {
@@ -42,11 +41,5 @@ public class DepositAccount extends Contract {
 		
 	}
 
-//	Object issuer; // for systemic risk
-
 	public long balance = 0; // balance in cents
-	
-	static Contract.IIssuer tmpBank = new Contract.IIssuer() {
-		public boolean terminate(Contract o) {return(true);}
-	};
 }
