@@ -1,4 +1,6 @@
-package development;
+package contracts;
+
+import development.IMessage;
 
 public class DemandForPayment implements IMessage {
 	public DemandForPayment(DepositAccount iPayeeAC, long iAmount, Contract iContract) {

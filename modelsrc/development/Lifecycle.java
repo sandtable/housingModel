@@ -7,11 +7,13 @@ import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
+import contracts.DepositAccount;
+
 import sim.engine.SimState;
 import utilities.ModelTime;
 
-public class Lifecycle implements IAgentTrait {	
-	public Lifecycle(IMessage.IReceiver me) {
+public class Lifecycle extends ModelLeaf {	
+	public Lifecycle() {
 		ModelTime birthAge = ModelTime.years(Data.Lifecycle.pdfHouseholdAgeAtBirth.nextDouble());
 		ModelTime deathAge;
 		do { // calculate age at death given we're alive at current age
@@ -21,7 +23,25 @@ public class Lifecycle implements IAgentTrait {
 		birthday = ModelTime.now().minus(birthAge);
 		deathday = birthday.plus(deathAge);
 		// schedule death
-		Trigger.timeIs(deathday).schedule(Message.die, me);
+		Trigger.timeIs(deathday).schedule(new ITriggerable() {public void trigger() {die();}});
+	}
+	
+	@Override
+	public void start(final IModelNode parent) {
+		super.start(parent);
+		Trigger.timeIs(deathday).schedule(new ITriggerable() {public void trigger() {parent.die();}});
+	}
+	
+	@Override
+	public void die() {
+		DepositAccount.Owner accounts = parent().get(DepositAccount.Owner.class);
+		Government government = parent().get(Government.class);
+		if(accounts != null && government != null) {
+			for(DepositAccount ac : accounts) {
+				ac.transfer(government.bankAccount(), ac.balance);
+			}
+		}
+		super.die();
 	}
 			
 	public ModelTime age() {

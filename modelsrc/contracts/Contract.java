@@ -1,8 +1,15 @@
-package development;
+package contracts;
 
 import java.util.Iterator;
 
-import utilities.IdentityHashSet;
+import development.EconAgent;
+import development.IMessage;
+import development.IModelNode;
+import development.Message;
+import development.NodeHashSet;
+import development.IMessage.IReceiver;
+import development.Message.Die;
+
 /***
  * A contract is something that may sit on an economic agent's balance
  * sheet. A contract has a defined issuer and owner, in contrast to an
@@ -12,13 +19,10 @@ import utilities.IdentityHashSet;
  *
  */
 public class Contract implements IMessage {
+	IIssuer	 		issuer; // should be EconAgent?
 
-//	public Contract() {
-//		this(null);
-//	}
-	
-	public Contract(IIssuer terminationHandler) {
-		issuer = terminationHandler;
+	public Contract(IIssuer issuer) {
+		this.issuer = issuer;
 	}
 	
 	public boolean terminate() {
@@ -33,23 +37,12 @@ public class Contract implements IMessage {
 //		public Class<? extends Contract> getElementClass();
 //		public Iterator<? extends Contract> iterator();
 //	}
-	
-	static public class HashSet<CONTRACT extends Contract> extends IdentityHashSet<CONTRACT> {
-		public HashSet(Class<? extends Contract> clazz) {
-			contractClazz = clazz;
-		}
 		
-		public Class<? extends Contract> getElementClass() {
-			return(contractClazz);
-		}
-		
-		Class<? extends Contract> contractClazz;
-	}
-	
-	static public class Issuer<CONTRACT extends Contract> extends HashSet<CONTRACT> implements IIssuer {
+	static public class Issuer<CONTRACT extends Contract> extends NodeHashSet<CONTRACT> implements IIssuer {
 		public Issuer(Class<CONTRACT> contractClazz) {
 			super(contractClazz);
 		}
+		
 		public boolean issue(CONTRACT newContract, IMessage.IReceiver owner) {
 			if(owner == null) return(false);
 			add(newContract);
@@ -58,27 +51,35 @@ public class Contract implements IMessage {
 			remove(newContract);
 			return(false);
 		}
-		
+				
 		public boolean terminate(Contract contract) {
 			return(remove(contract));
-		}
+		}		
 	}
 	
 	/***
 	 * Agent module for deposit account holder
 	 * @author daniel
 	 */
-	static public class Owner<CONTRACT extends Contract> extends HashSet<CONTRACT> implements IMessage.IReceiver, IAgentTrait {
-		public Owner(Class<? extends Contract> contractClazz) {
+	static public class Owner<CONTRACT extends Contract> extends NodeHashSet<CONTRACT> implements IMessage.IReceiver {
+		public Owner(Class<? extends CONTRACT> contractClazz) {
 			super(contractClazz);
+		}
+		
+		@Override
+		public void start(IModelNode parent) {
+			super.start(parent);
+			if(parent instanceof EconAgent) {
+				((EconAgent)parent).registerHandler(getElementClass(), this);
+			}
 		}
 		
 		public boolean receive(IMessage newContract) {
 			if(newContract instanceof Message.Die) {
 				discardAll();
 				return(true);
-			} else if(newContract.getClass() == contractClazz) {
-				add((CONTRACT)(newContract));
+			} else if(newContract.getClass() == getElementClass()) {
+				add(getElementClass().cast(newContract));
 				return(true);				
 			}
 			return(false);
@@ -100,10 +101,7 @@ public class Contract implements IMessage {
 		}
 	}
 	
-	static public interface IIssuer extends IAgentTrait {
+	static public interface IIssuer extends IModelNode {
 		boolean terminate(Contract contract); // termination of the contract early or after execution
 	}
-	
-	IIssuer	 		issuer; // should be EconAgent?
-
 }

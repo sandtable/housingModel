@@ -1,4 +1,6 @@
-package development;
+package contracts;
+
+import development.ITriggerable;
 
 abstract public class PaymentAgreement implements ITriggerable {
 	

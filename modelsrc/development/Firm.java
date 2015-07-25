@@ -1,26 +1,27 @@
 package development;
 
+import contracts.DepositAccount;
+
 public class Firm extends EconAgent {
-	public Firm(Bank bank) {
-		depositAccounts = new DepositAccount.Owner();
-		employerTrait = new Employer(this);
-		addTrait(depositAccounts);
-		addTrait(employerTrait);
-		bank.openAccount(depositAccounts);
+	public Firm() {
+		super(	new DepositAccount.Owner(),
+				new Employer()
+		);
 	}
 	
+	public void start(EconAgent parent) {
+		parent.get(Bank.class).openAccount(get(DepositAccount.Owner.class));		
+	}
+
 	public DepositAccount getPayrollAC() {
-		return(depositAccounts.first());
+		return(get(DepositAccount.Owner.class).defaultAccount());
 	}
 
 	public DepositAccount getSalesAC() {
-		return(depositAccounts.first());
+		return(get(DepositAccount.Owner.class).defaultAccount());
 	}
 	
-	public boolean employ(EconAgent newEmployee) {
-		return(employerTrait.issue(newEmployee.getTrait(Employee.class)));
+	public boolean employ(Employee newEmployee) {
+		return(get(Employer.class).issue(newEmployee));
 	}
-	
-	DepositAccount.Owner depositAccounts;
-	Employer employerTrait;
 }

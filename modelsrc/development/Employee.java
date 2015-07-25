@@ -1,16 +1,18 @@
 package development;
 
+import contracts.Contract;
+import contracts.DepositAccount;
+import contracts.LabourContract;
 import utilities.ModelTime;
 
 public class Employee extends Contract.Owner<LabourContract> implements LabourContract.IOwner {
-	public Employee(Lifecycle iLifecycle, DepositAccount iBankAccount) {
+	public Employee() {
 		super(LabourContract.class);
-		lifecycle = iLifecycle;
-		bankAccount = iBankAccount;
 	}
 
 	@Override
 	public ModelTime age() {
+		Lifecycle lifecycle = parent().get(Lifecycle.class);
 		if(lifecycle != null) {
 			return(lifecycle.age());
 		} else {
@@ -20,7 +22,7 @@ public class Employee extends Contract.Owner<LabourContract> implements LabourCo
 
 	@Override
 	public DepositAccount account() {
-		return(bankAccount);
+		return(parent().get(DepositAccount.Owner.class).defaultAccount());
 	}
 	
 	public long monthlyIncome() {
@@ -30,7 +32,4 @@ public class Employee extends Contract.Owner<LabourContract> implements LabourCo
 		}
 		return(income);
 	}
-	
-	Lifecycle lifecycle;
-	DepositAccount bankAccount;
 }

@@ -1,8 +1,14 @@
-package development;
+package contracts;
 
 import java.util.HashMap;
 
+
+import development.EconAgent;
+import development.HousingMarket;
+import development.IMessage;
+import development.HousingMarket.IQualityPriceSupplier;
 import development.HousingMarket.Match;
+import development.IMessage.IReceiver;
 import utilities.PriorityQueue2D;
 
 public class OOMarketBid extends MarketBid implements HousingMarket.IQualityPriceSupplier {	
@@ -12,30 +18,21 @@ public class OOMarketBid extends MarketBid implements HousingMarket.IQualityPric
 	}
 	
 	public static class Issuer extends Contract.Issuer<MarketBid> implements IIssuer {
-		public Issuer(EconAgent iMe) {
+		public Issuer() {
 			super(MarketBid.class);
-			me = iMe;
 		}
-
-//		@Override
-//		public void completePurchase(MarketBid bid, MarketOffer offer) {
-//			DepositAccount payoutAC = me.getTrait(DepositAccount.Owner.class).first();
-//			payoutAC.transfer(offer.payinAC, offer.getPrice());
-//		}
 
 		public void issue(long price, int quality, IMessage.IReceiver recipient) {
 			issue(new OOMarketBid(this, price, quality), recipient);
 		}
 		
-		public boolean receive(DemandForPayment d) {
-			return(me.receive(d));
+		@Override
+		public boolean receive(IMessage d) {
+			if(parent() instanceof EconAgent) {
+				return(((EconAgent)parent()).receive(d));
+			}
+			return(false);
 		}
-		
-		public boolean receive(House h) {
-			return(me.receive(h));
-		}
-		
-		EconAgent me;
 	}
 
 	@Override

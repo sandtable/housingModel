@@ -1,6 +1,6 @@
-package development;
+package contracts;
 
-import utilities.PriorityQueue2D;
+import development.HouseSaleMarket;
 
 public class BTLMarketBid extends MarketBid implements HouseSaleMarket.IYeildPriceSupplier {
 

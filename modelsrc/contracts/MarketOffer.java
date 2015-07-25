@@ -1,9 +1,22 @@
-package development;
+package contracts;
 
+import development.House;
+import development.HouseSaleMarket;
+import development.HousingMarket;
+import development.IModelNode;
+import development.HouseSaleMarket.IYeildPriceSupplier;
+import development.HousingMarket.IQualityPriceSupplier;
+import development.HousingMarket.Match;
 import utilities.ModelTime;
 import utilities.PriorityQueue2D;
 
 public class MarketOffer extends Contract implements HousingMarket.IQualityPriceSupplier, HouseSaleMarket.IYeildPriceSupplier {
+	public House 		house;
+	public long 		initialListedPrice;
+	public long			currentPrice;
+	public ModelTime	tInitialListing; 	// time of initial list
+	public HousingMarket.Match currentMatch;		// if non-null the house is currently 'under offer'
+	
 	/***********************************************
 	 * Construct a new record.
 	 * 
@@ -15,9 +28,8 @@ public class MarketOffer extends Contract implements HousingMarket.IQualityPrice
 		house = iHouse;
 		setPrice(price);
 		initialListedPrice = currentPrice;
-	//	quality = house.quality;
 		tInitialListing = ModelTime.now();
-//		payinAC = iPayinAC;
+		
 	}
 	
 	/***********************************************
@@ -38,12 +50,12 @@ public class MarketOffer extends Contract implements HousingMarket.IQualityPrice
 	@Override
 	public double getYeild() {
 		return(
-				Model.root.rentalMarket.getAverageSalePrice(getQuality())/
+				house.rentalMarket.getAverageSalePrice(getQuality())/
 				getPrice()
 				);
 	}
 	
-	IIssuer getIssuer() {
+	public IIssuer getIssuer() {
 		return((IIssuer)issuer);
 	}
 
@@ -71,28 +83,30 @@ public class MarketOffer extends Contract implements HousingMarket.IQualityPrice
 	}
 	
 	public static class Issuer extends Contract.Issuer<MarketOffer> implements IIssuer {
-		public Issuer(DepositAccount iPayeeAC) {
+		DepositAccount.Owner payee;
+
+		public Issuer() {
 			super(MarketOffer.class);
-			payeeAC = iPayeeAC;
+		}
+		
+		@Override
+		public void start(IModelNode parent) {
+			super.start(parent);
+			payee = parent.get(DepositAccount.Owner.class);
+			if(payee == null) System.out.println("A MarketOffer.Issuer needs to be a DepositAccount.Owner");
 		}
 		
 		public void issue(House house, long price) {
-			Model.root.saleMarket.receive(new MarketOffer(this, house, price));
+			house.saleMarket.receive(new MarketOffer(this, house, price));
 		}
 
 		@Override
 		public void completeSale(MarketOffer offer, MarketBid.IIssuer recipient) {
 			offer.house.owner.remove(offer.house);
 			recipient.receive(offer.house);
-			recipient.receive(new DemandForPayment(payeeAC, offer.getPrice(), offer));
+			recipient.receive(new DemandForPayment(payee.defaultAccount(), offer.getPrice(), offer));
 		}
 		
-		DepositAccount payeeAC;
 	}
 	
-	public House 		house;
-	public long 		initialListedPrice;
-	public long			currentPrice;
-	public ModelTime	tInitialListing; 	// time of initial list
-	HousingMarket.Match currentMatch;		// if non-null the house is currently 'under offer'
 }

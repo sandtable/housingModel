@@ -1,5 +1,11 @@
-package development;
+package contracts;
 
+import development.IMessage;
+import development.IModelNode;
+import development.Model;
+import development.Trigger;
+import development.IMessage.IReceiver;
+import development.Trigger.Repeating;
 import utilities.ModelTime;
 
 public class LabourContract extends Contract {
@@ -25,7 +31,7 @@ public class LabourContract extends Contract {
 	}
 	
 	
-	static public interface IOwner extends IMessage.IReceiver, IAgentTrait {
+	static public interface IOwner extends IMessage.IReceiver, IModelNode {
 		public ModelTime age();
 		public DepositAccount account();
 	}
@@ -35,7 +41,8 @@ public class LabourContract extends Contract {
 		public DepositAccount account();
 	}
 	
-	PaymentAgreement	payment;
+	
+	public PaymentAgreement	payment;
 	double				percentile; // wage percentile: proxy for skill of worker?
 	IOwner				payee;
 	Trigger.Repeating	trigger;

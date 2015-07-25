@@ -1,15 +1,14 @@
 package development;
 
+import contracts.DepositAccount;
 import utilities.ModelTime;
 
-public class Consumer implements IAgentTrait, IMessage.IReceiver {
-
-	public Consumer(DepositAccount iMyAccount, DepositAccount iShopsAccount, Employee iEmployeeTrait) {
-		myAccount = iMyAccount;
-		shopsAccount = iShopsAccount;
-		lastConsumption = ModelTime.now();
-		employeeTrait = iEmployeeTrait;
-	}
+public class Consumer extends ModelLeaf implements IMessage.IReceiver {
+	DepositAccount.Owner 	accounts;
+	Firm					shops;
+	ModelTime				lastConsumption;
+	Employee				employeeTrait;
+	ModelRoot				root;
 	
 	@Override
 	public boolean receive(IMessage message) {
@@ -32,14 +31,18 @@ public class Consumer implements IAgentTrait, IMessage.IReceiver {
 		ModelTime now = ModelTime.now();
 		
 		monthlyConsumption = 
-				10.0*Math.max((myAccount.balance/100.0 - Math.exp(4.07*Math.log(employeeTrait.monthlyIncome()*0.12)-33.1 + 0.2*Model.root.random.nextGaussian())),0.0);
+				10.0*Math.max((accounts.defaultAccount().balance/100.0 - Math.exp(4.07*Math.log(employeeTrait.monthlyIncome()*0.12)-33.1 + 0.2*root.random.nextGaussian())),0.0);
 		consumption = (long)(monthlyConsumption * now.minus(lastConsumption).inMonths()); 
-		myAccount.transfer(shopsAccount, consumption);
+		accounts.defaultAccount().transfer(shops.getSalesAC(), consumption);
 		lastConsumption = now;
 	}
 	
-	DepositAccount 	myAccount;
-	DepositAccount 	shopsAccount;
-	ModelTime		lastConsumption;
-	Employee		employeeTrait;
+	@Override
+	public void start(IModelNode parent) {
+		root = parent.get(ModelRoot.class);
+		accounts = parent.get(DepositAccount.Owner.class);
+		shops = root.get(Firm.class);
+		lastConsumption = ModelTime.now();
+		employeeTrait = parent.get(Employee.class);
+	}
 }

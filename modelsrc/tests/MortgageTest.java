@@ -1,26 +1,36 @@
 package tests;
 
+import contracts.DepositAccount;
+import contracts.Mortgage;
+import contracts.DepositAccount.Owner;
 import sim.engine.SimState;
 import utilities.ModelTime;
 import development.Bank;
 import development.CentralBank;
-import development.DepositAccount;
 import development.EconAgent;
+import development.IModelNode;
 import development.ITriggerable;
 import development.Model;
-import development.Mortgage;
 import development.Trigger;
-import development.DepositAccount.Owner;
 
 @SuppressWarnings("serial")
-public class MortgageTest extends Model implements ITriggerable {
+public class MortgageTest extends Model {
 
 	public static class HouseholdStub extends EconAgent implements ITriggerable {
-		public HouseholdStub(Bank bank) {
-			depositAccountOwner = new DepositAccount.Owner();
-			bank.openAccount(depositAccountOwner);
-			borrower = new Mortgage.Borrower(depositAccountOwner.first());
+		public HouseholdStub() {
+			super(
+					new DepositAccount.Owner(),
+					new Mortgage.Borrower()
+					);
+			borrower = get(Mortgage.Borrower.class);
+			depositAccountOwner = get(DepositAccount.Owner.class);
+		}
+
+		@Override
+		public void start(IModelNode parent) {
+			parent.find(Bank.class).openAccount(this);
 			Trigger.monthly().schedule(this);
+			super.start(parent);
 		}
 		
 		public void trigger() {
@@ -32,21 +42,22 @@ public class MortgageTest extends Model implements ITriggerable {
 	}
 	
 	public MortgageTest(long seed) {
-		super(seed);
-		centralBank = new CentralBank();
-		bank = new Bank();
-		household = new HouseholdStub(bank);
-		Trigger.after(ModelTime.year()).schedule(this);
+		super(seed, 
+				new CentralBank(),
+				new Bank(),
+				new HouseholdStub());
+
 	}
 
 	public void start() {
-		Mortgage m = bank.mortgageLender.requestApproval(household.borrower, 10000000, 1000000, true);
+		super.start();
+		Bank bank = root.get(Bank.class);
+		HouseholdStub household = root.get(HouseholdStub.class);
+		Mortgage m = bank.get(Mortgage.Lender.class).requestApproval(household.borrower, 10000000, 1000000, true);
 		System.out.println("Got Mortgage = "+m.principal);
-		bank.mortgageLender.issue(m, household.borrower);
-	}
-	
-	public void trigger() {
-		this.kill();
+		bank.get(Mortgage.Lender.class).issue(m, household.borrower);
+		Trigger.after(ModelTime.year()).schedule(new ITriggerable() {
+			public void trigger() {kill();}});
 	}
 	
 	public void finish() {
@@ -55,6 +66,4 @@ public class MortgageTest extends Model implements ITriggerable {
     public static void main(String[] args) {
     	SimState.doLoop(MortgageTest.class, args);
     }
-    
-    HouseholdStub household;
 }

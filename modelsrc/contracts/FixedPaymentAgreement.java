@@ -1,4 +1,5 @@
-package development;
+package contracts;
+
 
 public class FixedPaymentAgreement extends PaymentAgreement {
 

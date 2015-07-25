@@ -1,8 +1,9 @@
 package development;
 
+import contracts.Mortgage;
 import housing.CoreIndicators;
 
-public class CentralBank {
+public class CentralBank extends ModelLeaf {
 	
 	public CentralBank() {
 		// Setup initial values

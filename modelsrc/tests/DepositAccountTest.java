@@ -1,16 +1,8 @@
 package tests;
 
+import contracts.DepositAccount;
 import development.Bank;
-import development.DepositAccount;
-import development.Firm;
-import development.Government;
-import development.HouseSaleMarket;
-import development.Household;
 import development.Model;
-import development.SetOfHouseholds;
-import development.Trigger;
-import sim.engine.SimState;
-import utilities.ModelTime;
 
 @SuppressWarnings("serial")
 public class DepositAccountTest extends Model {
@@ -25,11 +17,11 @@ public class DepositAccountTest extends Model {
 	}
 
 	public void start() {
-    	bank.endowmentAccount.transfer(household1.first(), 100);
-    	bank.endowmentAccount.transfer(household2.first(), 55);
+    	bank.endowmentAccount.transfer(household1.defaultAccount(), 100);
+    	bank.endowmentAccount.transfer(household2.defaultAccount(), 55);
     	
-    	System.out.println("Household 1 = "+household1.first().balance);
-    	System.out.println("Household 2 = "+household2.first().balance);
+    	System.out.println("Household 1 = "+household1.defaultAccount().balance);
+    	System.out.println("Household 2 = "+household2.defaultAccount().balance);
     	System.out.println("Total Endowment = "+bank.endowmentAccount.balance);
 
 	}

@@ -1,5 +1,8 @@
-package development;
+package contracts;
 
+import development.ITriggerable;
+import development.Trigger;
+import development.Trigger.Repeating;
 import utilities.ModelTime;
 
 /***

@@ -1,5 +1,7 @@
 package development;
 
+import contracts.DepositAccount;
+
 /*****************************************
  * This class represents the government.
  * This is the class where taxation policy should be encoded.
@@ -29,20 +31,23 @@ public class Government extends EconAgent {
 		public int i;
 	}
 	
-	public Government(Bank bank, DepositAccount consumptionAC) {
-		this(new Government.Config(), bank, consumptionAC);
+	public Government() {
+		this(new Government.Config());
 	}
 
-	public Government(Government.Config c, Bank bank, DepositAccount iConsumptionAC) {
+	public Government(Government.Config c) {
+		super(new DepositAccount.Owner());
 		config = c;
-		consumptionAC = iConsumptionAC;
-		asDepositAccountOwner = new DepositAccount.Owner();
-		addTrait(asDepositAccountOwner);
-		bank.openAccount(asDepositAccountOwner);
+	}
+	
+	public void start(EconAgent parent) {
+		consumption = parent.get(Firm.class);
+		parent.get(Bank.class).openAccount(get(DepositAccount.Owner.class));
+		
 	}
 
 	DepositAccount bankAccount() {
-		return(getTrait(DepositAccount.Owner.class).first());
+		return(get(DepositAccount.Owner.class).defaultAccount());
 	}
 
 	/******************************************
@@ -101,6 +106,5 @@ public class Government extends EconAgent {
 	}
 
 	Government.Config	config;
-	public DepositAccount consumptionAC;
-	public DepositAccount.Owner asDepositAccountOwner;
+	Firm consumption;
 }

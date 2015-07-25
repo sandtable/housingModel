@@ -1,5 +1,8 @@
 package development;
 
+import contracts.BTLMarketBid;
+import contracts.MarketBid;
+import contracts.MarketOffer;
 import utilities.PriorityQueue2D;
 
 public class HouseSaleMarket extends HousingMarket {
@@ -64,7 +67,7 @@ public class HouseSaleMarket extends HousingMarket {
 	}
 
 	
-	static interface IYeildPriceSupplier {
+	public static interface IYeildPriceSupplier {
 		double getYeild();
 		long getPrice();
 		public static class Comparator implements PriorityQueue2D.XYComparator<IYeildPriceSupplier> {

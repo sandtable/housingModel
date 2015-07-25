@@ -1,30 +1,35 @@
 package development;
 
+import contracts.DepositAccount;
+import contracts.Mortgage;
+
 public class Bank extends EconAgent implements Mortgage.Lender.IBehaviour {
 //	public int    N_PAYMENTS = 12*25; // number of monthly repayments
 	public double INITIAL_BASE_RATE = 0.5; // Bank base-rate
 
 	public Bank() {
 		super(	new DepositAccount.Issuer(),
-				new DepositAccount.Owner());
-		depositAccounts = getTrait(DepositAccount.Issuer.class);
-		internalAccounts = getTrait(DepositAccount.Owner.class);
+				new DepositAccount.Owner(),
+				new Mortgage.Lender()
+				);
+		depositAccounts = get(DepositAccount.Issuer.class);
+		internalAccounts = get(DepositAccount.Owner.class);
 
 		endowmentAccount = new DepositAccount(depositAccounts);
 		depositAccounts.issue(endowmentAccount, internalAccounts);
 		profitAccount = new DepositAccount(depositAccounts);
 		depositAccounts.issue(profitAccount, internalAccounts);
-		
-		
-		mortgageLender = new Mortgage.Lender(this, profitAccount);
-		addTrait(mortgageLender);
-
 		init();
 	}
-		
+
 	public boolean openAccount(DepositAccount.Owner accountHolder) {
 		return(depositAccounts.issue(accountHolder));
 	}
+	
+	public boolean openAccount(EconAgent accountHolder) {
+		return(depositAccounts.issue(accountHolder.get(DepositAccount.Owner.class)));
+	}
+	
 		
 	public void init() {
 		baseRate = INITIAL_BASE_RATE;
@@ -71,7 +76,7 @@ public class Bank extends EconAgent implements Mortgage.Lender.IBehaviour {
 		this.baseRate = baseRate;
 	}
 	
-	public Mortgage.Lender	mortgageLender;	// all unpaid mortgage contracts supplied by the bank
+//	public Mortgage.Lender	mortgageLender;	// all unpaid mortgage contracts supplied by the bank
 	public double		interestSpread;	// current mortgage interest spread above base rate (monthly rate*12)
 	public double		baseRate;
 	// --- supply strategy stuff

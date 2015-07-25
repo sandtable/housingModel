@@ -1,6 +1,12 @@
 package development;
 
-public class Renter implements MarketBid.IIssuer, IAgentTrait, IMessage.IReceiver {
+import contracts.OOMarketBid;
+
+public class Renter extends EconAgent {
+	
+	public Renter() {
+		super(new OOMarketBid.Issuer());
+	}
 	
 	@Override
 	public boolean receive(IMessage message) {
@@ -15,26 +21,6 @@ public class Renter implements MarketBid.IIssuer, IAgentTrait, IMessage.IReceive
 		// TODO Auto-generated method stub
 		
 	}
-	@Override
-	public boolean terminate(Contract contract) {
-		if(contract == rentalBid) {
-			rentalBid = null;
-			return(true);
-		}
-		return(false);
-	}
-	
-	OOMarketBid	rentalBid;
-	House 				home;
-	@Override
-	public boolean receive(House h) {
-		home = h;
-		return false;
-	}
 
-	@Override
-	public boolean receive(DemandForPayment d) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+	House 				home;
 }

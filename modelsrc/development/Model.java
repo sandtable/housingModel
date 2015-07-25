@@ -1,31 +1,28 @@
 package development;
 
 import sim.engine.SimState;
-import utilities.ModelTime;
 
 public class Model extends SimState {
 
-	public Model(long seed) {
+	public Model(long seed, IModelNode...agents) {
 		super(seed);
-		root = this;
+		root = new ModelRoot(this, agents);
 	}
 	
-	public ModelTime timeNow() {
-		double scheduleTime = schedule.getTime();
-		if(scheduleTime < 0.0) scheduleTime = 0.0;
-		return(new ModelTime(scheduleTime,ModelTime.Units.RAW));
+	public void start() {
+		root.start(null);
 	}
-	
+		
 	// --- addressable entities (null if not present)
-	public Bank				bank;
-	public Firm				firm;
-	public Government 		government;
-	public SetOfHouseholds	setOfHouseholds;
-	public HouseSaleMarket	saleMarket;
-	public RentalMarket		rentalMarket;
-	public Construction		construction;
-	public CentralBank		centralBank;
+//	public Bank				bank;
+//	public Firm				firm;
+//	public Government 		government;
+//	public SetOfHouseholds	setOfHouseholds;
+//	public HouseSaleMarket	saleMarket;
+//	public RentalMarket		rentalMarket;
+//	public Construction		construction;
+//	public CentralBank		centralBank;
 
-	static public Model root;
+	static public ModelRoot root;
 	private static final long serialVersionUID = 1714518191380607106L;
 }

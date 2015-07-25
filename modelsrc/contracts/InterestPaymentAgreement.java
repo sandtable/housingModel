@@ -1,5 +1,6 @@
-package development;
+package contracts;
 
+import development.ITriggerable;
 import utilities.LongSupplier;
 import utilities.ModelTime;
 

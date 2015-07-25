@@ -20,7 +20,7 @@ import sim.engine.Steppable;
 import utilities.ModelTime;
 
 @SuppressWarnings("serial")
-public class MarketTest extends Model {
+public class MarketAndMortgageTest extends Model {
 
 	public static class HouseholdStub extends EconAgent {
 		public HouseholdStub() {
@@ -52,7 +52,7 @@ public class MarketTest extends Model {
 		House					home;
 	}
 	
-	public MarketTest(long seed) {
+	public MarketAndMortgageTest(long seed) {
 		super(seed,
 				new Bank(),
 				new HouseSaleMarket(),
@@ -86,7 +86,7 @@ public class MarketTest extends Model {
 	}
 		
     public static void main(String[] args) {
-    	SimState.doLoop(MarketTest.class, args);
+    	SimState.doLoop(MarketAndMortgageTest.class, args);
     }
     
     HouseholdStub 		Household1;

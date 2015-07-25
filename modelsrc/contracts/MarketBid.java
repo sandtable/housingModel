@@ -1,4 +1,7 @@
-package development;
+package contracts;
+
+import development.IMessage;
+import development.IMessage.IReceiver;
 
 public class MarketBid extends Contract {
 	public MarketBid(IIssuer issuer, long iPrice) {
@@ -14,10 +17,7 @@ public class MarketBid extends Contract {
 		return((IIssuer)issuer);
 	}
 	
-	public interface IIssuer extends Contract.IIssuer {
-//		void completePurchase(MarketBid bid, MarketOffer offer);
-		boolean receive(House h);
-		boolean receive(DemandForPayment d);
+	public interface IIssuer extends Contract.IIssuer, IMessage.IReceiver {
 	}
 	
 	long price;

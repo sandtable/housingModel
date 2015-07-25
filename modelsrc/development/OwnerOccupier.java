@@ -1,12 +1,23 @@
 package development;
 
+import contracts.Contract;
+import contracts.MarketOffer;
+import contracts.Mortgage;
+import contracts.OOMarketBid;
 import utilities.ModelTime;
 
-public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, IMessage.IReceiver {
-	public OwnerOccupier(HouseSaleMarket iSaleMarket, Employee iEmployeeTrait, DepositAccount ac) {
-		saleMarket = iSaleMarket;
-		employeeTrait = iEmployeeTrait;
-		marketOfferIssuer = new MarketOffer.Issuer(ac);
+public class OwnerOccupier extends EconAgent {
+	public OwnerOccupier() {
+		super(	new MarketOffer.Issuer(),
+				new OOMarketBid.Issuer()
+		);
+	}
+	
+	@Override
+	public void start(IModelNode parent) {
+		saleMarket = parent.find(HouseSaleMarket.class);
+		employeeTrait = parent.get(Employee.class);
+		super.start(parent);
 	}
 	
 	@Override
@@ -21,7 +32,7 @@ public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, IMessage.I
 	public void introspect() {
 		if(houseForSale == false && decideToSellHome()) {
 			long price = desiredPurchasePrice(employeeTrait.monthlyIncome(), saleMarket.getHPIAppreciation());
-			saleMarket.receive(new OOMarketBid(this, price, home.quality));
+	//		saleMarket.receive(new OOMarketBid(this, price, home.quality));
 		}
 	}
 	
@@ -71,17 +82,6 @@ public class OwnerOccupier implements IAgentTrait, MarketBid.IIssuer, IMessage.I
 		final double EPSILON = 0.36;//0.36;//0.48;//0.365; // S.D. of noise
 		final double SIGMA = 5.6*12.0*100.0;//5.6;	// scale
 		return((long)(SIGMA*monthlyIncome*Math.exp(EPSILON*Model.root.random.nextGaussian())/(1.0 - A*hpa)));
-	}
-	@Override
-	public boolean receive(House h) {
-		home = h;
-		return true;
-	}
-
-	@Override
-	public boolean receive(DemandForPayment d) {
-		// TODO Auto-generated method stub
-		return false;
 	}
 
 	public double P_SELL = 1.0/(7.0*12.0);  // monthly probability of selling home

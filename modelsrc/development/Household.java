@@ -1,28 +1,22 @@
 package development;
 
+import contracts.DepositAccount;
+
 
 
 public class Household extends EconAgent {
 	public Household() {
-		this(Model.root.bank, Model.root.firm.getSalesAC(), Model.root.saleMarket);
+		super(	new DepositAccount.Owner(),
+				new Lifecycle(),
+				new Employee(),
+				new Consumer(),
+				new OwnerOccupier()
+				);
 	}
-	
-	public Household(Bank bank, DepositAccount consumptionAC, HouseSaleMarket saleMarket) {
-			asDepositAccountOwner = new DepositAccount.Owner();
-			addTrait(asDepositAccountOwner);
-			bank.openAccount(asDepositAccountOwner);
-	//		asLifecycle = new Lifecycle(this);
-//			asEmployee = new Employee(asLifecycle, bankAccount());
-			asEmployee = new Employee(null, bankAccount());
-			asConsumer = new Consumer(bankAccount(), consumptionAC, asEmployee);
-			asOwnerOccupier = new OwnerOccupier(saleMarket,asEmployee,bankAccount());
-	//		addTrait(asLifecycle);
-			addTrait(asEmployee);
-			addTrait(asConsumer);
-			addTrait(asOwnerOccupier);
-//			new Renter(),
-//			new BuyToLetInvestor()
-			
+
+	@Override
+	public void start(IModelNode parent) {
+		parent.find(Bank.class).openAccount(parent.get(DepositAccount.Owner.class));
 	}
 	
 	/////////////////////////////////////////////////////////
@@ -30,11 +24,11 @@ public class Household extends EconAgent {
 	/////////////////////////////////////////////////////////
 	
 	public void die() {
-		bankAccount().transfer(Model.root.government.bankAccount(), bankAccount().balance);
-		asDepositAccountOwner.discardAll();
-		asEmployee.discardAll();
-		asOwnerOccupier.die(Model.root.government);
-		Model.root.setOfHouseholds.remove(this);
+//		bankAccount().transfer(Model.root.government.bankAccount(), bankAccount().balance);
+//		asDepositAccountOwner.discardAll();
+//		asEmployee.discardAll();
+//		asOwnerOccupier.die(Model.root.government);
+//		Model.root.setOfHouseholds.remove(this);
 		// TODO: transfer houses and terminate mortgages (should use bank account to pay off mortgages)
 /***		
 		for(House h : housePayments.keySet()) {
@@ -56,14 +50,14 @@ public class Household extends EconAgent {
 	}
 
 	
-	public DepositAccount bankAccount() {
-		return(getTrait(DepositAccount.Owner.class).first());
-	}
+//	public DepositAccount bankAccount() {
+//		return(getTrait(DepositAccount.Owner.class).first());
+//	}
 	
-	public Employee asEmployee;
-	public Consumer asConsumer;
+//	public Employee asEmployee;
+//	public Consumer asConsumer;
 //	public Lifecycle asLifecycle;
-	public OwnerOccupier asOwnerOccupier;
-	public DepositAccount.Owner asDepositAccountOwner;
+//	public OwnerOccupier asOwnerOccupier;
+//	public DepositAccount.Owner asDepositAccountOwner;
 
 }

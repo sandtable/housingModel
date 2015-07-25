@@ -1,8 +1,11 @@
 package tests;
 
 import sim.engine.SimState;
+import utilities.ModelTime;
 import development.EconAgent;
+import development.ITriggerable;
 import development.Model;
+import development.Trigger;
 
 @SuppressWarnings("serial")
 public class EmptyTest extends Model {
@@ -17,6 +20,7 @@ public class EmptyTest extends Model {
 	}
 
 	public void start() {
+		Trigger.after(ModelTime.year()).schedule(new ITriggerable() {public void trigger() {kill();}});
 	}
 	
 	public void finish() {

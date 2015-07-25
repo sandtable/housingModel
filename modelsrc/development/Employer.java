@@ -1,11 +1,13 @@
 package development;
 
+import contracts.Contract;
+import contracts.DepositAccount;
+import contracts.LabourContract;
 import utilities.ModelTime;
 
 public class Employer extends Contract.Issuer<LabourContract> implements LabourContract.IIssuer {
-	public Employer(Firm iParent) {
+	public Employer() {
 		super(LabourContract.class);
-		parent = iParent;
 	}
 
 	public boolean issue(Employee newEmployee) {
@@ -19,8 +21,6 @@ public class Employer extends Contract.Issuer<LabourContract> implements LabourC
 
 	@Override
 	public DepositAccount account() {
-		return(parent.getPayrollAC());
+		return(parent().get(DepositAccount.Owner.class).defaultAccount());
 	}
-	
-	Firm parent;
 }

@@ -1,5 +1,11 @@
-package development;
+package contracts;
 
+import development.CentralBank;
+import development.IMessage;
+import development.IModelNode;
+import development.ITriggerable;
+import development.Trigger;
+import development.IMessage.IReceiver;
 import utilities.ModelTime;
 
 public class Mortgage extends InvestmentAccount {
@@ -55,9 +61,8 @@ public class Mortgage extends InvestmentAccount {
 	///////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////
 	public static class Borrower extends DepositAccount.Owner {
-		public Borrower(DepositAccount bankAccount) {
+		public Borrower() {
 			super(Mortgage.class);
-			this.bankAccount = bankAccount;
 		}
 		
 		public boolean isFirstTimeBuyer() {
@@ -77,10 +82,8 @@ public class Mortgage extends InvestmentAccount {
 		}
 		
 		public DepositAccount getBankAccount() {
-			return bankAccount;
+			return parent().get(DepositAccount.Owner.class).defaultAccount();
 		}
-		
-		DepositAccount bankAccount;
 	}
 	
 	//////////////////////////////////////////////////////////////////////////////
@@ -91,13 +94,31 @@ public class Mortgage extends InvestmentAccount {
 		public double MAX_OO_LTI = 6.5;		// maximum LTI bank will give to owner-occupier when not regulated	
 		public double MAX_BTL_LTI = 10.0;	// maximum LTI bank will give to BTL when not regulated
 
-		public Lender(IBehaviour behaviour, DepositAccount interestAC) {
-			this.behaviour = behaviour;
-			this.interestAC = interestAC;
+		public int			nOverLTICapLoans; 	// number of (non-BTL) loans above LTI cap this month
+		public int			nOverLTVCapLoans;	// number of (non-BTL) loans above LTV cap this month
+		public int			nLoans; 			// total number of non-BTL loans this month
+		public long			supplyVal;			// monthly supply of mortgage loans (pence)
+		IBehaviour			behaviour;
+		CentralBank 		centralBank;
+		DepositAccount.Owner depositAccountOwner;
+		
+		public Lender() {
 			nLoans = 0;
 			nOverLTICapLoans = 0;
 			nOverLTVCapLoans = 0;
 			supplyVal = 0;
+		}
+
+		@Override
+		public void start(IModelNode parent) {
+			super.start(parent);
+			if(parent instanceof IBehaviour) {
+				this.behaviour = (IBehaviour)parent;
+			} else {
+				System.out.println("Dependency problem: A Mortgage.Lender should implement Mortgage.Lender.IBehaviour");
+			}
+			centralBank = parent.find(CentralBank.class);
+			depositAccountOwner = parent.get(DepositAccount.Owner.class);
 			Trigger.monthly().schedule(this);
 		}
 		
@@ -119,10 +140,10 @@ public class Mortgage extends InvestmentAccount {
 				supplyVal += mortgage.principal;
 				++nLoans;
 				if(!mortgage.isBuyToLet) {
-					if(mortgage.LTI > Model.root.centralBank.loanToIncomeRegulation(mortgage)) {
+					if(mortgage.LTI > centralBank.loanToIncomeRegulation(mortgage)) {
 						++nOverLTICapLoans;
 					}
-					if(mortgage.principal/(mortgage.principal + mortgage.downpayment) > Model.root.centralBank.loanToValueRegulation(mortgage)) {
+					if(mortgage.principal/(mortgage.principal + mortgage.downpayment) > centralBank.loanToValueRegulation(mortgage)) {
 						++nOverLTVCapLoans;
 					}
 				}
@@ -170,7 +191,7 @@ public class Mortgage extends InvestmentAccount {
 				principal = housePrice - desiredDownPayment;
 			}
 			
-			Mortgage approval = new Mortgage(this, h.getBankAccount(), interestAC, behaviour.getMortgageInterestRate(), principal, downPayment);
+			Mortgage approval = new Mortgage(this, h.getBankAccount(), depositAccountOwner.defaultAccount(), behaviour.getMortgageInterestRate(), principal, downPayment);
 			approval.isBuyToLet = !isHome;
 			approval.isFirstTimeBuyer = h.isFirstTimeBuyer();
 			return(approval);
@@ -199,8 +220,8 @@ public class Mortgage extends InvestmentAccount {
 			} else {
 				limit = MAX_BTL_LTV;
 			}
-			if((nOverLTVCapLoans+1.0)/(nLoans + 1.0) > Model.root.centralBank.proportionOverLTVLimit) {
-				limit = Math.min(limit, Model.root.centralBank.loanToValueRegulation(isHome,h.isFirstTimeBuyer()));
+			if((nOverLTVCapLoans+1.0)/(nLoans + 1.0) > centralBank.proportionOverLTVLimit) {
+				limit = Math.min(limit, centralBank.loanToValueRegulation(isHome,h.isFirstTimeBuyer()));
 			}
 			return(limit);
 		}
@@ -212,8 +233,8 @@ public class Mortgage extends InvestmentAccount {
 			} else {
 				limit = MAX_BTL_LTI;
 			}
-			if((nOverLTICapLoans+1.0)/(nLoans + 1.0) > Model.root.centralBank.proportionOverLTILimit) {
-				limit = Math.min(limit, Model.root.centralBank.loanToIncomeRegulation(isHome,h.isFirstTimeBuyer()));
+			if((nOverLTICapLoans+1.0)/(nLoans + 1.0) > centralBank.proportionOverLTILimit) {
+				limit = Math.min(limit, centralBank.loanToIncomeRegulation(isHome,h.isFirstTimeBuyer()));
 			}
 			return(limit);
 		}
@@ -244,13 +265,7 @@ public class Mortgage extends InvestmentAccount {
 			return(pdi_max);
 		}
 
-		
-		public int			nOverLTICapLoans; 	// number of (non-BTL) loans above LTI cap this month
-		public int			nOverLTVCapLoans;	// number of (non-BTL) loans above LTV cap this month
-		public int			nLoans; 			// total number of non-BTL loans this month
-		public long			supplyVal;			// monthly supply of mortgage loans (pence)
-		IBehaviour			behaviour;
-		DepositAccount		interestAC;
+//		DepositAccount		interestAC;
 		
 		public interface IBehaviour {
 			double getMortgageInterestRate();

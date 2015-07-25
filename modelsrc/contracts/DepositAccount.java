@@ -1,4 +1,8 @@
-package development;
+package contracts;
+
+import development.EconAgent;
+import development.IMessage;
+import development.IModelNode;
 
 
 public class DepositAccount extends Contract {
@@ -22,21 +26,29 @@ public class DepositAccount extends Contract {
 
 	static public class Owner extends Contract.Owner<DepositAccount> {
 		public Owner() {super(DepositAccount.class);}
-		public Owner(Class<? extends Contract> class1) {
+		public Owner(Class<? extends DepositAccount> class1) {
 			super(class1);
 		}
+		
+		@Override
+		public void start(IModelNode parent) {
+			super.start(parent);
+			if(parent instanceof EconAgent) {
+				((EconAgent) parent).registerHandler(DemandForPayment.class, this);
+			}
+		}
+		
 		@Override
 		public boolean receive(IMessage message) {
-			if(message instanceof Message.Die) {
-				for(DepositAccount ac : this) {
-					ac.transfer(Model.root.government.bankAccount(), ac.balance);
-				}
-				return(true);
-			} else if(message instanceof DemandForPayment) {
-				((DemandForPayment)message).pay(first());
+			if(message instanceof DemandForPayment) {
+				((DemandForPayment)message).pay(defaultAccount());
 				return(true);
 			}
 			return(super.receive(message));
+		}
+		
+		public DepositAccount defaultAccount() {
+			return(first());
 		}
 		
 	}

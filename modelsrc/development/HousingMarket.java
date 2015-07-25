@@ -1,5 +1,9 @@
 package development;
 
+import contracts.Contract;
+import contracts.MarketBid;
+import contracts.MarketOffer;
+import contracts.OOMarketBid;
 import utilities.ExponentialAverage;
 import utilities.ModelTime;
 import utilities.PriorityQueue2D;
@@ -19,14 +23,30 @@ public abstract class HousingMarket extends EconAgent {
 		lastHousePriceIndex = 1.0;
 		HPIAppreciation = 0.0;
 		averageDaysOnMarket = new ExponentialAverage(E, 30);
+	}
+
+	@Override
+	public void start(IModelNode parent) {
+		super.start(parent);
 		final HousingMarket me = this;
 		Trigger.quarterly().schedule(new ITriggerable() {
-			public void trigger() {
-				me.doQuarterlyStats();
-			}
-		});
+			public void trigger() {me.doQuarterlyStats();}
+		});		
 	}
-	
+
+	@Override
+	public boolean receive(IMessage message) {
+		if(message instanceof Match) {
+			// a match has completed its wait
+			Match match = (Match)message;
+			match.offer.getIssuer().completeSale(match.offer, match.bid.getIssuer());
+			offers.discard(match.offer);
+			bids.discard(match.bid);
+			recordTransaction(match);
+			return(true);
+		}
+		return(super.receive(message));
+	}
 
 	public Match matchBid(OOMarketBid bid) {
 		return(setupMatch((MarketOffer)offers.OOqueue.peek(bid), bid));
@@ -88,8 +108,6 @@ public abstract class HousingMarket extends EconAgent {
 	///////////////////////////////////////////////////////////////
 	// Owner/Issuer
 	///////////////////////////////////////////////////////////////
-	
-	
 	public class Bids extends Contract.Owner<MarketBid> {
 		public Bids() {
 			super(MarketBid.class);
@@ -109,24 +127,12 @@ public abstract class HousingMarket extends EconAgent {
 		}
 	}
 
+	/////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////
 	public class Offers extends Contract.Owner<MarketOffer> {
 		public Offers() {
 			super(MarketOffer.class);
 			OOqueue = new PriorityQueue2D<>(new IQualityPriceSupplier.Comparator());
-		}
-		
-		@Override
-		public boolean receive(IMessage message) {
-			if(message instanceof Match) {
-				// a match has completed its wait
-				Match match = (Match)message;
-				match.offer.getIssuer().completeSale(match.offer, match.bid.getIssuer());
-				discard(match.offer);
-				HousingMarket.this.bids.discard(match.bid);
-				HousingMarket.this.recordTransaction(match);
-				return(true);
-			}
-			return(super.receive(message));
 		}
 	
 		@Override
