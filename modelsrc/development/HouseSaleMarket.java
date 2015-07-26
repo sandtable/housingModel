@@ -27,7 +27,16 @@ public class HouseSaleMarket extends HousingMarket {
 	}
 	
 
-	public class Bids extends HousingMarket.Bids {		
+	public class Bids extends HousingMarket.Bids {	
+		
+		@Override
+		public void start(IModelNode parent) {
+			super.start(parent);
+			if(parent instanceof EconAgent) {
+				((EconAgent)parent).registerHandler(BTLMarketBid.class, this);
+			}
+		}
+		
 		@Override
 		public boolean receive(IMessage contract) {
 			if(contract instanceof BTLMarketBid) {

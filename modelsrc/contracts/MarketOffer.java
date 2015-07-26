@@ -3,6 +3,7 @@ package contracts;
 import development.House;
 import development.HouseSaleMarket;
 import development.HousingMarket;
+import development.IMessage;
 import development.IModelNode;
 import development.HouseSaleMarket.IYeildPriceSupplier;
 import development.HousingMarket.IQualityPriceSupplier;
@@ -79,7 +80,7 @@ public class MarketOffer extends Contract implements HousingMarket.IQualityPrice
 	}
 	
 	public static interface IIssuer extends Contract.IIssuer {
-		void completeSale(MarketOffer offer, MarketBid.IIssuer recipient);
+		void completeSale(MarketOffer offer, MarketBid bid);
 	}
 	
 	public static class Issuer extends Contract.Issuer<MarketOffer> implements IIssuer {
@@ -97,16 +98,28 @@ public class MarketOffer extends Contract implements HousingMarket.IQualityPrice
 		}
 		
 		public void issue(House house, long price) {
-			house.saleMarket.receive(new MarketOffer(this, house, price));
+			this.issue(new MarketOffer(this, house, price), getMarket(house));
+		}
+		
+		public boolean reducePrice(MarketOffer offer, long newPrice) {
+			if(terminate(offer)) {
+				offer.currentPrice = newPrice;
+				this.issue(offer, getMarket(offer.house));
+				return(true);
+			}
+			return(false);
+		}
+		
+		public IMessage.IReceiver getMarket(House h) {
+			return(h.saleMarket);
 		}
 
 		@Override
-		public void completeSale(MarketOffer offer, MarketBid.IIssuer recipient) {
+		public void completeSale(MarketOffer offer, MarketBid bid) {
 			offer.house.owner.remove(offer.house);
-			recipient.receive(offer.house);
-			recipient.receive(new DemandForPayment(payee.defaultAccount(), offer.getPrice(), offer));
+			bid.getIssuer().receive(offer.house);
+			bid.getIssuer().receive(new DemandForPayment(payee.defaultAccount(), offer.getPrice(), bid));
 		}
-		
 	}
 	
 }

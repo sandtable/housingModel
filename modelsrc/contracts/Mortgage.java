@@ -61,8 +61,16 @@ public class Mortgage extends InvestmentAccount {
 	///////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////
 	public static class Borrower extends DepositAccount.Owner {
+		DepositAccount.Owner depositAccounts;
+		
 		public Borrower() {
 			super(Mortgage.class);
+		}
+		
+		@Override
+		public void start(IModelNode parent) {
+			depositAccounts = parent.mustGet(DepositAccount.Owner.class);
+			super.start(parent);
 		}
 		
 		public boolean isFirstTimeBuyer() {
@@ -82,8 +90,9 @@ public class Mortgage extends InvestmentAccount {
 		}
 		
 		public DepositAccount getBankAccount() {
-			return parent().get(DepositAccount.Owner.class).defaultAccount();
+			return depositAccounts.defaultAccount();
 		}
+		
 	}
 	
 	//////////////////////////////////////////////////////////////////////////////
@@ -117,8 +126,8 @@ public class Mortgage extends InvestmentAccount {
 			} else {
 				System.out.println("Dependency problem: A Mortgage.Lender should implement Mortgage.Lender.IBehaviour");
 			}
-			centralBank = parent.find(CentralBank.class);
-			depositAccountOwner = parent.get(DepositAccount.Owner.class);
+			centralBank = parent.mustFind(CentralBank.class);
+			depositAccountOwner = parent.mustGet(DepositAccount.Owner.class);
 			Trigger.monthly().schedule(this);
 		}
 		
@@ -248,20 +257,19 @@ public class Mortgage extends InvestmentAccount {
 		 * @return The maximum value of house that this mortgage-lender is willing
 		 * to approve a mortgage for.
 		 ****************************************/
-		public double getMaxMortgage(Mortgage.Borrower h, boolean isHome) {
-			double ltv_max; // loan to value constraint
-			double pdi_max; // disposable income constraint
-			double lti_max; // loan to income constraint
+		public long getMaxMortgage(Mortgage.Borrower h, boolean isHome) {
+			long ltv_max; // loan to value constraint
+			long pdi_max; // disposable income constraint
+			long lti_max; // loan to income constraint
 
-			pdi_max = h.bankBalance() + Math.max(0.0,h.monthlyDisposableIncome())/monthlyPaymentFactor();
+			pdi_max = h.bankBalance() + (long)Math.floor(Math.max(0.0,h.monthlyDisposableIncome())/monthlyPaymentFactor());
 			
-			ltv_max = h.bankBalance()/(1.0 - loanToValue(h, isHome));
+			ltv_max = (long)Math.floor(h.bankBalance()/(1.0 - loanToValue(h, isHome)));
 			pdi_max = Math.min(pdi_max, ltv_max);
 
-			lti_max = h.monthlyIncome()*12.0* loanToIncome(h,isHome)/loanToValue(h,isHome);
+			lti_max = (long)Math.floor(h.monthlyIncome()*12*loanToIncome(h,isHome)/loanToValue(h,isHome));
 			pdi_max = Math.min(pdi_max, lti_max);
-			
-			pdi_max = Math.floor(pdi_max*100.0)/100.0; // round down to nearest penny
+
 			return(pdi_max);
 		}
 

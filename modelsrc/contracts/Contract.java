@@ -1,14 +1,10 @@
 package contracts;
 
-import java.util.Iterator;
-
 import development.EconAgent;
 import development.IMessage;
 import development.IModelNode;
 import development.Message;
 import development.NodeHashSet;
-import development.IMessage.IReceiver;
-import development.Message.Die;
 
 /***
  * A contract is something that may sit on an economic agent's balance
@@ -20,6 +16,7 @@ import development.Message.Die;
  */
 public class Contract implements IMessage {
 	IIssuer	 		issuer; // should be EconAgent?
+	public static final boolean			trace = true;
 
 	public Contract(IIssuer issuer) {
 		this.issuer = issuer;
@@ -45,9 +42,14 @@ public class Contract implements IMessage {
 		
 		public boolean issue(CONTRACT newContract, IMessage.IReceiver owner) {
 			if(owner == null) return(false);
+			if(trace) System.out.println(this.getClass().getName()+" issuing "+newContract.getClass().getSimpleName()+" to "+owner.getClass().getName());
 			add(newContract);
 			boolean accepted = owner.receive(newContract);
-			if(accepted) return(true);
+			if(accepted) {
+				if(trace) System.out.println("Contract accepted");
+				return(true);
+			}
+			if(trace) System.out.println("Contract rejected");
 			remove(newContract);
 			return(false);
 		}
@@ -79,6 +81,7 @@ public class Contract implements IMessage {
 				discardAll();
 				return(true);
 			} else if(newContract.getClass() == getElementClass()) {
+				if(trace) System.out.println(this.getClass().getName()+" received contract "+newContract.getClass().getSimpleName());
 				add(getElementClass().cast(newContract));
 				return(true);				
 			}

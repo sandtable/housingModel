@@ -13,7 +13,7 @@ public class DemandForPayment implements IMessage {
 		payoutAC.transfer(payeeAC, amount);
 	}
 	
-	DepositAccount 	payeeAC;
-	long			amount;
-	Contract		contract;
+	public DepositAccount 	payeeAC;
+	public long			amount;
+	public Contract		contract;	// the contract that gave rise to this demand
 }

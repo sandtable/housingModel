@@ -10,7 +10,9 @@ public class EconAgent extends ModelNode implements IMessage.IReceiver {
 	
 	public boolean registerHandler(Class<? extends IMessage> messageClass, IMessage.IReceiver handler) {
 		if(handlers.containsKey(messageClass)) {
-			System.out.println("EconAgent: Trying to register two handlers for one message type");
+			System.out.println("EconAgent: "+handler+" is trying to register handler for "+messageClass);
+			System.out.println("but already registered by "+handlers.get(messageClass));
+			
 			return(false);
 		}
 		handlers.put(messageClass, handler);
@@ -32,7 +34,7 @@ public class EconAgent extends ModelNode implements IMessage.IReceiver {
 			return(handler.receive(message));	
 		}
 		if(message instanceof IBroadcastMessage) {
-			for(IModelNode trait : children.values()) {
+			for(IModelNode trait : children) {
 				if(trait instanceof IMessage.IReceiver) {
 					((IMessage.IReceiver)trait).receive(message);
 				}

@@ -9,8 +9,10 @@ public class Firm extends EconAgent {
 		);
 	}
 	
-	public void start(EconAgent parent) {
-		parent.get(Bank.class).openAccount(get(DepositAccount.Owner.class));		
+	@Override
+	public void start(IModelNode parent) {
+		parent.mustGet(Bank.class).openAccount(get(DepositAccount.Owner.class));
+		super.start(parent);
 	}
 
 	public DepositAccount getPayrollAC() {
@@ -24,4 +26,11 @@ public class Firm extends EconAgent {
 	public boolean employ(Employee newEmployee) {
 		return(get(Employer.class).issue(newEmployee));
 	}
+
+	public boolean employ(IModelNode newEmployee) {
+		Employee e = newEmployee.get(Employee.class);
+		if(e == null) return(false);
+		return(get(Employer.class).issue(e));
+	}
+
 }

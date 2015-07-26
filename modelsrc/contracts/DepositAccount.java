@@ -33,7 +33,7 @@ public class DepositAccount extends Contract {
 		@Override
 		public void start(IModelNode parent) {
 			super.start(parent);
-			if(parent instanceof EconAgent) {
+			if(parent instanceof EconAgent && getClass() == DepositAccount.Owner.class) {
 				((EconAgent) parent).registerHandler(DemandForPayment.class, this);
 			}
 		}

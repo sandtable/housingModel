@@ -1,5 +1,7 @@
 package development;
 
+import housing.Model;
+import contracts.BTLMarketBid;
 import contracts.Contract;
 import contracts.MarketBid;
 import contracts.MarketOffer;
@@ -9,11 +11,23 @@ import utilities.ModelTime;
 import utilities.PriorityQueue2D;
 
 public abstract class HousingMarket extends EconAgent {
+	public static final double E = Math.exp(-1.0/200); // decay const for averaging days on market
+	public static final double G = Math.exp(-1.0/8); // Decay const for averageListPrice averaging
+	public static final double F = Math.exp(-1.0/12.0); // House Price Index appreciation decay const (in market clearings)
+
+	public Bids 	bids;
+	public Offers	offers;
+	public ExponentialAverage averageDaysOnMarket;
+	protected ExponentialAverage averageSalePrice[];
+	public double HPIAppreciation;
+	public double housePriceIndex;
+	public double lastHousePriceIndex;
+
 	public HousingMarket() {
 		bids = newBids();
 		offers = newOffers(); // good way of initialising circular dependency...!
-		addTrait(bids);
-		addTrait(offers);
+		addChild(bids);
+		addChild(offers);
 		
 		averageSalePrice = new ExponentialAverage[House.Config.N_QUALITY];
 		for(int i = 0; i<House.Config.N_QUALITY; ++i) {
@@ -39,7 +53,7 @@ public abstract class HousingMarket extends EconAgent {
 		if(message instanceof Match) {
 			// a match has completed its wait
 			Match match = (Match)message;
-			match.offer.getIssuer().completeSale(match.offer, match.bid.getIssuer());
+			match.offer.getIssuer().completeSale(match.offer, match.bid);
 			offers.discard(match.offer);
 			bids.discard(match.bid);
 			recordTransaction(match);
@@ -86,12 +100,28 @@ public abstract class HousingMarket extends EconAgent {
 	/***
 	 * @return Annual HPI appreciation
 	 */
-	public double getHPIAppreciation() {
+	public double housePriceAppreciation() {
 		return HPIAppreciation;
 	}
 
 	public long getAverageSalePrice(int quality) {
 		return((long)averageSalePrice[quality].value());
+	}
+	
+	public int getAverageDaysOnMarket() {
+		return((int)averageDaysOnMarket.value());
+	}
+	
+	/***
+	 * @param price
+	 * @return 	 The quality of house you would expect to get
+	 * for the given price
+	 */
+	public int qualityGivenPrice(long price) {
+		int q=0;
+		while(averageSalePrice[q].value() < price) ++q;
+		if(q>0) --q;
+		return(q);
 	}
 	
 	protected void doQuarterlyStats() {
@@ -111,6 +141,14 @@ public abstract class HousingMarket extends EconAgent {
 	public class Bids extends Contract.Owner<MarketBid> {
 		public Bids() {
 			super(MarketBid.class);
+		}
+
+		@Override
+		public void start(IModelNode parent) {
+			super.start(parent);
+			if(parent instanceof EconAgent) {
+				((EconAgent)parent).registerHandler(OOMarketBid.class, this);
+			}
 		}
 
 		@Override
@@ -182,15 +220,5 @@ public abstract class HousingMarket extends EconAgent {
 		static final ModelTime	gazumpTime = ModelTime.week();
 	}
 	
-	public Bids 	bids;
-	public Offers	offers;
-	public ExponentialAverage averageDaysOnMarket;
-	protected ExponentialAverage averageSalePrice[];
-	public double HPIAppreciation;
-	public double housePriceIndex;
-	public double lastHousePriceIndex;
 
-	public static final double E = Math.exp(-1.0/200); // decay const for averaging days on market
-	public static final double G = Math.exp(-1.0/8); // Decay const for averageListPrice averaging
-	public static final double F = Math.exp(-1.0/12.0); // House Price Index appreciation decay const (in market clearings)
 }

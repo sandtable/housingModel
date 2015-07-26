@@ -1,62 +1,45 @@
 package development;
 
-import java.util.IdentityHashMap;
+import java.util.HashSet;
 
-
-public class ModelNode implements IModelNode {
-	IdentityHashMap<Class<? extends IModelNode>, IModelNode> 		children;
-	IModelNode	parent;
+public class ModelNode extends ModelLeaf {
+	HashSet<IModelNode> 		children;
 	
 	public ModelNode(IModelNode... children) {
-		int i;
-		this.children = new IdentityHashMap<>(children.length);
-		for(i=0; i<children.length; ++i) {
-			addTrait(children[i]);
+		super(children);
+		this.children = new HashSet<>(children.length);
+		for(int i=0; i<children.length; ++i) {
+			this.children.add(children[i]);
 		}
 	}
 
-	public <T extends IModelNode> T get(Class<T> type) {
-		IModelNode trait = children.get(type);
-		if(trait != null) return(type.cast(trait));
-		if(type == this.getClass()) return(type.cast(this));
-		return(null);
-	}
-
-	public <T extends IModelNode> T find(Class<T> type) {
-		return(parent.find(type));
+	public void addChild(IModelNode child) {
+		children.add(child);
+		addDependency(child);
 	}
 	
-	public void addTrait(IModelNode trait) {
-		children.put(trait.getClass(), trait);
-	}
-	
-	public void removeTrait(IModelNode trait) {
-		children.remove(trait);
+	@Override
+	public boolean removeChild(IModelNode child) {
+		if(children.remove(child)) {
+			removeDependency(child);
+			return(true);
+		}
+		return(false);
 	}
 
 	@Override
 	public void start(IModelNode parent) {
-		this.parent = parent;
-		for(IModelNode child : children.values()) {
+		super.start(parent);
+		for(IModelNode child : children) {
 			child.start(this);
 		}
 	}
 
 	@Override
-	public IModelNode parent() {
-		return parent;
-	}
-
-	@Override
 	public void die() {
-		for(IModelNode child : children.values()) {
+		for(IModelNode child : children) {
 			child.die();
 		}
-		parent().removeChild(this);
-	}
-
-	@Override
-	public boolean removeChild(IModelNode child) {
-		return(children.remove(child) != null);
+		super.die();
 	}
 }

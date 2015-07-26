@@ -76,6 +76,14 @@ public class Bank extends EconAgent implements Mortgage.Lender.IBehaviour {
 		this.baseRate = baseRate;
 	}
 	
+	public double loanToValue(Mortgage.Borrower h, boolean isHome) {
+		return(mustGet(Mortgage.Lender.class).loanToValue(h, isHome));
+	}
+
+	public double loanToIncome(Mortgage.Borrower h, boolean isHome) {
+		return(mustGet(Mortgage.Lender.class).loanToIncome(h, isHome));
+	}
+
 //	public Mortgage.Lender	mortgageLender;	// all unpaid mortgage contracts supplied by the bank
 	public double		interestSpread;	// current mortgage interest spread above base rate (monthly rate*12)
 	public double		baseRate;
