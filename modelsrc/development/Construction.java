@@ -5,7 +5,10 @@ import contracts.MarketOffer;
 
 
 public class Construction extends EconAgent implements IHouseOwner {
-
+	IMessage.IReceiver saleMarket;
+	public double 	housesPerHousehold; 	// target number of houses per household
+	public int 		housingStock;			// total number of houses built
+	
 	public Construction() {
 		super(new DepositAccount.Owner(),
 				new MarketOffer.Issuer());
@@ -15,6 +18,7 @@ public class Construction extends EconAgent implements IHouseOwner {
 	
 	@Override
 	public void start(IModelNode parent) {
+		saleMarket = parent.mustFind(HouseSaleMarket.class);
 		parent.get(Bank.class).openAccount(get(DepositAccount.Owner.class));
 		super.start(parent);
 	}
@@ -41,19 +45,11 @@ public class Construction extends EconAgent implements IHouseOwner {
 		newBuild.owner = this;
 		++housingStock;
 		price = Data.HousingMarket.referenceSalePrice(newBuild.quality);
-		get(MarketOffer.Issuer.class).issue(newBuild, price);
+		get(MarketOffer.Issuer.class).issue(newBuild, price, saleMarket);
 	}
 	
 	@Override
 	public boolean remove(House house) {
 		return(true);
 	}
-
-//	@Override
-//	public void completeSale(MarketOffer sale) {
-//	}
-	
-	public double 	housesPerHousehold; 	// target number of houses per household
-	public int 		housingStock;			// total number of houses built
-//	MarketOffer.Issuer marketOfferIssuer;
 }

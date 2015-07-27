@@ -97,22 +97,22 @@ public class MarketOffer extends Contract implements HousingMarket.IQualityPrice
 			if(payee == null) System.out.println("A MarketOffer.Issuer needs to be a DepositAccount.Owner");
 		}
 		
-		public void issue(House house, long price) {
-			this.issue(new MarketOffer(this, house, price), getMarket(house));
+		public void issue(House house, long price, IMessage.IReceiver market) {
+			this.issue(new MarketOffer(this, house, price), market);
 		}
 		
-		public boolean reducePrice(MarketOffer offer, long newPrice) {
+		public boolean reducePrice(MarketOffer offer, long newPrice, IMessage.IReceiver market) {
 			if(terminate(offer)) {
 				offer.currentPrice = newPrice;
-				this.issue(offer, getMarket(offer.house));
+				this.issue(offer, market);
 				return(true);
 			}
 			return(false);
 		}
 		
-		public IMessage.IReceiver getMarket(House h) {
-			return(h.saleMarket);
-		}
+//		public IMessage.IReceiver getMarket(House h) {
+//			return(h.saleMarket);
+//		}
 
 		@Override
 		public void completeSale(MarketOffer offer, MarketBid bid) {

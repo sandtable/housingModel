@@ -11,4 +11,5 @@ public interface IModelNode {
 	boolean removeChild(IModelNode child);				// called after the death of a child node
 	void addDependency(IModelNode externalDependency);		// allows access to non-child objects via get
 	boolean removeDependency(IModelNode externalDependency);		// allows access to non-child objects via get
+	boolean receive(IMessage message);				// message reception
 }

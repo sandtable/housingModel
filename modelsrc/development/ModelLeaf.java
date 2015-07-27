@@ -19,6 +19,11 @@ public class ModelLeaf implements IModelNode {
 	}
 
 	@Override
+	public boolean receive(IMessage message) {
+		return(false);
+	}
+	
+	@Override
 	public <T extends IModelNode> T get(Class<T> type) {
 		if(type == this.getClass()) return(type.cast(this));
 		IModelNode trait = dependencies.get(type);

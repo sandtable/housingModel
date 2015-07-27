@@ -1,5 +1,7 @@
 package development;
 
+import contracts.RentalContract;
+
 
 /************************************************
  * Class representing a house.
@@ -16,7 +18,7 @@ public class House implements Comparable<House>, IAsset {
 	
 	public House(HouseSaleMarket saleMarket, RentalMarket rentalMarket) {
 		id = ++id_pool;	
-		resident = null;
+		lodger = null;
 		owner = null;
 		quality = (int)(Model.root.random.nextDouble()*Config.N_QUALITY);
 		this.saleMarket = saleMarket;
@@ -25,7 +27,7 @@ public class House implements Comparable<House>, IAsset {
 	
 	public int 				quality;
 	public IHouseOwner  	owner;
-	public Household		resident;
+	public RentalContract.Owner			lodger;
 	public HouseSaleMarket	saleMarket;
 	public RentalMarket		rentalMarket;
 	

@@ -28,13 +28,14 @@ import sim.engine.Steppable;
 import utilities.ModelTime;
 
 @SuppressWarnings("serial")
-public class OwnerOccupierTest extends Model {
+public class OwnerOccupierRenterTest extends Model {
 
 	public static class HouseholdStub extends EconAgent {
 		public HouseholdStub() {
 			super(
 					new DepositAccount.Owner(),
 					new OwnerOccupier(),
+					new Renter(),
 					new Mortgage.Borrower(),
 					new Employee()
 				);
@@ -46,13 +47,13 @@ public class OwnerOccupierTest extends Model {
 			super.start(parent);
 			Trigger.after(ModelTime.day()).schedule(new ITriggerable() {
 				public void trigger() {
-					get(OwnerOccupier.class).bidOnHouseMarket();
+					get(Renter.class).bidOnRentalMarket();
 				}
 			});
 		}
 	}
 	
-	public OwnerOccupierTest(long seed) {
+	public OwnerOccupierRenterTest(long seed) {
 		super(seed,
 				new CentralBank(),
 				new Bank(),
@@ -78,7 +79,7 @@ public class OwnerOccupierTest extends Model {
 	}
 		
     public static void main(String[] args) {
-    	SimState.doLoop(OwnerOccupierTest.class, args);
+    	SimState.doLoop(OwnerOccupierRenterTest.class, args);
     }
     
     HouseholdStub 		household;

@@ -12,18 +12,15 @@ import development.IMessage.IReceiver;
 import utilities.PriorityQueue2D;
 
 public class OOMarketBid extends MarketBid implements HousingMarket.IQualityPriceSupplier {	
-	public OOMarketBid(IIssuer issuer, long iPrice, int iMinQuality) {
-		super(issuer, iPrice);
+	public OOMarketBid(IIssuer issuer, long iPrice, int iMinQuality, IMessage.IReceiver market) {
+		super(issuer, iPrice, market);
 		minQuality = iMinQuality;
 	}
 	
-	public static class Issuer extends Contract.Issuer<MarketBid> implements IIssuer {
-		public Issuer() {
-			super(MarketBid.class);
-		}
+	public static class Issuer extends MarketBid.Issuer {
 
-		public void issue(long price, int quality, IMessage.IReceiver recipient) {
-			issue(new OOMarketBid(this, price, quality), recipient);
+		public boolean issue(long price, int quality, IMessage.IReceiver market) {
+			return(issue(new OOMarketBid(this, price, quality, market)));
 		}
 		
 		@Override

@@ -51,49 +51,13 @@ public class OwnerOccupier extends EconAgent implements IHouseOwner, ITriggerabl
 		if(houseForSale()) {
 			MarketOffer offer = get(MarketOffer.Issuer.class).first();
 			if(!offer.isUnderOffer()) {
-				get(MarketOffer.Issuer.class).reducePrice(offer,rethinkHouseSalePrice(offer.currentPrice));
+				get(MarketOffer.Issuer.class).reducePrice(offer,rethinkHouseSalePrice(offer.currentPrice), saleMarket);
 			}
 		} else if(isHomeowner() && decideToSellHome()) {
 			putHouseForSale();
 		}
-		
-		// buying behaviour
-		if(!isHomeowner() && !isBidding()) {
-			if(renter == null) {
-				System.out.println("OO: Bidding on market");
-				bidOnHouseMarket();
-			} else if(!isRenting()) {
-				if(calcAffordableQualityOfHouse() >= renter.calcAffordableQualityOfHouse()) {
-					System.out.println("OO: Bidding on market2");
-					bidOnHouseMarket();
-				}
-			}
-		}
 	}
 
-	public int calcAffordableQualityOfHouse() {
-		long price, maxMortgage;
-		price = desiredPurchasePrice(employeeTrait.monthlyIncome(), saleMarket.housePriceAppreciation());
-		maxMortgage = bank.get(Mortgage.Lender.class).getMaxMortgage(get(Mortgage.Borrower.class), true);
-		if(maxMortgage > price) price = maxMortgage;
-		return(saleMarket.qualityGivenPrice(price));
-	}
-
-	public void bidOnHouseMarket() {
-		long price = desiredPurchasePrice(employeeTrait.monthlyIncome(), saleMarket.housePriceAppreciation());
-		long maxMortgage = bank.get(Mortgage.Lender.class).getMaxMortgage(get(Mortgage.Borrower.class), true);
-		if(maxMortgage > price) price = maxMortgage;
-		get(OOMarketBid.Issuer.class).issue(price, qualityOfLife, saleMarket);				
-	}
-	
-	
-	public void putHouseForSale() {
-		long minPrice = 0;
-		if(mortgage != null) {minPrice = -mortgage.balance;}
-		long price = initialSalePrice(saleMarket.getAverageSalePrice(home.quality), saleMarket.getAverageDaysOnMarket(), minPrice);
-		get(MarketOffer.Issuer.class).issue(home, price);		
-	}
-	
 	@Override
 	public boolean receive(IMessage message) {
 		if(message instanceof House) {
@@ -120,6 +84,31 @@ public class OwnerOccupier extends EconAgent implements IHouseOwner, ITriggerabl
 		return(super.receive(message));
 	}
 	
+
+	
+	public int calcAffordableQualityOfHouse() {
+		long price, maxMortgage;
+		price = desiredPurchasePrice(employeeTrait.monthlyIncome(), saleMarket.housePriceAppreciation());
+		maxMortgage = bank.get(Mortgage.Lender.class).getMaxMortgage(get(Mortgage.Borrower.class), true);
+		if(maxMortgage > price) price = maxMortgage;
+		return(saleMarket.qualityGivenPrice(price));
+	}
+
+	public void bidOnHouseMarket() {
+		long price = desiredPurchasePrice(employeeTrait.monthlyIncome(), saleMarket.housePriceAppreciation());
+		long maxMortgage = bank.get(Mortgage.Lender.class).getMaxMortgage(get(Mortgage.Borrower.class), true);
+		if(maxMortgage > price) price = maxMortgage;
+		get(OOMarketBid.Issuer.class).issue(price, qualityOfLife, saleMarket);				
+	}
+	
+	
+	public void putHouseForSale() {
+		long minPrice = 0;
+		if(mortgage != null) {minPrice = -mortgage.balance;}
+		long price = initialSalePrice(saleMarket.getAverageSalePrice(home.quality), saleMarket.getAverageDaysOnMarket(), minPrice);
+		get(MarketOffer.Issuer.class).issue(home, price, saleMarket);		
+	}
+	
 	
 	public boolean houseForSale() {
 		return(get(MarketOffer.Issuer.class).size() > 0);
@@ -136,7 +125,23 @@ public class OwnerOccupier extends EconAgent implements IHouseOwner, ITriggerabl
 	public boolean isRenting() {
 		return(renter != null && renter.isRenting());
 	}
-	
+
+	@Override
+	public boolean remove(House house) {
+		if(house == home) {
+			house.owner = null;
+			home = null;
+			if(decideToStartRenting()) {
+				renter.bidOnRentalMarket();
+			} else {				
+				System.out.println("OO: Bidding on house market2");
+				bidOnHouseMarket();
+			}
+			
+		}
+		return(false);
+	}
+
 //	public void die(IMessage.IReceiver beneficiary) {
 //		beneficiary.receive(home); 
 //	}
@@ -211,13 +216,15 @@ public class OwnerOccupier extends EconAgent implements IHouseOwner, ITriggerabl
 		return((long)(SIGMA*monthlyIncome*Math.exp(EPSILON*root.random.nextGaussian())/(1.0 - A*hpa)));
 	}
 
-	@Override
-	public boolean remove(House house) {
-		if(house == home) {
-			house.owner = null;
-			home = null;
-		}
-		return(false);
+	/***
+	 * 
+	 * @return true when agent decides to move from owner occupation to rented accommodation
+	 * N.B. this is conceptually distinct from the negation of the decision to become an
+	 * owner-occupier from being a renter as the dedcision may be state dependent.
+	 */
+	public boolean decideToStartRenting() {
+		return(calcAffordableQualityOfHouse() < qualityOfLife && renter.calcAffordableQualityOfHouse() >= qualityOfLife);
 	}
 
+	
 }

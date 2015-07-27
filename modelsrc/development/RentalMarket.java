@@ -14,7 +14,7 @@ public class RentalMarket extends HousingMarket {
 
 	@Override
 	public long referencePrice(int quality) {
-		return(Data.HousingMarket.referenceSalePrice(quality));
+		return(Data.HousingMarket.referenceRentalPrice(quality));
 	}
 
 }
