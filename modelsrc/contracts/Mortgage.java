@@ -11,7 +11,17 @@ import utilities.ModelTime;
 public class Mortgage extends InvestmentAccount {
 	
 	static final int N_PAYMENTS = 12*25;	// number of payments
-		
+	public int 				nPayments = N_PAYMENTS;
+	public long				principal;
+	public long				downpayment;
+	// --- statistics information
+	public boolean 			isBuyToLet;
+	public boolean			isFirstTimeBuyer;
+	public double			LTI;
+	public DepositAccount	borrowerAC;
+
+	FixedPaymentAgreement 	payoff;
+
 	/***
 	 * @param borrowerAC		account from which to take monthly payments
 	 * @param lenderAC			account to which interest payments will be made
@@ -281,14 +291,4 @@ public class Mortgage extends InvestmentAccount {
 		}
 	}
 	
-	public int 				nPayments = N_PAYMENTS;
-	public long				principal;
-	public long				downpayment;
-	// --- statistics information
-	public boolean 			isBuyToLet;
-	public boolean			isFirstTimeBuyer;
-	public double			LTI;
-	public DepositAccount	borrowerAC;
-
-	FixedPaymentAgreement 	payoff;
 }

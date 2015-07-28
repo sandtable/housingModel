@@ -1,6 +1,6 @@
 package development;
 
-public interface IModelNode {
+public interface IModelNode extends IMessage.IReceiver {
 	void start(IModelNode parent);					// called before start of simulation
 	<T extends IModelNode> T get(Class<T> type);		// find child (or this node) of given type
 	<T extends IModelNode> T find(Class<T> type);	// do depth first search of entire model
@@ -11,5 +11,4 @@ public interface IModelNode {
 	boolean removeChild(IModelNode child);				// called after the death of a child node
 	void addDependency(IModelNode externalDependency);		// allows access to non-child objects via get
 	boolean removeDependency(IModelNode externalDependency);		// allows access to non-child objects via get
-	boolean receive(IMessage message);				// message reception
 }

@@ -2,14 +2,15 @@ package development;
 
 import contracts.DemandForPayment;
 import contracts.DepositAccount;
-import contracts.MarketOffer;
 import contracts.Mortgage;
 import contracts.OOMarketBid;
+import contracts.SaleMarketOffer;
+import contracts.TangibleAsset;
+import contracts.TangibleAsset.IOwner;
 
-public class OwnerOccupier extends EconAgent implements IHouseOwner, ITriggerable {
+public class OwnerOccupier extends EconAgent implements ITriggerable, TangibleAsset.IOwner {
 	public double P_SELL = 1.0/(7.0*12.0);  // monthly probability of selling home
 	public double DOWNPAYMENT_FRACTION; 	// Fraction of bank-balance household would like to spend on mortgage downpayments
-
 
 	House				home = null;
 	Mortgage			mortgage;
@@ -23,7 +24,7 @@ public class OwnerOccupier extends EconAgent implements IHouseOwner, ITriggerabl
 	Bank				bank;
 
 	public OwnerOccupier() {
-		super(	new MarketOffer.Issuer(),
+		super(	new SaleMarketOffer.Issuer(),
 				new OOMarketBid.Issuer()
 		);
 		qualityOfLife = 0;
@@ -49,12 +50,12 @@ public class OwnerOccupier extends EconAgent implements IHouseOwner, ITriggerabl
 		System.out.println("OO: Thinking");
 		// Selling behaviour
 		if(houseForSale()) {
-			MarketOffer offer = get(MarketOffer.Issuer.class).first();
+			SaleMarketOffer offer = get(SaleMarketOffer.Issuer.class).first();
 			if(!offer.isUnderOffer()) {
-				get(MarketOffer.Issuer.class).reducePrice(offer,rethinkHouseSalePrice(offer.currentPrice), saleMarket);
+				get(SaleMarketOffer.Issuer.class).reducePrice(offer,rethinkHouseSalePrice(offer.currentPrice), saleMarket);
 			}
 		} else if(isHomeowner() && decideToSellHome()) {
-			putHouseForSale();
+			get(SaleMarketOffer.Issuer.class).putHouseForSale(home);
 		}
 	}
 
@@ -102,16 +103,16 @@ public class OwnerOccupier extends EconAgent implements IHouseOwner, ITriggerabl
 	}
 	
 	
-	public void putHouseForSale() {
-		long minPrice = 0;
-		if(mortgage != null) {minPrice = -mortgage.balance;}
-		long price = initialSalePrice(saleMarket.getAverageSalePrice(home.quality), saleMarket.getAverageDaysOnMarket(), minPrice);
-		get(MarketOffer.Issuer.class).issue(home, price, saleMarket);		
-	}
+//	public void putHouseForSale() {
+//		long minPrice = 0;
+//		if(mortgage != null) {minPrice = -mortgage.balance;}
+//		long price = initialSalePrice(saleMarket.getAverageSalePrice(home.quality), saleMarket.getAverageDaysOnMarket(), minPrice);
+//		get(MarketOffer.Issuer.class).issue(home, price, saleMarket);		
+//	}
 	
 	
 	public boolean houseForSale() {
-		return(get(MarketOffer.Issuer.class).size() > 0);
+		return(get(SaleMarketOffer.Issuer.class).size() > 0);
 	}
 
 	public boolean isBidding() {
@@ -124,22 +125,6 @@ public class OwnerOccupier extends EconAgent implements IHouseOwner, ITriggerabl
 	
 	public boolean isRenting() {
 		return(renter != null && renter.isRenting());
-	}
-
-	@Override
-	public boolean remove(House house) {
-		if(house == home) {
-			house.owner = null;
-			home = null;
-			if(decideToStartRenting()) {
-				renter.bidOnRentalMarket();
-			} else {				
-				System.out.println("OO: Bidding on house market2");
-				bidOnHouseMarket();
-			}
-			
-		}
-		return(false);
 	}
 
 //	public void die(IMessage.IReceiver beneficiary) {
@@ -159,19 +144,6 @@ public class OwnerOccupier extends EconAgent implements IHouseOwner, ITriggerabl
 		return false;
 	}
 	
-	/********************************
-	 * @param pbar average sale price of houses of the same quality
-	 * @param d average number of days on the market before sale
-	 * @param principal amount of principal left on any mortgage on this house
-	 * @return initial sale price of a house 
-	 ********************************/
-	public long initialSalePrice(double pbar, double d, double principal) {
-		final double C = 0.02;//0.095;	// initial markup from average price (more like 0.2 from BoE calibration)
-		final double D = 0.00;//0.024;//0.01;//0.001;		// Size of Days-on-market effect
-		final double E = 0.05; //0.05;	// SD of noise
-		double exponent = C + Math.log(pbar) - D*Math.log((d + 1.0)/31.0) + E*root.random.nextGaussian();
-		return(Math.round(Math.max(100*Math.exp(exponent), principal)));
-	}
 
 	public long downPayment(double bankBalance) {
 		return(Math.round(bankBalance*DOWNPAYMENT_FRACTION));
@@ -226,5 +198,18 @@ public class OwnerOccupier extends EconAgent implements IHouseOwner, ITriggerabl
 		return(calcAffordableQualityOfHouse() < qualityOfLife && renter.calcAffordableQualityOfHouse() >= qualityOfLife);
 	}
 
-	
+	@Override
+	public boolean give(TangibleAsset asset, IOwner recipient) {
+		if(asset == home && recipient.receive(asset)) {
+			home = null;
+			if(decideToStartRenting()) {
+				renter.bidOnRentalMarket();
+			} else {				
+				System.out.println("OO: Bidding on house market2");
+				bidOnHouseMarket();
+			}
+			return(true);
+		}
+		return(false);
+	}	
 }

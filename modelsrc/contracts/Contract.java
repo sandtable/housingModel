@@ -36,8 +36,13 @@ public class Contract implements IMessage {
 //	}
 		
 	static public class Issuer<CONTRACT extends Contract> extends NodeHashSet<CONTRACT> implements IIssuer {
-		public Issuer(Class<CONTRACT> contractClazz) {
+		public Issuer(Class<? extends CONTRACT> contractClazz) {
 			super(contractClazz);
+		}
+		
+		@Override
+		public boolean receive(IMessage message) {
+			return(parent().receive(message));
 		}
 		
 		public boolean issue(CONTRACT newContract, IMessage.IReceiver owner) {

@@ -5,7 +5,7 @@ import java.util.Iterator;
 
 
 public class NodeHashSet<E> extends ModelLeaf implements Iterable<E> {
-	Class<? extends E> 					contractClazz;
+	public Class<? extends E> 					contractClazz;
 	public IdentityHashMap<E,Boolean>	data;
 	public Boolean						dummy;
 

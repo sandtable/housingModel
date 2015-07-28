@@ -1,7 +1,8 @@
 package development;
 
+import contracts.SaleMarketOffer;
+import contracts.TangibleAsset;
 import contracts.DepositAccount;
-import contracts.MarketOffer;
 
 
 public class Construction extends EconAgent implements IHouseOwner {
@@ -11,7 +12,8 @@ public class Construction extends EconAgent implements IHouseOwner {
 	
 	public Construction() {
 		super(new DepositAccount.Owner(),
-				new MarketOffer.Issuer());
+				new SaleMarketOffer.Issuer(),
+				new TangibleAsset.Owner());
 		housesPerHousehold = 4100.0/5000.0;
 		housingStock = 0; 
 	}
@@ -42,10 +44,10 @@ public class Construction extends EconAgent implements IHouseOwner {
 		long price;
 
 		newBuild = new House(parent.find(HouseSaleMarket.class), parent.find(RentalMarket.class));
-		newBuild.owner = this;
+		get(TangibleAsset.Owner.class).receive(newBuild);
 		++housingStock;
 		price = Data.HousingMarket.referenceSalePrice(newBuild.quality);
-		get(MarketOffer.Issuer.class).issue(newBuild, price, saleMarket);
+		get(SaleMarketOffer.Issuer.class).issue(newBuild, price, saleMarket);
 	}
 	
 	@Override

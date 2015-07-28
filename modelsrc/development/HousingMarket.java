@@ -103,6 +103,10 @@ public abstract class HousingMarket extends EconAgent {
 	public double housePriceAppreciation() {
 		return HPIAppreciation;
 	}
+	
+	public double housePriceIndex() {
+		return housePriceIndex;
+	}
 
 	public long getAverageSalePrice(int quality) {
 		return((long)averageSalePrice[quality].value());

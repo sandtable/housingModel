@@ -12,24 +12,17 @@ import development.IMessage.IReceiver;
 import utilities.PriorityQueue2D;
 
 public class OOMarketBid extends MarketBid implements HousingMarket.IQualityPriceSupplier {	
+	int minQuality;
+
 	public OOMarketBid(IIssuer issuer, long iPrice, int iMinQuality, IMessage.IReceiver market) {
 		super(issuer, iPrice, market);
 		minQuality = iMinQuality;
 	}
 	
 	public static class Issuer extends MarketBid.Issuer {
-
 		public boolean issue(long price, int quality, IMessage.IReceiver market) {
 			return(issue(new OOMarketBid(this, price, quality, market)));
-		}
-		
-		@Override
-		public boolean receive(IMessage d) {
-			if(parent() instanceof EconAgent) {
-				return(((EconAgent)parent()).receive(d));
-			}
-			return(false);
-		}
+		}		
 	}
 
 	@Override
@@ -37,5 +30,4 @@ public class OOMarketBid extends MarketBid implements HousingMarket.IQualityPric
 		return(minQuality);
 	}
 
-	int minQuality;
 }

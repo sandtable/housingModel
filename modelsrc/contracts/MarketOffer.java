@@ -83,11 +83,11 @@ public class MarketOffer extends Contract implements HousingMarket.IQualityPrice
 		void completeSale(MarketOffer offer, MarketBid bid);
 	}
 	
-	public static class Issuer extends Contract.Issuer<MarketOffer> implements IIssuer {
+	public static class Issuer<CONTRACT extends MarketOffer> extends Contract.Issuer<CONTRACT> implements IIssuer {
 		DepositAccount.Owner payee;
 
-		public Issuer() {
-			super(MarketOffer.class);
+		public Issuer(Class<CONTRACT> clazz) {
+			super(clazz);
 		}
 		
 		@Override
@@ -97,11 +97,11 @@ public class MarketOffer extends Contract implements HousingMarket.IQualityPrice
 			if(payee == null) System.out.println("A MarketOffer.Issuer needs to be a DepositAccount.Owner");
 		}
 		
-		public void issue(House house, long price, IMessage.IReceiver market) {
-			this.issue(new MarketOffer(this, house, price), market);
-		}
+//		public void issue(House house, long price, IMessage.IReceiver market) {
+//			this.issue( new MarketOffer(this, house, price), market);
+//		}
 		
-		public boolean reducePrice(MarketOffer offer, long newPrice, IMessage.IReceiver market) {
+		public boolean reducePrice(CONTRACT offer, long newPrice, IMessage.IReceiver market) {
 			if(terminate(offer)) {
 				offer.currentPrice = newPrice;
 				this.issue(offer, market);
@@ -116,8 +116,7 @@ public class MarketOffer extends Contract implements HousingMarket.IQualityPrice
 
 		@Override
 		public void completeSale(MarketOffer offer, MarketBid bid) {
-			offer.house.owner.remove(offer.house);
-			bid.getIssuer().receive(offer.house);
+			offer.house.owner.give(offer.house, bid.getIssuer().assetOwner());
 			bid.getIssuer().receive(new DemandForPayment(payee.defaultAccount(), offer.getPrice(), bid));
 		}
 	}
