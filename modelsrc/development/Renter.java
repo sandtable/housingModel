@@ -28,7 +28,7 @@ public class Renter extends EconAgent {
 	
 	@Override
 	public boolean receive(IMessage message) {
-		if(message == Message.endOfContract) { // end of rental contract
+		if(message instanceof Message.EndOfContract) { // end of rental contract
 			home.lodger = null;
 			home = null;
 			if(decideToBecomeOwnerOccupier()) {

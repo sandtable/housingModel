@@ -2,20 +2,26 @@ package development;
 
 
 import contracts.BTLMarketBid;
+import contracts.Contract;
+import contracts.Mortgage;
+import contracts.RentalMarketOffer;
 import contracts.SaleMarketOffer;
 import contracts.TangibleAsset;
 import contracts.MarketOffer;
 import contracts.RentalContract;
 
 public class BTLInvestor extends ModelLeaf implements ITriggerable {
-	int						desiredPortfolioSize;
+	int						desiredBTLProperties;
 	HouseSaleMarket			saleMarket;
 	RentalMarket			rentalMarket;
+	Employee				employee;
 	ModelRoot				root;
+	Bank					bank;
 
 	public BTLInvestor() {
 		super(	new RentalContract.Issuer(),
 				new BTLMarketBid.Issuer(),
+				new RentalMarketOffer.Issuer(),
 				new SaleMarketOffer.Issuer(),
 				new TangibleAsset.Owner());
 	}
@@ -26,34 +32,89 @@ public class BTLInvestor extends ModelLeaf implements ITriggerable {
 		root = parent.mustFind(ModelRoot.class);
 		saleMarket = root.mustFind(HouseSaleMarket.class);
 		rentalMarket = root.mustFind(RentalMarket.class);
+		employee = parent.mustGet(Employee.class);
+		bank = parent.mustFind(Bank.class);
+		addDependency(parent.mustGet(Mortgage.Borrower.class));
+		if(employee.getIncomePercentile() > 0.5 && root.random.nextDouble() < Data.HousingMarket.P_INVESTOR*2.0) {
+			desiredBTLProperties = (int)Data.HousingMarket.buyToLetDistribution.inverseCumulativeProbability(root.random.nextDouble());
+		} else {
+			desiredBTLProperties = 0;
+		}
 		Trigger.monthly().schedule(this);
+	}
+	
+	@Override
+	public boolean receive(IMessage message) {
+		if(message instanceof Message.EndOfContract) {
+			Contract c = ((Message.EndOfContract)message).contract;
+			if(c instanceof RentalContract) {
+				RentalContract rc = (RentalContract)c;
+				if(decideToSellInvestmentProperty(rc)) {
+					get(SaleMarketOffer.Issuer.class).putHouseForSale(rc.house);
+				} else {
+					putHouseOnRentalMarket(((RentalContract)c).house);
+				}
+				return(true);
+			}
+		}
+		else if(message instanceof House) {
+			putHouseOnRentalMarket((House)message);
+			// don't return, let house go to tangible asset owner
+		}
+		return(super.receive(message));
 	}
 	
 	@Override
 	public void trigger() {
 		// do monthly introspection
+				
+		// buy properties if below portfolio target
+		// minimum gross yield is based on comparing leveraged yield with alternative of 2%
+		if(numberOfBTLProperties() < desiredBTLProperties && !isCurrentlyBidding()) {
+			final double alternativeYield = 0.02;
+			final double ltv = bank.loanToValue(false,false);
+			final double interest = bank.getMortgageInterestRate();
+			final double costs = 0.01;
+			final double minYield = alternativeYield*(1.0-ltv) + ltv*interest + costs;
+			final long price = bank.getMaxMortgage(parent(), false);
+			get(BTLMarketBid.Issuer.class).issue(price, minYield);
+		}
 		
-		// sell off badly performing houses
-		for(RentalContract rental : get(RentalContract.Issuer.class)) {
-			if(decideToSellInvestmentProperty(rental)) {
-				get(SaleMarketOffer.Issuer.class).putHouseForSale(rental.house);
-			}
+		// reprice current offers
+		for(RentalMarketOffer offer : mustGet(RentalMarketOffer.Issuer.class)) {
+			offer.reducePrice(rethinkBuyToLetRent(offer.currentPrice));
 		}
 	}
-	
-	public double realisedGrossYeild(RentalContract rental) {
-		long houseValue = saleMarket.getAverageSalePrice(rental.house.quality);
-		return(rental.monthlyRent()*12.0/houseValue);
+
+	void putHouseOnRentalMarket(House house) {
+		long price = buyToLetRent(rentalMarket.getAverageSalePrice(house.quality), rentalMarket.getAverageDaysOnMarket());
+		get(RentalMarketOffer.Issuer.class).issue(house,price);		
 	}
+	
+	int numberOfBTLProperties() {
+		return get(TangibleAsset.Owner.class).size();
+	}
+	
+	boolean isCurrentlyBidding() {
+		return get(BTLMarketBid.Issuer.class).size() > 0;
+	}
+	
+//	public double realisedGrossYeild(RentalContract rental) {
+//		long houseValue = saleMarket.getAverageSalePrice(rental.house.quality);
+//		return(rental.monthlyRent()*12.0/houseValue);
+//	}
 
 	
 	/**
-	 * @return Does an investor decide to sell a buy-to-let property
-	 */
+	 * The decision to sell is based on gross yeild, rather than leveraged yeild
+	 * as the two are related linearly as: 
+	 * Y_leveraged = (Y_gross - LTV*INTEREST)/(1-LTV)
+	 * @return Does an investor decide to sell a buy-to-let property? */
 	public boolean decideToSellInvestmentProperty(RentalContract rental) {
-		double performance = Math.min(realisedGrossYeild(rental) / rentalMarket.bestYeild(), 1.0);
-		double probability = 1.0/(1.0 + Math.exp(15.0*(performance - 0.6)));
-		return(probability > root.random.nextDouble());
+//		double performance = Math.min(realisedGrossYeild(rental) / rentalMarket.bestYeild(), 1.0);
+//		double probability = 1.0/(1.0 + Math.exp(15.0*(performance - 0.6)));
+//		return(probability > root.random.nextDouble());
+		return false;
 	}
 	
 
@@ -62,27 +123,23 @@ public class BTLInvestor extends ModelLeaf implements ITriggerable {
 	 * @param pbar average rent for house of this quality
 	 * @param d average days on market
 	 */
-	/***
-	@Override
-	public double buyToLetRent(double pbar, double d, double mortgagePayment) {
+	public long buyToLetRent(double pbar, double d) {
 		final double C = 0.02;//0.095;	// initial markup from average price
 		final double D = 0.0;//0.024;//0.01;//0.001;		// Size of Days-on-market effect
 		final double E = 0.05; //0.05;	// SD of noise
-		double exponent = C + Math.log(pbar) - D*Math.log((d + 1.0)/31.0) + E*Model.rand.nextGaussian();
+		double exponent = C + Math.log(pbar) - D*Math.log((d + 1.0)/31.0) + E*root.random.nextGaussian();
 //		return(Math.max(Math.exp(exponent), mortgagePayment));
-		return(Math.exp(exponent));
+		return(Math.round(100.0*Math.exp(exponent)));
 //		return(mortgagePayment*(1.0+RENT_PROFIT_MARGIN));
 	}
-***/
-	/***
-	public double rethinkBuyToLetRent(HouseSaleRecord sale) {
-		if(rand.nextDouble() > 0.944) {
-			double logReduction = 1.603+(rand.nextGaussian()*0.6173);
-			return(sale.currentPrice * (1.0-Math.exp(logReduction)));
+
+	public long rethinkBuyToLetRent(long currentPrice) {
+		if(root.random.nextDouble() > 0.944) {
+			double logReduction = 1.603+(root.random.nextGaussian()*0.6173);
+			return(Math.round(currentPrice * (1.0-Math.exp(logReduction))));
 		}
-		return(sale.currentPrice);
+		return(currentPrice);
 	}
-	***/
 
 	/********************************************************
 	 * Decide whether to buy a house as a buy-to-let investment
@@ -120,17 +177,18 @@ public class BTLInvestor extends ModelLeaf implements ITriggerable {
 		return(false);
 	}
 ***/
-		
-	/***
+
 	public boolean isPropertyInvestor() {
 		return(desiredBTLProperties > 0);
 	}
 
+	/***
 	@Override
 	public double buyToLetMaxInvestment(Household me) {
 		return(Model.bank.getMaxMortgage(me, false));
 	}
 ***/
+
 	/***
 	 * If we're below our desired investment portfolio size, desired yield
 	 * is average yield on the market plus noise. Otherwise, swap if we
@@ -152,7 +210,5 @@ public class BTLInvestor extends ModelLeaf implements ITriggerable {
 		}
 		return(worstYield);
 	}
-***/
-
-
+	***/
 }

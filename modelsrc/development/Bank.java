@@ -30,6 +30,9 @@ public class Bank extends EconAgent implements Mortgage.Lender.IBehaviour {
 		return(depositAccounts.issue(accountHolder.get(DepositAccount.Owner.class)));
 	}
 	
+	public long getMaxMortgage(IModelNode h, boolean isHome) {
+		return(get(Mortgage.Lender.class).getMaxMortgage(h.mustGet(Mortgage.Borrower.class), isHome));
+	}
 		
 	public void init() {
 		baseRate = INITIAL_BASE_RATE;
@@ -76,8 +79,8 @@ public class Bank extends EconAgent implements Mortgage.Lender.IBehaviour {
 		this.baseRate = baseRate;
 	}
 	
-	public double loanToValue(Mortgage.Borrower h, boolean isHome) {
-		return(mustGet(Mortgage.Lender.class).loanToValue(h, isHome));
+	public double loanToValue(boolean ftb, boolean isHome) {
+		return(mustGet(Mortgage.Lender.class).loanToValue(ftb, isHome));
 	}
 
 	public double loanToIncome(Mortgage.Borrower h, boolean isHome) {

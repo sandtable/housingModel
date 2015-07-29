@@ -2,10 +2,11 @@ package contracts;
 
 import development.House;
 import development.IModelNode;
+import development.RentalMarket;
 
 public class RentalMarketOffer extends MarketOffer {
 	public RentalMarketOffer(IIssuer issuer, House house, long price) {
-		super(issuer, house, price);
+		super(issuer, house.rentalMarket, house, price);
 	}
 	
 	public static class Issuer extends MarketOffer.Issuer<RentalMarketOffer> {
@@ -13,6 +14,10 @@ public class RentalMarketOffer extends MarketOffer {
 		
 		public Issuer() {
 			super(RentalMarketOffer.class);
+		}
+		
+		public boolean issue(House house, long price) {
+			return(issue(new RentalMarketOffer(this, house, price), house.rentalMarket));
 		}
 		
 		@Override

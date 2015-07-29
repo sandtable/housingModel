@@ -34,7 +34,7 @@ public class RentalContract extends Contract {
 		
 		public void endOfAgreement(RentalContract contract) {
 			remove(contract);
-			parent().receive(Message.endOfContract);
+			parent().receive(new Message.EndOfContract(contract));
 		}
 	}
 
@@ -57,6 +57,9 @@ public class RentalContract extends Contract {
 
 		@Override
 		public boolean terminate(Contract contract) {
+			if(super.terminate(contract)) {
+				parent().receive(new Message.EndOfContract(contract));				
+			}
 			return(false);
 		}
 	}

@@ -191,6 +191,14 @@ public abstract class HousingMarket extends EconAgent {
 			OOqueue.add(offer);
 		}
 		
+		public void reducePrice(MarketOffer offer, long newPrice) {
+			if(newPrice != offer.currentPrice) {
+				OOqueue.remove(offer);
+				offer.currentPrice = newPrice;
+				OOqueue.add(offer);
+			}
+		}
+		
 		PriorityQueue2D<IQualityPriceSupplier>	OOqueue;
 	}
 

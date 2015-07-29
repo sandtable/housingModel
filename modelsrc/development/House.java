@@ -33,7 +33,7 @@ public class House extends TangibleAsset implements Comparable<House> {
 	}
 	
 	public int 				quality;
-	public RentalContract.Owner			lodger;
+	public RentalContract.Owner			lodger; // null if owner-occupied
 	public HouseSaleMarket	saleMarket;
 	public RentalMarket		rentalMarket;
 	

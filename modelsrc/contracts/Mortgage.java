@@ -187,7 +187,7 @@ public class Mortgage extends InvestmentAccount {
 			// --- calculate maximum allowable principal
 			principal = Math.round(Math.max(0.0,h.monthlyDisposableIncome())/monthlyPaymentFactor());
 
-			ltv_principal = Math.round(housePrice*loanToValue(h, isHome));
+			ltv_principal = Math.round(housePrice*loanToValue(h.isFirstTimeBuyer(), isHome));
 			principal = Math.min(principal, ltv_principal);
 
 			lti_principal = Math.round(h.monthlyIncome()*12.0 * loanToIncome(h,isHome));
@@ -228,11 +228,11 @@ public class Mortgage extends InvestmentAccount {
 		/**********************************************
 		 * Get the Loan-To-Value ratio applicable to a given household.
 		 * 
-		 * @param h The houshold that is applying for the mortgage
+		 * @param ftb The houshold that is applying for the mortgage
 		 * @param isHome true if 'h' plans to live in the house
 		 * @return The loan-to-value ratio applicable to the given household.
 		 *********************************************/
-		public double loanToValue(Mortgage.Borrower h, boolean isHome) {
+		public double loanToValue(boolean ftb, boolean isHome) {
 			double limit;
 			if(isHome) {
 				limit = MAX_OO_LTV;
@@ -240,7 +240,7 @@ public class Mortgage extends InvestmentAccount {
 				limit = MAX_BTL_LTV;
 			}
 			if((nOverLTVCapLoans+1.0)/(nLoans + 1.0) > centralBank.proportionOverLTVLimit) {
-				limit = Math.min(limit, centralBank.loanToValueRegulation(isHome,h.isFirstTimeBuyer()));
+				limit = Math.min(limit, centralBank.loanToValueRegulation(isHome,ftb));
 			}
 			return(limit);
 		}
@@ -274,10 +274,10 @@ public class Mortgage extends InvestmentAccount {
 
 			pdi_max = h.bankBalance() + (long)Math.floor(Math.max(0.0,h.monthlyDisposableIncome())/monthlyPaymentFactor());
 			
-			ltv_max = (long)Math.floor(h.bankBalance()/(1.0 - loanToValue(h, isHome)));
+			ltv_max = (long)Math.floor(h.bankBalance()/(1.0 - loanToValue(h.isFirstTimeBuyer(), isHome)));
 			pdi_max = Math.min(pdi_max, ltv_max);
 
-			lti_max = (long)Math.floor(h.monthlyIncome()*12*loanToIncome(h,isHome)/loanToValue(h,isHome));
+			lti_max = (long)Math.floor(h.monthlyIncome()*12*loanToIncome(h,isHome)/loanToValue(h.isFirstTimeBuyer(),isHome));
 			pdi_max = Math.min(pdi_max, lti_max);
 
 			return(pdi_max);

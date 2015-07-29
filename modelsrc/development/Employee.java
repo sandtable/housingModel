@@ -6,8 +6,16 @@ import contracts.LabourContract;
 import utilities.ModelTime;
 
 public class Employee extends Contract.Owner<LabourContract> implements LabourContract.IOwner {
+	public double incomePercentile; // proxy for innate ability to earn
+	
 	public Employee() {
 		super(LabourContract.class);
+	}
+	
+	@Override
+	public void start(IModelNode parent) {
+		incomePercentile = parent.mustFind(ModelRoot.class).random.nextDouble();
+		super.start(parent);
 	}
 
 	@Override
@@ -25,6 +33,10 @@ public class Employee extends Contract.Owner<LabourContract> implements LabourCo
 		return(parent().get(DepositAccount.Owner.class).defaultAccount());
 	}
 	
+	public double getIncomePercentile() {
+		return incomePercentile;
+	}
+	
 	public long monthlyIncome() {
 		long income = 0;
 		for(LabourContract incomeStream : this) {
@@ -32,4 +44,5 @@ public class Employee extends Contract.Owner<LabourContract> implements LabourCo
 		}
 		return(income);
 	}
+	
 }
