@@ -110,6 +110,7 @@ public class Contract implements IMessage {
 	}
 	
 	static public interface IIssuer extends IModelNode {
+//		boolean issue(Contract newContract, IMessage.IReceiver owner);
 		boolean terminate(Contract contract); // termination of the contract early or after execution
 	}
 }

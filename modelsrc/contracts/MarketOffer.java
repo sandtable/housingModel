@@ -5,28 +5,29 @@ import development.HouseSaleMarket;
 import development.HousingMarket;
 import development.IMessage;
 import development.IModelNode;
-import development.HouseSaleMarket.IYeildPriceSupplier;
+import development.HouseSaleMarket.IYieldPriceSupplier;
 import development.HousingMarket.IQualityPriceSupplier;
 import development.HousingMarket.Match;
 import utilities.ModelTime;
 import utilities.PriorityQueue2D;
 
-public class MarketOffer extends Contract implements HousingMarket.IQualityPriceSupplier, HouseSaleMarket.IYeildPriceSupplier {
+public class MarketOffer extends Contract implements HousingMarket.IQualityPriceSupplier, HouseSaleMarket.IYieldPriceSupplier {
 	public House 		house;
 	public long 		initialListedPrice;
 	public long			currentPrice;
 	public ModelTime	tInitialListing; 	// time of initial list
 	public HousingMarket.Match currentMatch;		// if non-null the house is currently 'under offer'
-	
+	HousingMarket.Offers	market;
 	/***********************************************
 	 * Construct a new record.
 	 * 
 	 * @param h The house that is for sale.
 	 * @param price The initial list price for the house.
 	 ***********************************************/
-	public MarketOffer(IIssuer issuer, House iHouse, long price) {
+	public MarketOffer(IIssuer issuer, HousingMarket market, House iHouse, long price) {
 		super(issuer);
 		house = iHouse;
+		this.market = market.offers;
 		setPrice(price);
 		initialListedPrice = currentPrice;
 		tInitialListing = ModelTime.now();
@@ -49,11 +50,8 @@ public class MarketOffer extends Contract implements HousingMarket.IQualityPrice
 	}
 
 	@Override
-	public double getYeild() {
-		return(
-				house.rentalMarket.getAverageSalePrice(getQuality())/
-				getPrice()
-				);
+	public double getExpectedGrossYield() {
+		return(house.rentalMarket.expectedGrossYield(getQuality()));
 	}
 	
 	public IIssuer getIssuer() {
@@ -67,6 +65,10 @@ public class MarketOffer extends Contract implements HousingMarket.IQualityPrice
 	
 	public boolean isUnderOffer() {
 		return(currentMatch != null);
+	}
+	
+	public void reducePrice(long newPrice) {
+		market.reducePrice(this,newPrice);
 	}
 	
 	public HousingMarket.Match matchWith(MarketBid bid) {
@@ -100,16 +102,7 @@ public class MarketOffer extends Contract implements HousingMarket.IQualityPrice
 //		public void issue(House house, long price, IMessage.IReceiver market) {
 //			this.issue( new MarketOffer(this, house, price), market);
 //		}
-		
-		public boolean reducePrice(CONTRACT offer, long newPrice, IMessage.IReceiver market) {
-			if(terminate(offer)) {
-				offer.currentPrice = newPrice;
-				this.issue(offer, market);
-				return(true);
-			}
-			return(false);
-		}
-		
+				
 //		public IMessage.IReceiver getMarket(House h) {
 //			return(h.saleMarket);
 //		}

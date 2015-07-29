@@ -4,7 +4,7 @@ import development.HouseSaleMarket;
 import development.IMessage;
 import development.IModelNode;
 
-public class BTLMarketBid extends MarketBid implements HouseSaleMarket.IYeildPriceSupplier {
+public class BTLMarketBid extends MarketBid implements HouseSaleMarket.IYieldPriceSupplier {
 	double minYield;
 
 	public BTLMarketBid(IIssuer issuer, long iPrice, double iMinYield, IMessage.IReceiver market) {
@@ -27,7 +27,7 @@ public class BTLMarketBid extends MarketBid implements HouseSaleMarket.IYeildPri
 	}
 
 	@Override
-	public double getYeild() {
+	public double getExpectedGrossYield() {
 		// TODO Auto-generated method stub
 		return 0;
 	}

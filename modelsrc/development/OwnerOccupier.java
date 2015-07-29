@@ -52,7 +52,7 @@ public class OwnerOccupier extends EconAgent implements ITriggerable, TangibleAs
 		if(houseForSale()) {
 			SaleMarketOffer offer = get(SaleMarketOffer.Issuer.class).first();
 			if(!offer.isUnderOffer()) {
-				get(SaleMarketOffer.Issuer.class).reducePrice(offer,rethinkHouseSalePrice(offer.currentPrice), saleMarket);
+				offer.reducePrice(rethinkHouseSalePrice(offer.currentPrice));
 			}
 		} else if(isHomeowner() && decideToSellHome()) {
 			get(SaleMarketOffer.Issuer.class).putHouseForSale(home);
@@ -167,12 +167,12 @@ public class OwnerOccupier extends EconAgent implements ITriggerable, TangibleAs
 		***/
 	}
 
-	public boolean purchaseDecision(Mortgage.Borrower h, long housePrice, long annualRent) {
+	public boolean purchaseDecision(boolean ftb, long housePrice, long annualRent) {
 		final double COST_OF_RENTING = 600; // Annual psychological cost of renting
 		final double FTB_K = 1.0/600.0;//1.0/100000.0;//0.005 // Heterogeneity of sensitivity of desire to first-time-buy to cost
 		double costOfHouse;
 //			costOfHouse = housePrice*((1.0-HousingMarketTest.bank.config.THETA_FTB)*HousingMarketTest.bank.mortgageInterestRate() - HousingMarketTest.housingMarket.housePriceAppreciation());
-		costOfHouse = housePrice*(bank.loanToValue(h,true)*bank.getMortgageInterestRate() - saleMarket.housePriceAppreciation());
+		costOfHouse = housePrice*(bank.loanToValue(ftb,true)*bank.getMortgageInterestRate() - saleMarket.housePriceAppreciation());
 		return(root.random.nextDouble() < 1.0/(1.0 + Math.exp(-FTB_K*(annualRent + COST_OF_RENTING - costOfHouse))));
 	}
 

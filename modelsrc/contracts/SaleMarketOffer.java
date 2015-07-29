@@ -7,7 +7,7 @@ import development.ModelRoot;
 
 public class SaleMarketOffer extends MarketOffer {
 	public SaleMarketOffer(IIssuer issuer, House house, long price) {
-		super(issuer, house, price);
+		super(issuer, house.saleMarket, house, price);
 	}
 
 	public static class Issuer extends MarketOffer.Issuer<SaleMarketOffer> {		

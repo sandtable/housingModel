@@ -55,7 +55,7 @@ public class HouseSaleMarket extends HousingMarket {
 
 	public class Offers extends HousingMarket.Offers {
 		public Offers() {
-			BTLqueue = new PriorityQueue2D<>(new IYeildPriceSupplier.Comparator());
+			BTLqueue = new PriorityQueue2D<>(new IYieldPriceSupplier.Comparator());
 		}
 
 		@Override
@@ -71,22 +71,31 @@ public class HouseSaleMarket extends HousingMarket {
 			}
 			return(false);
 		}
+		
+		@Override
+		public void reducePrice(MarketOffer offer, long newPrice) {
+			if(newPrice != offer.currentPrice) {
+				BTLqueue.remove(offer);
+				super.reducePrice(offer, newPrice);
+				BTLqueue.add(offer);
+			}
+		}
 
-		PriorityQueue2D<HouseSaleMarket.IYeildPriceSupplier>	BTLqueue; // offers sorted by yeild
+		PriorityQueue2D<HouseSaleMarket.IYieldPriceSupplier>	BTLqueue; // offers sorted by yeild
 	}
 
 	
-	public static interface IYeildPriceSupplier {
-		double getYeild();
+	public static interface IYieldPriceSupplier {
+		double getExpectedGrossYield();
 		long getPrice();
-		public static class Comparator implements PriorityQueue2D.XYComparator<IYeildPriceSupplier> {
+		public static class Comparator implements PriorityQueue2D.XYComparator<IYieldPriceSupplier> {
 			@Override
-			public int XCompare(IYeildPriceSupplier arg0, IYeildPriceSupplier arg1) {
+			public int XCompare(IYieldPriceSupplier arg0, IYieldPriceSupplier arg1) {
 				return(Long.signum(arg0.getPrice() - arg1.getPrice()));
 			}
 			@Override
-			public int YCompare(IYeildPriceSupplier arg0, IYeildPriceSupplier arg1) {
-				return((int)Math.signum(arg0.getYeild() - arg1.getYeild()));
+			public int YCompare(IYieldPriceSupplier arg0, IYieldPriceSupplier arg1) {
+				return((int)Math.signum(arg0.getExpectedGrossYield() - arg1.getExpectedGrossYield()));
 			}
 		}
 	}
