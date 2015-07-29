@@ -171,9 +171,9 @@ public abstract class HousingMarket extends EconAgent {
 
 	/////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////
-	public class Offers extends Contract.Owner<MarketOffer> {
-		public Offers() {
-			super(MarketOffer.class);
+	public class Offers<CONTRACT extends MarketOffer> extends Contract.Owner<CONTRACT> {
+		public Offers(Class<CONTRACT> clazz) {
+			super(clazz);
 			OOqueue = new PriorityQueue2D<>(new IQualityPriceSupplier.Comparator());
 		}
 	
@@ -186,7 +186,7 @@ public abstract class HousingMarket extends EconAgent {
 		}
 
 		@Override
-		public void add(MarketOffer offer) {
+		public void add(CONTRACT offer) {
 			super.add(offer);
 			OOqueue.add(offer);
 		}

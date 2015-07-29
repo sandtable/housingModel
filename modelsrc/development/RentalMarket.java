@@ -1,5 +1,7 @@
 package development;
 
+import contracts.RentalMarketOffer;
+
 public class RentalMarket extends HousingMarket {
 	double bestYeild;
 	HouseSaleMarket houseSaleMarket;
@@ -40,6 +42,12 @@ public class RentalMarket extends HousingMarket {
 		for(int q=0; q < House.Config.N_QUALITY; ++q) {
 			yeild = getAverageSalePrice(q)*12.0/houseSaleMarket.getAverageSalePrice(q);
 			if(yeild > bestYeild) bestYeild = yeild;
+		}
+	}
+	
+	public class Offers extends HousingMarket.Offers<RentalMarketOffer> {
+		public Offers() {
+			super(RentalMarketOffer.class);
 		}
 	}
 

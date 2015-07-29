@@ -27,6 +27,7 @@ public class OwnerOccupier extends EconAgent implements ITriggerable, TangibleAs
 		super(	new SaleMarketOffer.Issuer(),
 				new OOMarketBid.Issuer()
 		);
+		addDependency(TangibleAsset.IOwner.class, this);
 		qualityOfLife = 0;
 	}
 

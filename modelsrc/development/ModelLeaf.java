@@ -7,7 +7,8 @@ public class ModelLeaf implements IModelNode {
 	IModelNode parent;
 	
 	public ModelLeaf(IModelNode... depends) {
-		dependencies = new IdentityHashMap<>(depends.length);
+		dependencies = new IdentityHashMap<>(depends.length+1);
+		addDependency(this);
 		for(int i=0; i<depends.length; ++i) {
 			addDependency(depends[i]);
 		}
@@ -25,7 +26,6 @@ public class ModelLeaf implements IModelNode {
 	
 	@Override
 	public <T extends IModelNode> T get(Class<T> type) {
-		if(type == this.getClass()) return(type.cast(this));
 		IModelNode trait = dependencies.get(type);
 		if(trait != null) return(type.cast(trait));
 		return(null);
@@ -75,6 +75,10 @@ public class ModelLeaf implements IModelNode {
 	@Override
 	public void addDependency(IModelNode externalDependency) {
 		dependencies.put(externalDependency.getClass(), externalDependency);
+	}
+
+	public <TYPE extends IModelNode> void addDependency(Class<TYPE> clazz, TYPE externalDependency) {
+		dependencies.put(clazz, externalDependency);
 	}
 
 	@Override

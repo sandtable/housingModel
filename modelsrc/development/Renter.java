@@ -3,6 +3,7 @@ package development;
 import housing.Model;
 import contracts.OOMarketBid;
 import contracts.RentalContract;
+import contracts.RentalMarketBid;
 
 public class Renter extends EconAgent {
 	OwnerOccupier	meOwnerOccupier;
@@ -12,7 +13,7 @@ public class Renter extends EconAgent {
 	int				qualityOfLife;
 	
 	public Renter() {
-		super(new OOMarketBid.Issuer(),
+		super(new RentalMarketBid.Issuer(),
 		 	  new RentalContract.Owner());
 		qualityOfLife = 0;
 	}
@@ -52,7 +53,7 @@ public class Renter extends EconAgent {
 	}
 
 	public void bidOnRentalMarket() {
-		get(OOMarketBid.Issuer.class).issue(desiredRent(meEmployee.monthlyIncome()), qualityOfLife, rentalMarket);
+		get(RentalMarketBid.Issuer.class).issue(desiredRent(meEmployee.monthlyIncome()), qualityOfLife, rentalMarket);
 	}
 	
 	public int calcAffordableQualityOfHouse() {

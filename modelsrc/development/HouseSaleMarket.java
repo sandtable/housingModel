@@ -3,6 +3,7 @@ package development;
 import contracts.BTLMarketBid;
 import contracts.MarketBid;
 import contracts.MarketOffer;
+import contracts.SaleMarketOffer;
 import utilities.PriorityQueue2D;
 
 public class HouseSaleMarket extends HousingMarket {
@@ -53,13 +54,14 @@ public class HouseSaleMarket extends HousingMarket {
 
 	
 
-	public class Offers extends HousingMarket.Offers {
+	public class Offers extends HousingMarket.Offers<SaleMarketOffer> {
 		public Offers() {
+			super(SaleMarketOffer.class);
 			BTLqueue = new PriorityQueue2D<>(new IYeildPriceSupplier.Comparator());
 		}
 
 		@Override
-		public void add(MarketOffer offer) {
+		public void add(SaleMarketOffer offer) {
 			super.add(offer);
 			BTLqueue.add(offer);
 		}

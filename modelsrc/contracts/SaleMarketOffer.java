@@ -27,6 +27,12 @@ public class SaleMarketOffer extends MarketOffer {
 			this.issue( new SaleMarketOffer(this, house, price), market);
 		}
 
+		@Override
+		public void completeSale(MarketOffer offer, MarketBid bid) {
+			offer.house.owner.give(offer.house, ((OOMarketBid.IIssuer)bid.issuer).assetOwner());
+			bid.getIssuer().receive(new DemandForPayment(payee.defaultAccount(), offer.getPrice(), bid));
+		}
+
 		
 		public void putHouseForSale(House house) {
 			long minPrice = 0;

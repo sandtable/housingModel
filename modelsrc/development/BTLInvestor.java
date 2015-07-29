@@ -62,6 +62,7 @@ public class BTLInvestor extends ModelLeaf implements ITriggerable {
 	 * @param pbar average rent for house of this quality
 	 * @param d average days on market
 	 */
+	/***
 	@Override
 	public double buyToLetRent(double pbar, double d, double mortgagePayment) {
 		final double C = 0.02;//0.095;	// initial markup from average price
@@ -72,7 +73,8 @@ public class BTLInvestor extends ModelLeaf implements ITriggerable {
 		return(Math.exp(exponent));
 //		return(mortgagePayment*(1.0+RENT_PROFIT_MARGIN));
 	}
-
+***/
+	/***
 	public double rethinkBuyToLetRent(HouseSaleRecord sale) {
 		if(rand.nextDouble() > 0.944) {
 			double logReduction = 1.603+(rand.nextGaussian()*0.6173);
@@ -80,6 +82,7 @@ public class BTLInvestor extends ModelLeaf implements ITriggerable {
 		}
 		return(sale.currentPrice);
 	}
+	***/
 
 	/********************************************************
 	 * Decide whether to buy a house as a buy-to-let investment
@@ -118,6 +121,7 @@ public class BTLInvestor extends ModelLeaf implements ITriggerable {
 	}
 ***/
 		
+	/***
 	public boolean isPropertyInvestor() {
 		return(desiredBTLProperties > 0);
 	}
@@ -126,12 +130,13 @@ public class BTLInvestor extends ModelLeaf implements ITriggerable {
 	public double buyToLetMaxInvestment(Household me) {
 		return(Model.bank.getMaxMortgage(me, false));
 	}
-
+***/
 	/***
 	 * If we're below our desired investment portfolio size, desired yield
 	 * is average yield on the market plus noise. Otherwise, swap if we
 	 * find a house with better yield than worst yield in current portfolio.
 	 */
+	/***
 	@Override
 	public double buyToLetDesiredYield(Household me) {
 		if(me.housePayments.size()+1 < desiredBTLProperties) {
@@ -147,7 +152,7 @@ public class BTLInvestor extends ModelLeaf implements ITriggerable {
 		}
 		return(worstYield);
 	}
-
+***/
 
 
 }

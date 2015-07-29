@@ -83,7 +83,7 @@ public class MarketOffer extends Contract implements HousingMarket.IQualityPrice
 		void completeSale(MarketOffer offer, MarketBid bid);
 	}
 	
-	public static class Issuer<CONTRACT extends MarketOffer> extends Contract.Issuer<CONTRACT> implements IIssuer {
+	public static abstract class Issuer<CONTRACT extends MarketOffer> extends Contract.Issuer<CONTRACT> implements IIssuer {
 		DepositAccount.Owner payee;
 
 		public Issuer(Class<CONTRACT> clazz) {
@@ -109,16 +109,13 @@ public class MarketOffer extends Contract implements HousingMarket.IQualityPrice
 			}
 			return(false);
 		}
-		
+
+		abstract public void completeSale(MarketOffer offer, MarketBid bid);
+
 //		public IMessage.IReceiver getMarket(House h) {
 //			return(h.saleMarket);
 //		}
 
-		@Override
-		public void completeSale(MarketOffer offer, MarketBid bid) {
-			offer.house.owner.give(offer.house, bid.getIssuer().assetOwner());
-			bid.getIssuer().receive(new DemandForPayment(payee.defaultAccount(), offer.getPrice(), bid));
-		}
 	}
 	
 }

@@ -1,31 +1,22 @@
 package tests;
 
-import contracts.DemandForPayment;
+import sim.engine.SimState;
+import utilities.ModelTime;
 import contracts.DepositAccount;
-import contracts.MarketBid;
 import contracts.Mortgage;
-import contracts.OOMarketBid;
 import development.Bank;
 import development.CentralBank;
 import development.Construction;
 import development.EconAgent;
 import development.Employee;
 import development.Firm;
-import development.House;
 import development.HouseSaleMarket;
-import development.IMessage;
 import development.IModelNode;
 import development.ITriggerable;
-import development.HousingMarket;
 import development.Model;
-import development.NodeGroup;
 import development.OwnerOccupier;
 import development.RentalMarket;
-import development.Renter;
 import development.Trigger;
-import sim.engine.SimState;
-import sim.engine.Steppable;
-import utilities.ModelTime;
 
 @SuppressWarnings("serial")
 public class OwnerOccupierTest extends Model {

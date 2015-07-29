@@ -26,22 +26,13 @@ public class MarketBid extends Contract {
 		return((IIssuer)issuer);
 	}
 	
-	public interface IIssuer extends Contract.IIssuer, IMessage.IReceiver {
-		TangibleAsset.IOwner assetOwner();
-	}
 	
 	public static class Issuer extends Contract.Issuer<MarketBid> implements IIssuer {
-		TangibleAsset.IOwner assetOwner;
 		
 		public Issuer() {
 			super(MarketBid.class);
 		}
 		
-		@Override
-		public void start(IModelNode parent) {
-			assetOwner = parent.mustGet(TangibleAsset.IOwner.class);
-			super.start(parent);
-		}
 
 		@Override
 		public boolean receive(IMessage d) {
@@ -70,10 +61,6 @@ public class MarketBid extends Contract {
 			});			
 		}
 
-		@Override
-		public TangibleAsset.IOwner assetOwner() {
-			return assetOwner;
-		}
 
 	}
 	
