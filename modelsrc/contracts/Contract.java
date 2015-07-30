@@ -15,7 +15,7 @@ import development.NodeHashSet;
  *
  */
 public class Contract implements IMessage {
-	IIssuer	 		issuer; // should be EconAgent?
+	final IIssuer	 		issuer; // should be EconAgent?
 	public static final boolean			trace = true;
 
 	public Contract(IIssuer issuer) {
@@ -24,12 +24,16 @@ public class Contract implements IMessage {
 	
 	public boolean terminate() {
 		if(issuer != null && issuer.terminate(this)) {
-			issuer = null;
+//			issuer = null;
 			return(true);
 		}
 		return(false);
 	}
 
+	IIssuer getIssuer() {
+		return(issuer);
+	}
+	
 //	public interface Set {
 //		public Class<? extends Contract> getElementClass();
 //		public Iterator<? extends Contract> iterator();
@@ -47,7 +51,7 @@ public class Contract implements IMessage {
 		
 		public boolean issue(CONTRACT newContract, IMessage.IReceiver owner) {
 			if(owner == null) return(false);
-			if(trace) System.out.println(this.getClass().getName()+" issuing "+newContract.getClass().getSimpleName()+" to "+owner.getClass().getName());
+			if(trace) System.out.println(this+" issuing "+newContract.getClass().getSimpleName()+" to "+owner);
 			add(newContract);
 			boolean accepted = owner.receive(newContract);
 			if(accepted) {
@@ -86,18 +90,18 @@ public class Contract implements IMessage {
 				discardAll();
 				return(true);
 			} else if(newContract.getClass() == getElementClass()) {
-				if(trace) System.out.println(this.getClass().getName()+" received contract "+newContract.getClass().getSimpleName());
+				if(trace) System.out.println(this+" received contract "+newContract);
 				add(getElementClass().cast(newContract));
 				return(true);				
 			}
 			return(false);
 		}
 				
-		public boolean discard(Object contract) {
-			if(!remove(contract) ) {
+		public boolean discard(Contract contract) {
+			if(!contract.terminate()) {
 				return(false);
 			}
-			return(((Contract)contract).terminate());
+			return(remove(contract));
 		}
 		
 		public boolean discardAll() {
@@ -114,7 +118,7 @@ public class Contract implements IMessage {
 		boolean terminate(Contract contract); // termination of the contract early or after execution
 	}
 	static public interface IOwner extends IModelNode, IMessage.IReceiver {
-		boolean discard(Object contract);		
+		boolean discard(Contract contract);		
 		boolean discardAll();
 		int size();
 	}

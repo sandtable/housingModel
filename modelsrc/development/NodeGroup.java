@@ -17,7 +17,7 @@ public class NodeGroup<NODETYPE extends IModelNode> extends ModelLeaf implements
 		}
 		hasStarted = true;
 	}
-	
+		
 	public void add(NODETYPE newNode) {
 		set.add(newNode);
 		if(hasStarted) newNode.start(this);

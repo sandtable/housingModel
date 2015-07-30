@@ -182,6 +182,7 @@ public class PriorityQueue2D<E> {
 	
 	public int size() {return(ySortedElements.size());}
 	public int uncoveredSize() {return(uncoveredElements.size());}
+	public boolean contains(Object element) {return(ySortedElements.contains(element));}
 	
 	//////////////////////////////////////////////
 	

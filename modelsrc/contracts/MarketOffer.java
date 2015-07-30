@@ -17,14 +17,14 @@ public class MarketOffer extends Contract implements HousingMarket.IQualityPrice
 	public long			currentPrice;
 	public ModelTime	tInitialListing; 	// time of initial list
 	public HousingMarket.Match currentMatch;		// if non-null the house is currently 'under offer'
-	HousingMarket.IOffers	market;
+	HousingMarket.Offers<? extends MarketOffer>	market;
 	/***********************************************
 	 * Construct a new record.
 	 * 
 	 * @param h The house that is for sale.
 	 * @param price The initial list price for the house.
 	 ***********************************************/
-	public MarketOffer(IIssuer issuer, HousingMarket market, House iHouse, long price) {
+	public MarketOffer(Issuer<? extends MarketOffer> issuer, HousingMarket market, House iHouse, long price) {
 		super(issuer);
 		house = iHouse;
 		this.market = market.offers;
@@ -54,8 +54,9 @@ public class MarketOffer extends Contract implements HousingMarket.IQualityPrice
 		return(house.rentalMarket.expectedGrossYield(getQuality()));
 	}
 	
-	public IIssuer getIssuer() {
-		return((IIssuer)issuer);
+	@SuppressWarnings("unchecked")
+	public Issuer<? extends MarketOffer> getIssuer() {
+		return((Issuer<? extends MarketOffer>)issuer);
 	}
 
 	@Override
@@ -71,11 +72,13 @@ public class MarketOffer extends Contract implements HousingMarket.IQualityPrice
 		market.reducePrice(this,newPrice);
 	}
 	
+	/**
 	public HousingMarket.Match matchWith(MarketBid bid) {
 		if(currentMatch != null) return(null);
 		currentMatch = new HousingMarket.Match(this, bid);
 		return(currentMatch);
 	}
+	**/
 	
 	public void unMatch() {
 		currentMatch = null;

@@ -6,7 +6,7 @@ import development.IModelNode;
 import development.ModelRoot;
 
 public class SaleMarketOffer extends MarketOffer {
-	public SaleMarketOffer(IIssuer issuer, House house, long price) {
+	public SaleMarketOffer(Issuer issuer, House house, long price) {
 		super(issuer, house.saleMarket, house, price);
 	}
 

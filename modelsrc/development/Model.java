@@ -22,12 +22,30 @@ public class Model extends ModelBase {
 	public void start() {
 		super.start();
 		
-		root.get(Construction.class).buildHouse();
-		households.add(new Household());
-		households.add(new Household());
+//		root.get(Construction.class).buildHouse();
+//		root.get(Construction.class).buildHouse();
+//		households.add(new Household());
+//		households.add(new Household());
+	
+		new Lifecycle.BirthTrigger().schedule(new ITriggerable() {
+			public void trigger() {
+				households.add(new Household());
+				System.out.println("Birth!! "+households.size());
+			}
+		});
 		
 		Trigger.after(ModelTime.year()).schedule(new ITriggerable() {
-			public void trigger() {kill();}});
+			public void trigger() {
+				System.out.println("END: Killing");
+				kill();
+			}
+		});
+		
+		Trigger.monthly().schedule(new ITriggerable() {
+			public void trigger() {
+				System.out.println("Month is: "+Model.this.root.timeNow().inMonths());
+			}
+		});
 	}
 	
 	public void finish() {

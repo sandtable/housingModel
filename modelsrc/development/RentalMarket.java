@@ -31,7 +31,7 @@ public class RentalMarket extends HousingMarket {
 	}
 
 	@Override
-	public IOffers newOffers() {
+	public Offers newOffers() {
 		return this.new Offers();
 	}
 

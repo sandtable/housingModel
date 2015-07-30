@@ -5,7 +5,7 @@ import contracts.TangibleAsset;
 import contracts.DepositAccount;
 
 
-public class Construction extends EconAgent implements IHouseOwner {
+public class Construction extends EconAgent implements ITriggerable {
 	IMessage.IReceiver saleMarket;
 	public double 	housesPerHousehold; 	// target number of houses per household
 	public int 		housingStock;			// total number of houses built
@@ -22,6 +22,7 @@ public class Construction extends EconAgent implements IHouseOwner {
 	public void start(IModelNode parent) {
 		saleMarket = parent.mustFind(HouseSaleMarket.class);
 		parent.get(Bank.class).openAccount(get(DepositAccount.Owner.class));
+		Trigger.monthly().schedule(this);
 		super.start(parent);
 	}
 	
@@ -29,8 +30,8 @@ public class Construction extends EconAgent implements IHouseOwner {
 		housingStock = 0;		
 	}
 	
-	public void step() {
-		int targetStock = (int)(get(NodeGroup.class).size()*housesPerHousehold);
+	public void trigger() {
+		int targetStock = (int)(mustFind(NodeGroup.class).size()*housesPerHousehold);
 		// TODO: work out how to refer to different NodeGroups
 		int shortFall = targetStock - housingStock;
 		while(shortFall > 0) {
@@ -43,6 +44,7 @@ public class Construction extends EconAgent implements IHouseOwner {
 		House newBuild;
 		long price;
 
+		System.out.println("Building a new house");
 		newBuild = new House(parent.find(HouseSaleMarket.class), parent.find(RentalMarket.class));
 		get(TangibleAsset.Owner.class).receive(newBuild);
 		++housingStock;
@@ -50,8 +52,4 @@ public class Construction extends EconAgent implements IHouseOwner {
 		get(SaleMarketOffer.Issuer.class).issue(newBuild, price, saleMarket);
 	}
 	
-	@Override
-	public boolean remove(House house) {
-		return(true);
-	}
 }

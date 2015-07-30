@@ -2,6 +2,7 @@ package contracts;
 
 import contracts.TangibleAsset.IOwner;
 import utilities.ModelTime;
+import development.HousingMarket;
 import development.IMessage;
 import development.IModelNode;
 import development.ITriggerable;
@@ -11,6 +12,7 @@ import development.IMessage.IReceiver;
 public class MarketBid extends Contract {
 	long price;
 	IMessage.IReceiver market;
+	public HousingMarket.Match currentMatch;		// if non-null this bid is currently an 'under offer' bid	
 	
 	public MarketBid(IIssuer issuer, long price, IMessage.IReceiver market) {
 		super(issuer);
@@ -57,7 +59,9 @@ public class MarketBid extends Contract {
 		
 		void reIssue(final MarketBid bid, ModelTime delay) {
 			Trigger.after(delay).schedule(new ITriggerable() {
-				public void trigger() {issue(bid);}
+				public void trigger() {
+					issue(bid);
+				}
 			});			
 		}
 

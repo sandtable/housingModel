@@ -12,7 +12,7 @@ import utilities.PriorityQueue2D;
 public class HouseSaleMarket extends HousingMarket {
 
 	@Override
-	public HousingMarket.IOffers newOffers() {
+	public Offers newOffers() {
 		return(this.new Offers());
 	}
 
@@ -71,7 +71,7 @@ public class HouseSaleMarket extends HousingMarket {
 		}
 
 		@Override
-		public boolean discard(Object offer) {
+		public boolean discard(Contract offer) {
 			if(super.discard(offer)) {
 				return(BTLqueue.remove(offer));
 			}

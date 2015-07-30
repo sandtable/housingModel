@@ -5,7 +5,7 @@ import development.IModelNode;
 import development.RentalMarket;
 
 public class RentalMarketOffer extends MarketOffer {
-	public RentalMarketOffer(IIssuer issuer, House house, long price) {
+	public RentalMarketOffer(Issuer issuer, House house, long price) {
 		super(issuer, house.rentalMarket, house, price);
 	}
 	

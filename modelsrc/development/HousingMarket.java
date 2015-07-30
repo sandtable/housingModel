@@ -17,7 +17,7 @@ public abstract class HousingMarket extends EconAgent {
 	public static final double F = Math.exp(-1.0/12.0); // House Price Index appreciation decay const (in market clearings)
 
 	public Bids 	bids;
-	public IOffers			offers;
+	public Offers<? extends MarketOffer>			offers;
 	public ExponentialAverage averageDaysOnMarket;
 	protected ExponentialAverage averageSalePrice[];
 	public double HPIAppreciation;
@@ -71,10 +71,19 @@ public abstract class HousingMarket extends EconAgent {
 		if(matchedOffer == null) return(null);
 		if(matchedOffer.isUnderOffer()) {
 			matchedOffer.currentMatch.stop();
+			System.out.println("Bids :"+bids.data);
+			System.out.println("Offers :"+offers.data);
+			System.out.println("Old Match: "+matchedOffer+":"+offers.contains(matchedOffer) +
+					" "+matchedOffer.currentMatch.bid+":"+bids.contains(matchedOffer.currentMatch.bid));
+			System.out.println("offer in ooqueue:"+offers.OOqueue.contains(matchedOffer));
+//			System.out.println("in btlqueue:"+offers.BTLqueue.contains(matchedOffer));
+			System.out.println("Offers size:"+this.offers.size()+" OOqueue size:"+this.offers.OOqueue.size());
 			HousingMarket.this.bids.discard(matchedOffer.currentMatch.bid);
 			matchedOffer.unMatch();
 		}
-		Match match = matchedOffer.matchWith(bid);
+//		Match match = matchedOffer.matchWith(bid);
+		Match match = new HousingMarket.Match(matchedOffer, bid);
+
 		match.schedule(match, this);
 		return(match);
 	}
@@ -91,7 +100,7 @@ public abstract class HousingMarket extends EconAgent {
 
 	// --- override these to make sub-classed bids and offers traits
 	abstract public Bids newBids();
-	abstract public IOffers newOffers();
+	abstract public Offers<? extends MarketOffer> newOffers();
 	abstract public long referencePrice(int quality);
 
 	///////////////////////////////////////////////////////////////
@@ -124,7 +133,7 @@ public abstract class HousingMarket extends EconAgent {
 	 */
 	public int qualityGivenPrice(long price) {
 		int q=0;
-		while(averageSalePrice[q].value() < price) ++q;
+		while(q < House.Config.N_QUALITY && averageSalePrice[q].value() < price) ++q;
 		if(q>0) --q;
 		return(q);
 	}
@@ -154,6 +163,19 @@ public abstract class HousingMarket extends EconAgent {
 		}
 
 		@Override
+		public boolean discard(Contract contract) {
+			if(super.discard(contract)) {
+				Match match = ((MarketBid)contract).currentMatch;
+				if(match != null) {
+					match.offer.currentMatch = null;
+					match.stop();
+				}
+				return(true);
+			}
+			return(false);
+		}
+		
+		@Override
 		public boolean receive(IMessage contract) {
 			if(contract instanceof RentalMarketBid) { // RentalMarketBids and OOMarketBids
 				RentalMarketBid bid = (RentalMarketBid)contract;
@@ -169,16 +191,23 @@ public abstract class HousingMarket extends EconAgent {
 
 	/////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////
-	public static class Offers<CONTRACT extends MarketOffer> extends Contract.Owner<CONTRACT> implements IOffers {
+	public class Offers<CONTRACT extends MarketOffer> extends Contract.Owner<CONTRACT> {
 		public Offers(Class<CONTRACT> clazz) {
 			super(clazz);
 			OOqueue = new PriorityQueue2D<>(new IQualityPriceSupplier.Comparator());
 		}
 	
 		@Override
-		public boolean discard(Object offer) {
+		public boolean discard(Contract offer) {
 			if(super.discard(offer)) {
-				return(OOqueue.remove(offer));
+				Match match = ((MarketBid)offer).currentMatch;
+				if(match != null) {
+					HousingMarket.this.bids.discard(match.bid);
+				}
+				if(!OOqueue.contains(offer)) System.out.println("Error: Offer is not in OOqueue");
+				OOqueue.remove(offer);
+				if(OOqueue.contains(offer)) System.out.println("Error: deletion failure");
+				return(true);
 			}
 			return(false);
 		}
@@ -204,10 +233,10 @@ public abstract class HousingMarket extends EconAgent {
 		PriorityQueue2D<IQualityPriceSupplier>	OOqueue;
 	}
 
-	public interface IOffers extends Contract.IOwner {
-		MarketOffer peek(IQualityPriceSupplier xMax);
-		void reducePrice(MarketOffer offer, long newPrice);
-	}
+//	public interface IOffers extends Contract.IOwner {
+//		MarketOffer peek(IQualityPriceSupplier xMax);
+//		void reducePrice(MarketOffer offer, long newPrice);
+//	}
 	
 	public interface IQualityPriceSupplier {
 		int getQuality();
@@ -232,6 +261,10 @@ public abstract class HousingMarket extends EconAgent {
 			super(gazumpTime);
 			offer = iOffer;
 			bid = iBid;
+			if(offer.currentMatch != null) System.out.println("Error: Setting up a match on an already matched MarketOffer");
+			offer.currentMatch = this;
+			if(bid.currentMatch != null) System.out.println("Error: Setting up a match on an already matched MarketBid");
+			bid.currentMatch = this;
 		}
 		
 		MarketOffer offer;

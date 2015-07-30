@@ -21,7 +21,7 @@ public class Renter extends EconAgent {
 	@Override
 	public void start(IModelNode parent) {
 		super.start(parent);
-		meOwnerOccupier = parent.get(OwnerOccupier.class);
+		meOwnerOccupier = parent.mustGet(OwnerOccupier.class);
 		meEmployee = parent.mustGet(Employee.class);
 		rentalMarket = parent.mustFind(RentalMarket.class);
 	}
@@ -29,7 +29,7 @@ public class Renter extends EconAgent {
 	@Override
 	public boolean receive(IMessage message) {
 		if(message instanceof Message.EndOfContract) { // end of rental contract
-			home.lodger = null;
+			if(home != null) home.lodger = null;
 			home = null;
 			if(decideToBecomeOwnerOccupier()) {
 				meOwnerOccupier.bidOnHouseMarket();
