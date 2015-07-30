@@ -10,11 +10,11 @@ import development.CentralBank;
 import development.EconAgent;
 import development.IModelNode;
 import development.ITriggerable;
-import development.Model;
+import development.ModelBase;
 import development.Trigger;
 
 @SuppressWarnings("serial")
-public class MortgageTest extends Model {
+public class MortgageTest extends ModelBase {
 
 	public static class HouseholdStub extends EconAgent implements ITriggerable {
 		public HouseholdStub() {

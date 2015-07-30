@@ -17,7 +17,7 @@ import development.IMessage;
 import development.IModelNode;
 import development.ITriggerable;
 import development.HousingMarket;
-import development.Model;
+import development.ModelBase;
 import development.NodeGroup;
 import development.OwnerOccupier;
 import development.RentalMarket;
@@ -28,7 +28,7 @@ import sim.engine.Steppable;
 import utilities.ModelTime;
 
 @SuppressWarnings("serial")
-public class OwnerOccupierRenterTest extends Model {
+public class OwnerOccupierRenterTest extends ModelBase {
 
 	public static class HouseholdStub extends EconAgent {
 		public HouseholdStub() {

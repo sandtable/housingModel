@@ -21,7 +21,7 @@ public class House extends TangibleAsset implements Comparable<House> {
 	public House(HouseSaleMarket saleMarket, RentalMarket rentalMarket) {
 		id = ++id_pool;	
 		lodger = null;
-		quality = (int)(Model.root.random.nextDouble()*Config.N_QUALITY);
+		quality = (int)(ModelBase.root.random.nextDouble()*Config.N_QUALITY);
 		this.saleMarket = saleMarket;
 		this.rentalMarket = rentalMarket;
 	}

@@ -59,7 +59,7 @@ public class Trigger {
 		}
 		@Override
 		public void sendToSchedule() {
-			Model.root.schedule.scheduleOnce(time, this);
+			ModelBase.root.schedule.scheduleOnce(time, this);
 		}
 		double time;
 	}
@@ -71,7 +71,7 @@ public class Trigger {
 		}
 		@Override
 		public void sendToSchedule() {
-			Model.root.schedule.scheduleOnce(ModelTime.now().raw()+delay, this);
+			ModelBase.root.schedule.scheduleOnce(ModelTime.now().raw()+delay, this);
 		}
 		double delay;
 	}
@@ -83,7 +83,7 @@ public class Trigger {
 		}
 		
 		public void sendToSchedule() {
-			stopper = Model.root.schedule.scheduleRepeating(ModelTime.now().raw(),this,period.raw());
+			stopper = ModelBase.root.schedule.scheduleRepeating(ModelTime.now().raw(),this,period.raw());
 		}
 		
 		@Override
@@ -175,7 +175,7 @@ public class Trigger {
 		
 		/** return: a random delay between events with exponential distribution */
 		double nextDelay() {
-			return(-Math.log(1.0 - Model.root.random.nextDouble())/rate);
+			return(-Math.log(1.0 - ModelBase.root.random.nextDouble())/rate);
 		}
 		
 		double rate;

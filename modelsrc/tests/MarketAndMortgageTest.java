@@ -15,7 +15,7 @@ import development.IMessage;
 import development.IModelNode;
 import development.ITriggerable;
 import development.HousingMarket;
-import development.Model;
+import development.ModelBase;
 import development.NodeGroup;
 import development.RentalMarket;
 import development.Trigger;
@@ -24,7 +24,7 @@ import sim.engine.Steppable;
 import utilities.ModelTime;
 
 @SuppressWarnings("serial")
-public class MarketAndMortgageTest extends Model {
+public class MarketAndMortgageTest extends ModelBase {
 
 	public static class HouseholdStub extends EconAgent {
 		public HouseholdStub() {

@@ -68,7 +68,7 @@ public class Contract implements IMessage {
 	 * Agent module for deposit account holder
 	 * @author daniel
 	 */
-	static public class Owner<CONTRACT extends Contract> extends NodeHashSet<CONTRACT> implements IMessage.IReceiver {
+	static public class Owner<CONTRACT extends Contract> extends NodeHashSet<CONTRACT> implements IOwner {
 		public Owner(Class<? extends CONTRACT> contractClazz) {
 			super(contractClazz);
 		}
@@ -112,5 +112,10 @@ public class Contract implements IMessage {
 	static public interface IIssuer extends IModelNode {
 //		boolean issue(Contract newContract, IMessage.IReceiver owner);
 		boolean terminate(Contract contract); // termination of the contract early or after execution
+	}
+	static public interface IOwner extends IModelNode, IMessage.IReceiver {
+		boolean discard(Object contract);		
+		boolean discardAll();
+		int size();
 	}
 }

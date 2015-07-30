@@ -2,10 +2,10 @@ package tests;
 
 import contracts.DepositAccount;
 import development.Bank;
-import development.Model;
+import development.ModelBase;
 
 @SuppressWarnings("serial")
-public class DepositAccountTest extends Model {
+public class DepositAccountTest extends ModelBase {
 
 	public DepositAccountTest(long seed) {
 		super(seed);

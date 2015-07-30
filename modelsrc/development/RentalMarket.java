@@ -1,5 +1,6 @@
 package development;
 
+import contracts.Contract;
 import contracts.RentalMarketOffer;
 import utilities.ExponentialAverage;
 import utilities.ModelTime;
@@ -30,7 +31,7 @@ public class RentalMarket extends HousingMarket {
 	}
 
 	@Override
-	public Offers newOffers() {
+	public IOffers newOffers() {
 		return this.new Offers();
 	}
 

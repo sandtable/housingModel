@@ -39,7 +39,8 @@ public class Consumer extends ModelLeaf implements IMessage.IReceiver {
 	
 	@Override
 	public void start(IModelNode parent) {
-		root = parent.get(ModelRoot.class);
+		super.start(parent);
+		root = parent.mustFind(ModelRoot.class);
 		accounts = parent.get(DepositAccount.Owner.class);
 		shops = root.get(Firm.class);
 		lastConsumption = ModelTime.now();

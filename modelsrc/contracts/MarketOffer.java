@@ -17,7 +17,7 @@ public class MarketOffer extends Contract implements HousingMarket.IQualityPrice
 	public long			currentPrice;
 	public ModelTime	tInitialListing; 	// time of initial list
 	public HousingMarket.Match currentMatch;		// if non-null the house is currently 'under offer'
-	HousingMarket.Offers	market;
+	HousingMarket.IOffers	market;
 	/***********************************************
 	 * Construct a new record.
 	 * 

@@ -53,7 +53,7 @@ public class Renter extends EconAgent {
 	}
 
 	public void bidOnRentalMarket() {
-		get(RentalMarketBid.Issuer.class).issue(desiredRent(meEmployee.monthlyIncome()), qualityOfLife, rentalMarket);
+		get(RentalMarketBid.Issuer.class).issue(desiredRent(meEmployee.monthlyIncome()), qualityOfLife, rentalMarket.bids);
 	}
 	
 	public int calcAffordableQualityOfHouse() {

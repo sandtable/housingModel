@@ -13,13 +13,13 @@ import development.Firm;
 import development.HouseSaleMarket;
 import development.IModelNode;
 import development.ITriggerable;
-import development.Model;
+import development.ModelBase;
 import development.OwnerOccupier;
 import development.RentalMarket;
 import development.Trigger;
 
 @SuppressWarnings("serial")
-public class OwnerOccupierTest extends Model {
+public class OwnerOccupierTest extends ModelBase {
 
 	public static class HouseholdStub extends EconAgent {
 		public HouseholdStub() {

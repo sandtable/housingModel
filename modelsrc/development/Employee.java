@@ -30,7 +30,7 @@ public class Employee extends Contract.Owner<LabourContract> implements LabourCo
 
 	@Override
 	public DepositAccount account() {
-		return(parent().get(DepositAccount.Owner.class).defaultAccount());
+		return(parent().mustGet(DepositAccount.Owner.class).defaultAccount());
 	}
 	
 	public double getIncomePercentile() {

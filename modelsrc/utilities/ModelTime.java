@@ -1,6 +1,6 @@
 package utilities;
 
-import development.Model;
+import development.ModelBase;
 
 public class ModelTime {
 	public enum Units {
@@ -84,7 +84,7 @@ public class ModelTime {
 		return(ModelTime.days(1.0));
 	}
 	static public ModelTime now() {
-		return(Model.root.timeNow());
+		return(ModelBase.root.timeNow());
 	}
 	
 	final double time;

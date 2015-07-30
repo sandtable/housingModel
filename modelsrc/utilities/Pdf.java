@@ -1,6 +1,6 @@
 package utilities;
 
-import development.Model;
+import development.ModelBase;
 
 // import java.util.function.DoubleUnaryOperator; // not compatible with Java 1.7
 
@@ -84,7 +84,7 @@ public class Pdf {
 	 * @return A random sample from the PDF
 	 */
 	public double nextDouble() {
-		double uniform = Model.root.random.nextDouble(); // uniform random sample on [0:1)
+		double uniform = ModelBase.root.random.nextDouble(); // uniform random sample on [0:1)
 		int i = (int)(uniform*(nSamples-1));
 		double remainder = uniform*(nSamples-1.0) - i;
 		return((1.0-remainder)*inverseCDF[i] + remainder*inverseCDF[i+1]);

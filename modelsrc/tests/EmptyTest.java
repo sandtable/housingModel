@@ -4,11 +4,11 @@ import sim.engine.SimState;
 import utilities.ModelTime;
 import development.EconAgent;
 import development.ITriggerable;
-import development.Model;
+import development.ModelBase;
 import development.Trigger;
 
 @SuppressWarnings("serial")
-public class EmptyTest extends Model {
+public class EmptyTest extends ModelBase {
 
 	public static class HouseholdStub extends EconAgent {
 		public HouseholdStub() {

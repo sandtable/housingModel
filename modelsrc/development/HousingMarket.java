@@ -6,6 +6,7 @@ import contracts.Contract;
 import contracts.MarketBid;
 import contracts.MarketOffer;
 import contracts.OOMarketBid;
+import contracts.RentalMarketBid;
 import utilities.ExponentialAverage;
 import utilities.ModelTime;
 import utilities.PriorityQueue2D;
@@ -16,7 +17,7 @@ public abstract class HousingMarket extends EconAgent {
 	public static final double F = Math.exp(-1.0/12.0); // House Price Index appreciation decay const (in market clearings)
 
 	public Bids 	bids;
-	public Offers	offers;
+	public IOffers			offers;
 	public ExponentialAverage averageDaysOnMarket;
 	protected ExponentialAverage averageSalePrice[];
 	public double HPIAppreciation;
@@ -62,8 +63,8 @@ public abstract class HousingMarket extends EconAgent {
 		return(super.receive(message));
 	}
 
-	public Match matchBid(OOMarketBid bid) {
-		return(setupMatch((MarketOffer)offers.OOqueue.peek(bid), bid));
+	public Match matchBid(RentalMarketBid bid) {
+		return(setupMatch(offers.peek(bid), bid));
 	}
 
 	Match setupMatch(MarketOffer matchedOffer, MarketBid bid) {
@@ -90,7 +91,7 @@ public abstract class HousingMarket extends EconAgent {
 
 	// --- override these to make sub-classed bids and offers traits
 	abstract public Bids newBids();
-	abstract public Offers newOffers();
+	abstract public IOffers newOffers();
 	abstract public long referencePrice(int quality);
 
 	///////////////////////////////////////////////////////////////
@@ -150,18 +151,15 @@ public abstract class HousingMarket extends EconAgent {
 		@Override
 		public void start(IModelNode parent) {
 			super.start(parent);
-			if(parent instanceof EconAgent) {
-				((EconAgent)parent).registerHandler(OOMarketBid.class, this);
-			}
 		}
 
 		@Override
 		public boolean receive(IMessage contract) {
-			if(contract instanceof OOMarketBid) {
-				OOMarketBid bid = (OOMarketBid)contract;
+			if(contract instanceof RentalMarketBid) { // RentalMarketBids and OOMarketBids
+				RentalMarketBid bid = (RentalMarketBid)contract;
 				Match match = HousingMarket.this.matchBid(bid);
 				if(match != null) {
-					add((MarketBid)contract);
+					add(bid);
 					return(true);
 				}
 			}
@@ -171,7 +169,7 @@ public abstract class HousingMarket extends EconAgent {
 
 	/////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////
-	public class Offers<CONTRACT extends MarketOffer> extends Contract.Owner<CONTRACT> {
+	public static class Offers<CONTRACT extends MarketOffer> extends Contract.Owner<CONTRACT> implements IOffers {
 		public Offers(Class<CONTRACT> clazz) {
 			super(clazz);
 			OOqueue = new PriorityQueue2D<>(new IQualityPriceSupplier.Comparator());
@@ -199,9 +197,18 @@ public abstract class HousingMarket extends EconAgent {
 			}
 		}
 		
+		public MarketOffer peek(IQualityPriceSupplier xMax) {
+			return((MarketOffer)OOqueue.peek(xMax));
+		}
+		
 		PriorityQueue2D<IQualityPriceSupplier>	OOqueue;
 	}
 
+	public interface IOffers extends Contract.IOwner {
+		MarketOffer peek(IQualityPriceSupplier xMax);
+		void reducePrice(MarketOffer offer, long newPrice);
+	}
+	
 	public interface IQualityPriceSupplier {
 		int getQuality();
 		long getPrice();

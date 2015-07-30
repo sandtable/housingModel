@@ -1,20 +1,23 @@
 package development;
 
 import contracts.BTLMarketBid;
+import contracts.Contract;
 import contracts.MarketBid;
 import contracts.MarketOffer;
+import contracts.OOMarketBid;
+import contracts.RentalMarketBid;
 import contracts.SaleMarketOffer;
 import utilities.PriorityQueue2D;
 
 public class HouseSaleMarket extends HousingMarket {
 
 	@Override
-	public HousingMarket.Offers newOffers() {
+	public HousingMarket.IOffers newOffers() {
 		return(this.new Offers());
 	}
 
 	@Override
-	public HousingMarket.Bids newBids() {
+	public Bids newBids() {
 		return(this.new Bids());
 	}
 
@@ -35,7 +38,8 @@ public class HouseSaleMarket extends HousingMarket {
 			super.start(parent);
 			if(parent instanceof EconAgent) {
 				((EconAgent)parent).registerHandler(BTLMarketBid.class, this);
-			}
+				((EconAgent)parent).registerHandler(OOMarketBid.class, this);
+				}
 		}
 		
 		@Override

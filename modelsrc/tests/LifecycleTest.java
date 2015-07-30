@@ -12,12 +12,12 @@ import development.IModelNode;
 import development.ITriggerable;
 import development.Lifecycle;
 import development.Message;
-import development.Model;
+import development.ModelBase;
 import development.NodeGroup;
 import development.Trigger;
 
 @SuppressWarnings("serial")
-public class LifecycleTest extends Model implements ITriggerable {
+public class LifecycleTest extends ModelBase implements ITriggerable {
 
 	public static class HouseholdStub extends EconAgent {
 		public HouseholdStub() {
