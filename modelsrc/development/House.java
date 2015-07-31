@@ -1,6 +1,5 @@
 package development;
 
-import contracts.Mortgage;
 import contracts.TangibleAsset;
 import contracts.RentalContract;
 
@@ -18,10 +17,10 @@ public class House extends TangibleAsset implements Comparable<House> {
 		public static int N_QUALITY = 48; // number of quality bands		
 	}
 	
-	public House(HouseSaleMarket saleMarket, RentalMarket rentalMarket) {
+	public House(HouseSaleMarket saleMarket, RentalMarket rentalMarket, ModelRoot root) {
 		id = ++id_pool;	
 		lodger = null;
-		quality = (int)(ModelBase.root.random.nextDouble()*Config.N_QUALITY);
+		quality = (int)(root.random.nextDouble()*Config.N_QUALITY);
 		this.saleMarket = saleMarket;
 		this.rentalMarket = rentalMarket;
 	}

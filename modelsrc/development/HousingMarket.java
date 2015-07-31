@@ -24,6 +24,7 @@ public abstract class HousingMarket extends EconAgent {
 	public double housePriceIndex;
 	public double lastHousePriceIndex;
 
+	
 	public HousingMarket() {
 		bids = newBids();
 		offers = newOffers(); // good way of initialising circular dependency...!
@@ -46,7 +47,7 @@ public abstract class HousingMarket extends EconAgent {
 		final HousingMarket me = this;
 		Trigger.quarterly().schedule(new ITriggerable() {
 			public void trigger() {me.doQuarterlyStats();}
-		});		
+		});
 	}
 
 	@Override
@@ -54,10 +55,13 @@ public abstract class HousingMarket extends EconAgent {
 		if(message instanceof Match) {
 			// a match has completed its wait
 			Match match = (Match)message;
-			match.offer.getIssuer().completeSale(match.offer, match.bid);
-			offers.discard(match.offer);
-			bids.discard(match.bid);
+			MarketOffer offer = match.offer;
+			MarketBid bid = match.bid;
+			offer.getIssuer().completeSale(offer, bid);
 			recordTransaction(match);
+			match.unlink();
+			offers.discard(offer);
+			bids.discard(bid);
 			return(true);
 		}
 		return(super.receive(message));
@@ -71,19 +75,9 @@ public abstract class HousingMarket extends EconAgent {
 		if(matchedOffer == null) return(null);
 		if(matchedOffer.isUnderOffer()) {
 			matchedOffer.currentMatch.stop();
-			System.out.println("Bids :"+bids.data);
-			System.out.println("Offers :"+offers.data);
-			System.out.println("Old Match: "+matchedOffer+":"+offers.contains(matchedOffer) +
-					" "+matchedOffer.currentMatch.bid+":"+bids.contains(matchedOffer.currentMatch.bid));
-			System.out.println("offer in ooqueue:"+offers.OOqueue.contains(matchedOffer));
-//			System.out.println("in btlqueue:"+offers.BTLqueue.contains(matchedOffer));
-			System.out.println("Offers size:"+this.offers.size()+" OOqueue size:"+this.offers.OOqueue.size());
 			HousingMarket.this.bids.discard(matchedOffer.currentMatch.bid);
-			matchedOffer.unMatch();
 		}
-//		Match match = matchedOffer.matchWith(bid);
 		Match match = new HousingMarket.Match(matchedOffer, bid);
-
 		match.schedule(match, this);
 		return(match);
 	}
@@ -164,14 +158,16 @@ public abstract class HousingMarket extends EconAgent {
 
 		@Override
 		public boolean discard(Contract contract) {
+			if(!contains(contract)) System.out.println("Error: trying to discard a contract I don't have");
 			if(super.discard(contract)) {
 				Match match = ((MarketBid)contract).currentMatch;
 				if(match != null) {
-					match.offer.currentMatch = null;
+					match.unlink();
 					match.stop();
 				}
 				return(true);
 			}
+			System.out.println("Error: discard failed");
 			return(false);
 		}
 		
@@ -200,7 +196,7 @@ public abstract class HousingMarket extends EconAgent {
 		@Override
 		public boolean discard(Contract offer) {
 			if(super.discard(offer)) {
-				Match match = ((MarketBid)offer).currentMatch;
+				Match match = ((MarketOffer)offer).currentMatch;
 				if(match != null) {
 					HousingMarket.this.bids.discard(match.bid);
 				}
@@ -265,6 +261,13 @@ public abstract class HousingMarket extends EconAgent {
 			offer.currentMatch = this;
 			if(bid.currentMatch != null) System.out.println("Error: Setting up a match on an already matched MarketBid");
 			bid.currentMatch = this;
+		}
+		
+		public void unlink() {
+			offer.currentMatch = null;
+			bid.currentMatch = null;
+			offer = null;
+			bid = null;
 		}
 		
 		MarketOffer offer;

@@ -48,14 +48,13 @@ public class OwnerOccupier extends EconAgent implements ITriggerable, TangibleAs
 	@Override
 	public void trigger() {
 		// Triggers once a month on introspection
-		System.out.println("OO: Thinking");
 		// Selling behaviour
 		if(houseForSale()) {
 			SaleMarketOffer offer = get(SaleMarketOffer.Issuer.class).first();
 			if(!offer.isUnderOffer()) {
 				offer.reducePrice(rethinkHouseSalePrice(offer.currentPrice));
 			}
-		} else if(isHomeowner() && decideToSellHome()) {
+		} else if(isOwnerOccupier() && decideToSellHome()) {
 			get(SaleMarketOffer.Issuer.class).putHouseForSale(home);
 		}
 	}
@@ -120,7 +119,7 @@ public class OwnerOccupier extends EconAgent implements ITriggerable, TangibleAs
 		return(get(OOMarketBid.Issuer.class).size() > 0);		
 	}
 	
-	public boolean isHomeowner() {
+	public boolean isOwnerOccupier() {
 		return(home != null);
 	}
 	

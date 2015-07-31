@@ -24,9 +24,7 @@ public class NodeHashSet<E> extends ModelLeaf implements Iterable<E> {
 	}
 	
 	public boolean remove(Object element) {
-		System.out.println("Remove:"+this+" "+element+" "+data);
-		System.out.println("isin:"+data.containsKey(element));
-		return(data.remove(element));
+		return(data.remove(element) != null);
 	}
 	
 	public boolean contains(Object element) {

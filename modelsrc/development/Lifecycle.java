@@ -62,18 +62,19 @@ public class Lifecycle extends ModelLeaf {
 	@SuppressWarnings("serial")
 	static public class BirthTrigger extends Trigger.PoissonProcess {
 		public BirthTrigger() {
-			super(0.0, ModelTime.Units.DAYS);
-			delay = birthRate();
+			super(ModelTime.days(0.0));
+			meanInterval = birthInterval();
+			delay = nextDelay();
 		}
 		
 		@Override
 		public void step(SimState arg0) {
-			rate = birthRate();
+			meanInterval = birthInterval();
 			super.step(arg0);
 		}
 
 		/** number of births in unit raw schedule time */
-		public double birthRate() {
+		public ModelTime birthInterval() {
 			double birthsPerYear;
 			if(ModelTime.now().isBefore(ModelTime.years(SPINUP_YEARS))) {
 				// --- still in spin-up phase of simulation
@@ -82,7 +83,7 @@ public class Lifecycle extends ModelLeaf {
 				// --- in projection phase of simulation
 				birthsPerYear = futureBirthRate(ModelTime.now().inMonths());
 			}
-			return(birthsPerYear/ModelTime.Units.YEAR.raw());
+			return(ModelTime.years(1.0/birthsPerYear));
 		}
 	}
 			

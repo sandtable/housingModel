@@ -12,7 +12,11 @@ public class ModelBase extends SimState {
 	public void start() {
 		root.start(null);
 	}
+	
+	public void stop() {
+		kill();
+	}
 
-	static public ModelRoot root;
+	public static ModelRoot root;
 	private static final long serialVersionUID = 1714518191380607106L;
 }

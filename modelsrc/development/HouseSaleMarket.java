@@ -11,6 +11,9 @@ import utilities.PriorityQueue2D;
 
 public class HouseSaleMarket extends HousingMarket {
 
+	
+	
+	
 	@Override
 	public Offers newOffers() {
 		return(this.new Offers());

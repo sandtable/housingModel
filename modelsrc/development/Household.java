@@ -14,7 +14,7 @@ public class Household extends EconAgent {
 				new Consumer(),
 				new OwnerOccupier(),
 				new Renter(),
-	//			new BTLInvestor(),
+				new BTLInvestor(),
 				new Mortgage.Borrower()
 				);
 	}
@@ -26,5 +26,14 @@ public class Household extends EconAgent {
 		parent.mustFind(Firm.class).employ(mustGet(Employee.class));
 		// trigger that we're homeless
 		Trigger.after(ModelTime.now()).schedule(new Message.EndOfContract(null), get(Renter.class));
-	}	
+	}
+	
+	public boolean isOwnerOccupier() {
+		return(get(OwnerOccupier.class).isOwnerOccupier());
+	}
+
+	public boolean isRenting() {
+		return(get(Renter.class).isRenting());
+	}
+
 }

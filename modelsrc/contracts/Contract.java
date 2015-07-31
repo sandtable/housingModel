@@ -16,18 +16,19 @@ import development.NodeHashSet;
  */
 public class Contract implements IMessage {
 	final IIssuer	 		issuer; // should be EconAgent?
-	public static final boolean			trace = true;
+	public static final boolean			trace = false;
 
 	public Contract(IIssuer issuer) {
 		this.issuer = issuer;
 	}
 	
 	public boolean terminate() {
-		if(issuer != null && issuer.terminate(this)) {
+		return(issuer.terminate(this));
+//		if(issuer != null && issuer.terminate(this)) {
 //			issuer = null;
-			return(true);
-		}
-		return(false);
+//			return(true);
+//		}
+//		return(false);
 	}
 
 	IIssuer getIssuer() {
@@ -64,6 +65,7 @@ public class Contract implements IMessage {
 		}
 				
 		public boolean terminate(Contract contract) {
+			if(!contains(contract)) System.out.println("Error: trying to terminate a contract that I didn't issue");
 			return(remove(contract));
 		}		
 	}
@@ -99,6 +101,7 @@ public class Contract implements IMessage {
 				
 		public boolean discard(Contract contract) {
 			if(!contract.terminate()) {
+				System.out.println("Error: terminate failed");
 				return(false);
 			}
 			return(remove(contract));

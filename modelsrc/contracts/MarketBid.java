@@ -52,7 +52,8 @@ public class MarketBid extends Contract {
 		@Override
 		public boolean terminate(Contract contract) {
 			if(super.terminate(contract)) {
-				reIssue(((MarketBid)contract), ModelTime.week());				
+				reIssue(((MarketBid)contract), ModelTime.week());
+				return(true);
 			}
 			return(false);
 		}

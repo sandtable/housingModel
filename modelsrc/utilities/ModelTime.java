@@ -5,14 +5,14 @@ import development.ModelBase;
 public class ModelTime {
 	public enum Units {
 		RAW(1.0),
-		DAY(1.0),
-		DAYS(1.0),
-		WEEK(7.0),
-		WEEKS(7.0),
-		MONTH(30.0),
-		MONTHS(30.0),
-		YEAR(360.0),
-		YEARS(360.0);
+		DAY(1.0/360.0),
+		DAYS(1.0/360.0),
+		WEEK(1.0/52.0),
+		WEEKS(1.0/52.0),
+		MONTH(1.0),
+		MONTHS(1.0),
+		YEAR(12.0),
+		YEARS(12.0);
 		
 		Units(double d) {multiplier = d;}
 

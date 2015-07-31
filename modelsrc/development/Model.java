@@ -6,17 +6,21 @@ import tests.OwnerOccupierRenterTest.HouseholdStub;
 import utilities.ModelTime;
 
 public class Model extends ModelBase {
-	public Model(long seed) {
+	private static final long serialVersionUID = -6104859347518541540L;
+	Households households;
+
+    public Model(long seed) {
 		super(seed,
 				new CentralBank(),
 				new Bank(),
 				new HouseSaleMarket(),
 				new RentalMarket(),
 				new Construction(),
-				new Firm()
+				new Firm(),
+				new Households(),
+				new HouseholdStats()
 		);
-		households = new NodeGroup<Household>();
-		this.root.addChild(households);
+		households = root.get(Households.class);
 	}
 
 	public void start() {
@@ -54,6 +58,4 @@ public class Model extends ModelBase {
     public static void main(String[] args) {
     	SimState.doLoop(Model.class, args);
     }
-    
-    NodeGroup<Household> households;
 }

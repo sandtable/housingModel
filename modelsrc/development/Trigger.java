@@ -158,9 +158,9 @@ public class Trigger {
 	 */
 	@SuppressWarnings("serial")
 	static public class PoissonProcess extends OnceAfter {
-		public PoissonProcess(double rate, ModelTime.Units perWhat) {
+		public PoissonProcess(ModelTime meanInterval) {
 			super(new ModelTime(0.0,ModelTime.Units.RAW));
-			rate = rate/perWhat.raw();
+			this.meanInterval = meanInterval;
 			delay = nextDelay();
 		}
 		
@@ -175,10 +175,10 @@ public class Trigger {
 		
 		/** return: a random delay between events with exponential distribution */
 		double nextDelay() {
-			return(-Math.log(1.0 - ModelBase.root.random.nextDouble())/rate);
+			return(-Math.log(1.0 - ModelBase.root.random.nextDouble())*meanInterval.raw());
 		}
 		
-		double rate;
+		ModelTime meanInterval;
 	}
 
 	static public Repeating repeatingEvery(ModelTime time) 	{return(new Repeating(time));}
@@ -189,7 +189,7 @@ public class Trigger {
 	static public Repeating monthly() 						{return(repeatingEvery(ModelTime.month()));}
 	static public Repeating weekly() 						{return(repeatingEvery(ModelTime.week()));}
 	static public Repeating daily() 						{return(repeatingEvery(ModelTime.day()));}
-	static public PoissonProcess   poisson(double rate, ModelTime.Units perWhat)		{return(new PoissonProcess(rate,perWhat));}
+	static public PoissonProcess   poisson(ModelTime meanInterval)		{return(new PoissonProcess(meanInterval));}
 	static public ITrigger onDemand() {
 		return(new ITrigger() {
 			@Override
