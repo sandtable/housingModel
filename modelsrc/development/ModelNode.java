@@ -37,9 +37,13 @@ public class ModelNode extends ModelLeaf {
 
 	@Override
 	public void die() {
-		for(IModelNode child : children) {
-			child.die();
+		while(children.size() > 0) {
+			children.iterator().next().die();
 		}
+		
+//		for(IModelNode child : children) {
+//			child.die();
+//		}
 		super.die();
 	}
 }

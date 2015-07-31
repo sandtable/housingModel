@@ -19,7 +19,7 @@ public class HouseholdStats extends ModelLeaf implements ITriggerable {
 //		this.root = parent.mustGet();
 		households = parent.mustFind(Households.class);
 		construction = parent.mustFind(Construction.class);
-		Trigger.monthly().schedule(this);
+		Trigger.monthly().schedule(this); // TODO: does this ever need to stop?
 	}
 	
 	public void trigger() {

@@ -138,7 +138,7 @@ public class Mortgage extends InvestmentAccount {
 			}
 			centralBank = parent.mustFind(CentralBank.class);
 			depositAccountOwner = parent.mustGet(DepositAccount.Owner.class);
-			Trigger.monthly().schedule(this);
+			Trigger.monthly().schedule(this); //TODO: deal with death of lender
 		}
 		
 		/***
@@ -146,7 +146,7 @@ public class Mortgage extends InvestmentAccount {
 		 */
 		public void trigger() {
 			behaviour.recalcInterestRate(supplyVal);
-			System.out.println("nLoans = "+nLoans);
+//			System.out.println("nLoans = "+nLoans);
 			nLoans = 0;
 			nOverLTICapLoans = 0;
 			nOverLTVCapLoans = 0;

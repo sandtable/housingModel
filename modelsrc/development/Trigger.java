@@ -31,10 +31,11 @@ public class Trigger {
 		}
 
 		@Override
-		public void schedule(ITriggerable iListener) {
+		public StoppableSteppableTrigger schedule(ITriggerable iListener) {
 			active = true;
 			listener = iListener;
 			sendToSchedule();
+			return(this);
 		}
 		
 		@Override
@@ -48,6 +49,18 @@ public class Trigger {
 
 		abstract public void sendToSchedule(); // actually put this object on the schedule
 		
+		public void scheduleOnce(double time) {
+			ModelBase.root.schedule.scheduleOnce(time, this);			
+		}
+		
+		public Stoppable scheduleRepeating(double startTime, double period) {
+			return(ModelBase.root.schedule.scheduleRepeating(startTime, this, period));	
+		}
+
+		public void scheduleOnceIn(double delay) {
+			ModelBase.root.schedule.scheduleOnce(ModelTime.now().raw()+delay, this);	
+		}
+
 		boolean 		active;
 		ITriggerable 	listener;
 	}
@@ -55,23 +68,23 @@ public class Trigger {
 	@SuppressWarnings("serial")
 	static public class Once extends StoppableSteppableTrigger {
 		public Once(ModelTime triggerTime) {
-			time = triggerTime.raw();
+			this.triggerTime = triggerTime.raw();
 		}
 		@Override
 		public void sendToSchedule() {
-			ModelBase.root.schedule.scheduleOnce(time, this);
+			scheduleOnce(triggerTime);
 		}
-		double time;
+		double triggerTime;
 	}
 
 	@SuppressWarnings("serial")
 	static public class OnceAfter extends StoppableSteppableTrigger {
 		public OnceAfter(ModelTime triggerDelay) {
-			delay = Math.nextUp(triggerDelay.raw());
+			delay = triggerDelay.raw();
 		}
 		@Override
 		public void sendToSchedule() {
-			ModelBase.root.schedule.scheduleOnce(ModelTime.now().raw()+delay, this);
+			scheduleOnceIn(delay);
 		}
 		double delay;
 	}
@@ -120,9 +133,10 @@ public class Trigger {
 		}
 
 		@Override
-		public void schedule(ITriggerable listener) {
+		public StoppableSteppableTrigger schedule(ITriggerable listener) {
 			scheduleEndTrigger();
 			baseTrigger.schedule(listener);
+			return(baseTrigger);
 		}
 
 		@Override
@@ -193,7 +207,8 @@ public class Trigger {
 	static public ITrigger onDemand() {
 		return(new ITrigger() {
 			@Override
-			public void schedule(ITriggerable contract) {
+			public StoppableSteppableTrigger schedule(ITriggerable contract) {
+				return(null);
 			}
 			@Override
 			public void stop() {

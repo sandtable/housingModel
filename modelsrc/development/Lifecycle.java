@@ -23,17 +23,20 @@ public class Lifecycle extends ModelLeaf {
 		birthday = ModelTime.now().minus(birthAge);
 		deathday = birthday.plus(deathAge);
 		// schedule death
-		Trigger.timeIs(deathday).schedule(new ITriggerable() {public void trigger() {die();}});
+//		Trigger.timeIs(deathday).schedule(new ITriggerable() {public void trigger() {die();}});
 	}
 	
 	@Override
 	public void start(final IModelNode parent) {
 		super.start(parent);
-		Trigger.timeIs(deathday).schedule(new ITriggerable() {public void trigger() {parent.die();}});
+		Trigger.timeIs(deathday).schedule(new ITriggerable() {public void trigger() {
+	//		System.out.println("Death!!");
+			inheritance();
+			parent.die();}});
 	}
 	
-	@Override
-	public void die() {
+	public void inheritance() {
+		/** Do Inheritance stuff before the agent dies
 		DepositAccount.Owner accounts = parent().get(DepositAccount.Owner.class);
 		Government government = parent().get(Government.class);
 		if(accounts != null && government != null) {
@@ -41,7 +44,7 @@ public class Lifecycle extends ModelLeaf {
 				ac.transfer(government.bankAccount(), ac.balance);
 			}
 		}
-		super.die();
+		**/
 	}
 			
 	public ModelTime age() {

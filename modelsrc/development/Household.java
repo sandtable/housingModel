@@ -25,7 +25,7 @@ public class Household extends EconAgent {
 		parent.mustFind(Bank.class).openAccount(mustGet(DepositAccount.Owner.class));
 		parent.mustFind(Firm.class).employ(mustGet(Employee.class));
 		// trigger that we're homeless
-		Trigger.after(ModelTime.now()).schedule(new Message.EndOfContract(null), get(Renter.class));
+		Trigger.after(ModelTime.day()).schedule(new Message.EndOfContract(null), get(Renter.class));
 	}
 	
 	public boolean isOwnerOccupier() {

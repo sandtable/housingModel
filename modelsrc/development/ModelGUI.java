@@ -4,11 +4,17 @@ import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
+
+import org.jfree.data.xy.XYSeries;
+
 import sim.display.Console;
 import sim.display.Controller;
 import sim.display.GUIState;
 import sim.engine.SimState;
 import sim.engine.Steppable;
+import sim.engine.Stoppable;
+import sim.util.Valuable;
 import sim.util.media.chart.ScatterPlotGenerator;
 import sim.util.media.chart.ScatterPlotSeriesAttributes;
 import sim.util.media.chart.TimeSeriesAttributes;
@@ -152,23 +158,24 @@ public class ModelGUI extends GUIState implements Steppable {
         marketStats.clearAllSeries(); /// NOTE THIS ISN'T IN LOAD(...)
         tenure.clearAllSeries();
         
-        ChartUtilities.scheduleSeries(this, hpi, new sim.util.Valuable() {
+        scheduleSeries(this, hpi, new sim.util.Valuable() {
         	public double doubleValue() {
         		//return root.get(HouseSaleMarket.class).housePriceIndex; }});
-        		return root.get(HouseSaleMarket.class).housePriceIndex; }});
-        ChartUtilities.scheduleSeries(this, daysOnMarket, new sim.util.Valuable() {
+        		return root.mustGet(HouseSaleMarket.class).housePriceIndex; }});
+        
+        scheduleSeries(this, daysOnMarket, new sim.util.Valuable() {
         	public double doubleValue() {
-        		return root.get(HouseSaleMarket.class).averageDaysOnMarket.value(); }});
+        		return root.mustGet(HouseSaleMarket.class).averageDaysOnMarket.value(); }});
 
-        ChartUtilities.scheduleSeries(this, nHouseholds, new sim.util.Valuable() {
+        scheduleSeries(this, nHouseholds, new sim.util.Valuable() {
         	public double doubleValue() {
         		return root.mustGet(HouseholdStats.class).nHouseholds; }});
-        ChartUtilities.scheduleSeries(this, ownerOccupier, new sim.util.Valuable() {
+        scheduleSeries(this, ownerOccupier, new sim.util.Valuable() {
         	public double doubleValue() {
-        		return root.get(HouseholdStats.class).nOwnerOccupier; }});
-        ChartUtilities.scheduleSeries(this, nPrivateHousing, new sim.util.Valuable() {
+        		return root.mustGet(HouseholdStats.class).nOwnerOccupier; }});
+        scheduleSeries(this, nPrivateHousing, new sim.util.Valuable() {
         	public double doubleValue() {
-        		return root.get(HouseholdStats.class).nPrivateHousing; }});
+        		return root.mustGet(HouseholdStats.class).nPrivateHousing; }});
 
         /***
         addSeries(housePriceChart, "Modelled prices", Collectors.housingMarketStats.priceData);
@@ -264,5 +271,36 @@ public class ModelGUI extends GUIState implements Steppable {
 	public Object getSimulationInspectedObject() {
 		return state;
 	}
+	
+	  public static Stoppable scheduleSeries(final GUIState state, final TimeSeriesAttributes attributes, 
+		        final Valuable valueProvider)
+		        {
+		        return state.state.schedule.scheduleRepeating(new Steppable()
+		            {
+		            final XYSeries series = attributes.getSeries();
+		            double last = state.state.schedule.BEFORE_SIMULATION;
+		            public void step(SimState state)
+		                {
+		                final double x = state.schedule.getTime();
+		                if (x > last && x >= state.schedule.EPOCH && x < state.schedule.AFTER_SIMULATION)
+		                    {
+		                    last = x;
+		                    final double value = (valueProvider == null) ? Double.NaN : valueProvider.doubleValue();
+		                                        
+		                    // JFreeChart isn't synchronized.  So we have to update it from the Swing Event Thread
+		                    SwingUtilities.invokeLater(new Runnable()
+		                        {
+		                        public void run()
+		                            {
+		                            attributes.possiblyCull();
+		                            series.add(x, value, true);
+		                            }
+		                        });
+		                    // this will get pushed on the swing queue late
+		                    attributes.getGenerator().updateChartLater(state.schedule.getSteps());
+		                    }
+		                }
+		            }, 1.0);
+		        }
 
 }

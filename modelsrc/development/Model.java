@@ -34,11 +34,11 @@ public class Model extends ModelBase {
 		new Lifecycle.BirthTrigger().schedule(new ITriggerable() {
 			public void trigger() {
 				households.add(new Household());
-				System.out.println("Birth!! "+households.size());
+//				System.out.println("Birth!! "+households.size());
 			}
 		});
 		
-		Trigger.after(ModelTime.year()).schedule(new ITriggerable() {
+		Trigger.after(ModelTime.years(100)).schedule(new ITriggerable() {
 			public void trigger() {
 				System.out.println("END: Killing");
 				kill();

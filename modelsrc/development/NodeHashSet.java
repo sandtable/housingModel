@@ -42,6 +42,4 @@ public class NodeHashSet<E> extends ModelLeaf implements Iterable<E> {
 	public int size() {
 		return(data.size());
 	}
-	
-	
 }

@@ -50,8 +50,8 @@ public class MarketBid extends Contract {
 		}
 
 		@Override
-		public boolean terminate(Contract contract) {
-			if(super.terminate(contract)) {
+		public boolean ownerDiscarded(Contract contract) {
+			if(super.ownerDiscarded(contract)) {
 				reIssue(((MarketBid)contract), ModelTime.week());
 				return(true);
 			}

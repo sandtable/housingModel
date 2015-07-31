@@ -1,5 +1,6 @@
 package development;
 
+import development.Trigger.StoppableSteppableTrigger;
 import sim.engine.Stoppable;
 
 /**
@@ -10,7 +11,7 @@ import sim.engine.Stoppable;
  * @author daniel
  */
 public interface ITrigger {
-	public void schedule(ITriggerable listener);
+	public StoppableSteppableTrigger schedule(ITriggerable listener);
 	public void schedule(IMessage message, IMessage.IReceiver handler);
 	public void stop();//in Stoppable interface
 }

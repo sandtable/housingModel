@@ -1,6 +1,7 @@
 package development;
 
 
+import sim.engine.Stoppable;
 import contracts.BTLMarketBid;
 import contracts.Contract;
 import contracts.Mortgage;
@@ -17,6 +18,7 @@ public class BTLInvestor extends ModelLeaf implements ITriggerable {
 	Employee				employee;
 	ModelRoot				root;
 	Bank					bank;
+	Stoppable				introspectionTrigger;
 
 	public BTLInvestor() {
 		super(	new RentalContract.Issuer(),
@@ -40,7 +42,7 @@ public class BTLInvestor extends ModelLeaf implements ITriggerable {
 		} else {
 			desiredBTLProperties = 0;
 		}
-		Trigger.monthly().schedule(this);
+		introspectionTrigger = Trigger.monthly().schedule(this);
 	}
 	
 	@Override
@@ -84,6 +86,12 @@ public class BTLInvestor extends ModelLeaf implements ITriggerable {
 		for(RentalMarketOffer offer : mustGet(RentalMarketOffer.Issuer.class)) {
 			offer.reducePrice(rethinkBuyToLetRent(offer.currentPrice));
 		}
+	}
+	
+	@Override
+	public void die() {
+		introspectionTrigger.stop();
+		super.die();
 	}
 
 	void putHouseOnRentalMarket(House house) {

@@ -38,8 +38,8 @@ public class InvestmentAccount extends DepositAccount implements ITriggerable {
 	}
 	
 	@Override
-	public boolean terminate() {
-		if(super.terminate()) {
+	public boolean ownerDiscarded() {
+		if(super.ownerDiscarded()) {
 			interestPaymentTrigger.stop();
 			return(true);
 		}

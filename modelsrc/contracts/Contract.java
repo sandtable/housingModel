@@ -15,26 +15,30 @@ import development.NodeHashSet;
  *
  */
 public class Contract implements IMessage {
-	final IIssuer	 		issuer; // should be EconAgent?
+	final IIssuer	 					issuer; // should be EconAgent?
+	IOwner								owner;
 	public static final boolean			trace = false;
 
 	public Contract(IIssuer issuer) {
 		this.issuer = issuer;
 	}
 	
-	public boolean terminate() {
-		return(issuer.terminate(this));
-//		if(issuer != null && issuer.terminate(this)) {
-//			issuer = null;
-//			return(true);
-//		}
-//		return(false);
+	public boolean ownerDiscarded() {
+		return(issuer.ownerDiscarded(this));
+	}
+
+	public boolean issuerTerminated() {
+		return(owner.issuerTerminated(this));
 	}
 
 	IIssuer getIssuer() {
 		return(issuer);
 	}
-	
+
+	IOwner getOwner() {
+		return(owner);
+	}
+
 //	public interface Set {
 //		public Class<? extends Contract> getElementClass();
 //		public Iterator<? extends Contract> iterator();
@@ -64,10 +68,36 @@ public class Contract implements IMessage {
 			return(false);
 		}
 				
-		public boolean terminate(Contract contract) {
-			if(!contains(contract)) System.out.println("Error: trying to terminate a contract that I didn't issue");
+		public boolean ownerDiscarded(Contract contract) {
+			if(trace) {
+				if(!contains(contract)) System.out.println("Error: trying to terminate a contract that I didn't issue");
+			}
 			return(remove(contract));
-		}		
+		}
+		
+		// issuer terminates (e.g. upon death)
+		public boolean terminate(CONTRACT contract) {
+			if(remove(contract)) {
+				if(contract.issuerTerminated()) {
+					return(true);
+				} else {
+					add(contract); //TODO: what should we do if the owner refuses to terminate?
+					return(false);
+				}
+			}
+			return(false);
+		}
+		
+		@Override
+		public void die() {
+			while(size() > 0) {
+				if(!terminate(first())) {
+					System.out.println("Error in Contract.Issuer: Can't terminate a contract, but I'm dying!");
+				}
+			}
+			super.die();
+		}
+		
 	}
 	
 	/***
@@ -88,41 +118,57 @@ public class Contract implements IMessage {
 		}
 		
 		public boolean receive(IMessage newContract) {
-			if(newContract instanceof Message.Die) {
-				discardAll();
-				return(true);
-			} else if(newContract.getClass() == getElementClass()) {
+//			if(newContract instanceof Message.Die) {
+//				discardAll();
+//				return(true);
+			if(newContract.getClass() == getElementClass()) {
 				if(trace) System.out.println(this+" received contract "+newContract);
 				add(getElementClass().cast(newContract));
+				getElementClass().cast(newContract).owner = this;
 				return(true);				
 			}
 			return(false);
 		}
 				
 		public boolean discard(Contract contract) {
-			if(!contract.terminate()) {
+			if(!contract.ownerDiscarded()) {
 				System.out.println("Error: terminate failed");
 				return(false);
 			}
 			return(remove(contract));
 		}
 		
-		public boolean discardAll() {
-			boolean result = true;
-			for(Contract c : this) {
-				result = result && discard(c);
+//		public boolean discardAll() {
+//			boolean result = true;
+//			for(Contract c : this) {
+//				result = result && discard(c);
+//			}
+//			return(result);
+//		}
+		
+		@Override
+		public void die() {
+			while(size() > 0) {
+				if(!discard(first())) {
+					System.out.println("Error in Contract.Owner: Can't terminate a contract, but I'm dying!");
+				}
 			}
-			return(result);
+			super.die();
+		}
+		
+		public boolean issuerTerminated(Contract contract) {
+			return(remove(contract));
 		}
 	}
 	
 	static public interface IIssuer extends IModelNode {
 //		boolean issue(Contract newContract, IMessage.IReceiver owner);
-		boolean terminate(Contract contract); // termination of the contract early or after execution
+		boolean ownerDiscarded(Contract contract); // termination of the contract early or after execution
 	}
 	static public interface IOwner extends IModelNode, IMessage.IReceiver {
-		boolean discard(Contract contract);		
-		boolean discardAll();
+		boolean discard(Contract contract);
+//		boolean discardAll();
+		boolean issuerTerminated(Contract contract);
 		int size();
 	}
 }

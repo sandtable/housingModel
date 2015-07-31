@@ -28,7 +28,7 @@ public class Construction extends EconAgent implements ITriggerable {
 		root = parent.mustFind(ModelRoot.class);
 		
 		parent.get(Bank.class).openAccount(get(DepositAccount.Owner.class));
-		Trigger.monthly().schedule(this);
+		Trigger.monthly().schedule(this); // TODO: deal with death of construction sector?
 		super.start(parent);
 	}
 	
@@ -49,7 +49,7 @@ public class Construction extends EconAgent implements ITriggerable {
 		House newBuild;
 		long price;
 
-		System.out.println("Building a new house");
+//		System.out.println("Building a new house");
 		newBuild = new House(houseSaleMarket, rentalMarket, root);
 		get(TangibleAsset.Owner.class).receive(newBuild);
 		++housingStock;

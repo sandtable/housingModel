@@ -1,5 +1,6 @@
 package development;
 
+import sim.engine.Stoppable;
 import contracts.DemandForPayment;
 import contracts.DepositAccount;
 import contracts.Mortgage;
@@ -22,6 +23,7 @@ public class OwnerOccupier extends EconAgent implements ITriggerable, TangibleAs
 //	MarketOffer.Issuer  marketOfferIssuer;
 	ModelRoot			root;
 	Bank				bank;
+	Stoppable			introspectionTrigger;
 
 	public OwnerOccupier() {
 		super(	new SaleMarketOffer.Issuer(),
@@ -41,8 +43,14 @@ public class OwnerOccupier extends EconAgent implements ITriggerable, TangibleAs
 		addDependency(parent.mustGet(Mortgage.Borrower.class));
 		renter = parent.get(Renter.class);
 		DOWNPAYMENT_FRACTION = 0.1 + 0.0025*root.random.nextGaussian();
-		Trigger.monthly().schedule(this);
+		introspectionTrigger = Trigger.monthly().schedule(this);
 		super.start(parent);
+	}
+	
+	@Override
+	public void die() {
+		introspectionTrigger.stop();
+		super.die();
 	}
 	
 	@Override

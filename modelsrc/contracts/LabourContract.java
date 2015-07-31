@@ -18,8 +18,8 @@ public class LabourContract extends Contract {
 	}
 	
 	@Override
-	public boolean terminate() {
-		if(super.terminate()) {
+	public boolean ownerDiscarded() {
+		if(super.ownerDiscarded()) {
 			trigger.stop();
 			return(true);
 		}
