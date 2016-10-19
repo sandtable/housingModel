@@ -1,2 +1,11 @@
 /bin/
 /experiments
+*.class
+coreIndicator-*.csv
+output-0.csv
+*.csv
+r-*
+*.pyc
+config.properties
+model.jar
+.metadata

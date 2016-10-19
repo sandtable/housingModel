@@ -6,16 +6,54 @@ import org.apache.commons.math3.distribution.LogNormalDistribution;
 
 import ec.util.MersenneTwisterFast;
 
+import java.util.Properties;
+import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.InputStream;
+
 /**
  * This class implements the behavioural decisions made by households
  *
  * @author daniel
  */
+class PropertyReader {
+	private static String path = "config.properties";
+	private Properties prop = new Properties();
+
+	public PropertyReader() {
+		InputStream input = null;
+
+		try {
+			input = new FileInputStream(path);
+			// load a properties file
+			prop.load(input);
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		} finally {
+			if (input != null) {
+				try {
+					input.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+	}
+
+	public String get(String var) {
+		return(prop.getProperty(var));
+	}
+}
+
+
 public class HouseholdBehaviour implements Serializable {// implements IHouseholdBehaviour {
+
+	private PropertyReader properties = new PropertyReader();
+
 	private static final long serialVersionUID = -7785886649432814279L;
 	public static LogNormalDistribution FTB_DOWNPAYMENT = new LogNormalDistribution(null, 10.30, 0.9093);
 	public static LogNormalDistribution OO_DOWNPAYMENT = new LogNormalDistribution(null, 11.155, 0.7538);
-
 
 	// Buy-To-Let parameters
 	static public double P_INVESTOR = 0.16; 		// Prior probability of being (wanting to be) a property investor (should be 4%)
@@ -32,7 +70,8 @@ public class HouseholdBehaviour implements Serializable {// implements IHousehol
 
 	// General Parameters
 	public final double BANK_BALANCE_FOR_CASH_DOWNPAYMENT = 2.0; // if bankBalance/housePrice is above this, payment will be made fully in cash
-	public final double HPA_EXPECTATION_WEIGHT = 0.5; 		// expectation value for HPI(t+DT) = HPI(t) + WEIGHT*DT*dHPI/dt (John Muellbauer: less than 1)
+	public final double HPA_EXPECTATION_WEIGHT = Float.parseFloat(properties.get("HPA_EXPECTATION_WEIGHT"));
+	// public final double HPA_EXPECTATION_WEIGHT = 0.5; 		// expectation value for HPI(t+DT) = HPI(t) + WEIGHT*DT*dHPI/dt (John Muellbauer: less than 1)
 	static public double P_SELL = 1.0/(11.0*12.0);  // monthly probability of Owner-Occupier selling home (British housing survey 2008)
 
 	// House price reduction behaviour. Calibrated against Zoopla data at BoE
