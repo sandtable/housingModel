@@ -15,7 +15,7 @@ public class Demographics {
 	 * at time t=0
 	 * Calibrated against (LCFS 2012)
 	 */
-	public static Pdf pdfAge = new Pdf("modelsrc/data/AgeMarginalPDFstatic.csv");
+	public static Pdf pdfAge = new Pdf("AgeMarginalPDFstatic.csv");
 
 	/**
 	 * Probability density by age of the representative householder given that
