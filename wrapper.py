@@ -23,7 +23,7 @@ class WrappedModel(ShellSimulator):
         #     '-classpath',
         #     'modelsrc/:collectorsrc/:lib/bsh-2.0b4.jar:lib/commons-csv-1.1.jar:lib/commons-math3-3.3.jar:lib/itext-1.2.jar:lib/jcommon-1.0.21.jar:lib/jfreechart-1.0.17.jar:lib/jmf.jar:lib/mason.18.jar:lib/portfolio.jar:lib/vecmath.jar',
         #     'housing.Model']
-        self.command = ['java', '-jar', 'model.jar']
+        self.command = ['java', '-jar', 'housingModel_ST.jar']
 
     def pre_processing(self):
         with open('config.properties', 'w') as f_config:

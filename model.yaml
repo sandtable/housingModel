@@ -9,7 +9,7 @@ sim_files:
   - type: simpy_module
     filepath: wrapper.py
   - type: java
-    filepath: model.jar
+    filepath: housingModel_ST.jar
 
 control_parameters:
   logging: debug
