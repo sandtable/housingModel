@@ -1,6 +1,6 @@
 project: housing_inet
 
-version: 0.0.1.0
+version: 0.0.2.0
 
 description: |
   Wrapper for INET's housing model
@@ -114,8 +114,8 @@ replication_analysis:
 replication_data_schema:
   - name: output
     columns:
-      - {name: "Model time", type: real}
-      - {name: "NRegisteredMortgages", type: real}
+      - {name: "Model time", type: int}
+      - {name: "NRegisteredMortgages", type: int}
       - {name: "nBtL(gene)", type: int}
       - {name: "nEmpty", type: int}
       - {name: "nHomeless", type: int}
