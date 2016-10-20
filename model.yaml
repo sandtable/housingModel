@@ -1,6 +1,6 @@
 project: housing_inet
 
-version: 0.0.2.0
+version: 0.0.5.0
 
 description: |
   Wrapper for INET's housing model
@@ -10,6 +10,10 @@ sim_files:
     filepath: wrapper.py
   - type: java
     filepath: housingModel_ST.jar
+  - type: data1
+    filepath: modelsrc/data/AgeMarginalPDFstatic.csv
+  - type: data2
+    filepath: modelsrc/data/IncomeGivenAge.csv
 
 control_parameters:
   logging: debug

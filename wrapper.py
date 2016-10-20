@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-
-import sys
-import json
 from glob import glob
+import json
+import os
+import sys
 
 import logging
 logger = logging.getLogger(__name__)
@@ -18,22 +18,27 @@ class WrappedModel(ShellSimulator):
 
     def __init__(self, config):
         super(WrappedModel, self).__init__(config)
-        # self.command = [
-        #     'java',
-        #     '-classpath',
-        #     'modelsrc/:collectorsrc/:lib/bsh-2.0b4.jar:lib/commons-csv-1.1.jar:lib/commons-math3-3.3.jar:lib/itext-1.2.jar:lib/jcommon-1.0.21.jar:lib/jfreechart-1.0.17.jar:lib/jmf.jar:lib/mason.18.jar:lib/portfolio.jar:lib/vecmath.jar',
-        #     'housing.Model']
+
+        # change directory
+        logger.info('change working directory: {}'.format(os.getcwd()))
+        os.chdir(self.output_folder)
+
         self.command = ['java', '-jar', 'housingModel_ST.jar']
 
     def pre_processing(self):
+        #config_prop = os.path.join(self.output_folder, 'config.properties')
         with open('config.properties', 'w') as f_config:
-            f_config.write('\n'.join(['{}={}'.format(k, v) for k, v in self.model_parameters.items()]))
+            f_config.write('\n'.join(['{}={}'.format(k, v)
+                           for k, v in self.model_parameters.items()]))
 
     def post_processing(self):
         self.output_file['output'] = self.get_output()
         self.output_file['coreIndicator'] = self.get_indicator('coreIndicator')
 
+        self.close_output_file()
+
     def get_output(self):
+        #df = pd.read_csv(os.path.join(self.output_folder, 'output-0.csv'))
         df = pd.read_csv('output-0.csv')
         # Remove unnecessary whitespace
         df.columns = [c.strip() for c in df.columns]
@@ -47,6 +52,7 @@ class WrappedModel(ShellSimulator):
         df['tick'] = range(len(df))
         df = df[np.hstack(('tick', df.columns[:-1]))]
         return df
+
 
 if __name__ == "__main__":
     args = sys.argv

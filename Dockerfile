@@ -1,11 +1,10 @@
-FROM sandtable/scipystack:latest
+FROM openjdk:8-jdk-alpine
 
-RUN apk add openjdk8-jre
-
-ADD housingModel_ST.jar /opt/
-
+ADD config.properties /opt/
 ADD modelsrc/data/AgeMarginalPDFstatic.csv /opt/
 ADD modelsrc/data/IncomeGivenAge.csv /opt/
+
+ADD housingModel_ST.jar /opt/
 
 WORKDIR /opt
 
