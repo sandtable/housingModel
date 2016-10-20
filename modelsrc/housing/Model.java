@@ -47,7 +47,8 @@ public class Model extends SimState implements Steppable {
 	public static void main(String[] args) {
 		long seed = Long.parseLong(args[0]);
 		String paramsFile = args[1];
-		Model model = new Model(seed, paramsFile);
+		String outputDir = args[2];
+		Model model = new Model(seed, paramsFile, outputDir);
 		model.start();
 		double time;
 		while((time = model.schedule.getTime()) < N_STEPS)
@@ -58,13 +59,14 @@ public class Model extends SimState implements Steppable {
 		model.finish();
 	}
 
-	public Model(long seed, String paramsFile) {
+	public Model(long seed, String paramsFile, String outputDir) {
 		super(seed);
 		System.out.println(seed);
 		System.out.println(paramsFile);
+		System.out.println(outputDir);
 		government = new Government();
 		demographics = new Demographics(paramsFile);
-		recorder = new Recorder();
+		recorder = new Recorder(outputDir);
 		transactionRecorder = new MicroDataRecorder();
 		rand = new MersenneTwister(seed);
 

@@ -1,5 +1,6 @@
 package housing;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -12,23 +13,29 @@ import org.apache.commons.math3.linear.ArrayRealVector;
  *
  */
 public class Recorder {
+
+	public String outputDir;
+
+	public Recorder(String output) {
+		outputDir = output;
+	}
 	
 	public void start() throws FileNotFoundException, UnsupportedEncodingException {
 		// --- open files for core indicators
-        ooLTI = new PrintWriter("coreIndicator-ooLTI.csv", "UTF-8");
-        btlLTV = new PrintWriter("coreIndicator-btlLTV.csv", "UTF-8");
-        creditGrowth = new PrintWriter("coreIndicator-creditGrowth.csv", "UTF-8");
-        debtToIncome = new PrintWriter("coreIndicator-debtToIncome.csv", "UTF-8");
-        ooDebtToIncome = new PrintWriter("coreIndicator-ooDebtToIncome.csv", "UTF-8");
-        mortgageApprovals = new PrintWriter("coreIndicator-mortgageApprovals.csv", "UTF-8");
-        housingTransactions = new PrintWriter("coreIndicator-housingTransactions.csv", "UTF-8");
-        advancesToFTBs = new PrintWriter("coreIndicator-advancesToFTB.csv", "UTF-8");
-        advancesToBTL = new PrintWriter("coreIndicator-advancesToBTL.csv", "UTF-8");
-        advancesToHomeMovers = new PrintWriter("coreIndicator-advancesToMovers.csv", "UTF-8");
-        priceToIncome = new PrintWriter("coreIndicator-priceToIncome.csv", "UTF-8");
-        rentalYield = new PrintWriter("coreIndicator-rentalYield.csv", "UTF-8");
-        housePriceGrowth = new PrintWriter("coreIndicator-housePriceGrowth.csv", "UTF-8");
-        interestRateSpread = new PrintWriter("coreIndicator-interestRateSpread.csv", "UTF-8");
+        ooLTI = new PrintWriter(new File(outputDir, "coreIndicator-ooLTI.csv"), "UTF-8");
+        btlLTV = new PrintWriter(new File(outputDir, "coreIndicator-btlLTV.csv"), "UTF-8");
+        creditGrowth = new PrintWriter(new File(outputDir, "coreIndicator-creditGrowth.csv"), "UTF-8");
+        debtToIncome = new PrintWriter(new File(outputDir, "coreIndicator-debtToIncome.csv"), "UTF-8");
+        ooDebtToIncome = new PrintWriter(new File(outputDir, "coreIndicator-ooDebtToIncome.csv"), "UTF-8");
+        mortgageApprovals = new PrintWriter(new File(outputDir, "coreIndicator-mortgageApprovals.csv"), "UTF-8");
+        housingTransactions = new PrintWriter(new File(outputDir, "coreIndicator-housingTransactions.csv"), "UTF-8");
+        advancesToFTBs = new PrintWriter(new File(outputDir, "coreIndicator-advancesToFTB.csv"), "UTF-8");
+        advancesToBTL = new PrintWriter(new File(outputDir, "coreIndicator-advancesToBTL.csv"), "UTF-8");
+        advancesToHomeMovers = new PrintWriter(new File(outputDir, "coreIndicator-advancesToMovers.csv"), "UTF-8");
+        priceToIncome = new PrintWriter(new File(outputDir, "coreIndicator-priceToIncome.csv"), "UTF-8");
+        rentalYield = new PrintWriter(new File(outputDir, "coreIndicator-rentalYield.csv"), "UTF-8");
+        housePriceGrowth = new PrintWriter(new File(outputDir, "coreIndicator-housePriceGrowth.csv"), "UTF-8");
+        interestRateSpread = new PrintWriter(new File(outputDir, "coreIndicator-interestRateSpread.csv"), "UTF-8");
 		
         newSim = true;
 	}
@@ -37,13 +44,13 @@ public class Recorder {
 		if(newSim) {
 //			String simID = Integer.toHexString(UUID.randomUUID().hashCode());
 	        try {
-				outfile = new PrintWriter("output-"+Model.nSimulation+".csv", "UTF-8");
+				outfile = new PrintWriter(new File(outputDir, "output-"+Model.nSimulation+".csv"), "UTF-8");
 		    	outfile.println(
 		    			"Model time, NRegisteredMortgages, nBtL(gene), nEmpty, nHomeless, nHouseholds, nRenting, AverageBidPrice, "+
 		    			"AverageDaysOnMarket, AverageOfferPrice, BTLSalesProportion, FTBSalesProportion, HPA, HPI, nBuyers, "+
 		    			"nSellers, nSales, nNewBuild, Rental AverageBidPrice, Rental AverageDaysOnMarket, Rental AverageOfferPrice, Rental HPA, Rental HPI, "+
 		    			"Rental nBuyers, Rental nSellers, Rental nSales, averageNewRentalGrossYield, nBtL(active), ProportionOfHousingStockBtL");
-		        paramfile = new PrintWriter("parameters-"+Model.nSimulation+".csv", "UTF-8");
+		        paramfile = new PrintWriter(new File(outputDir, "parameters-"+Model.nSimulation+".csv"), "UTF-8");
 		        paramfile.println("BtL P_INVESTOR, CentralBank ICR Limit");
 		        paramfile.println(
 		        		housing.HouseholdBehaviour.P_INVESTOR+", "+

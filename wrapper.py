@@ -3,6 +3,7 @@ from glob import glob
 import json
 import os
 import sys
+import shutil
 
 import logging
 logger = logging.getLogger(__name__)
@@ -16,6 +17,9 @@ from simpy.shell_simulator import ShellSimulator
 
 class WrappedModel(ShellSimulator):
 
+    config_path = 'config.properties'
+    output_path = '.'
+
     def __init__(self, config):
         super(WrappedModel, self).__init__(config)
 
@@ -23,11 +27,14 @@ class WrappedModel(ShellSimulator):
         logger.info('change working directory: {}'.format(os.getcwd()))
         os.chdir(self.output_folder)
 
-        self.command = ['java', '-jar', 'housingModel_ST.jar']
+        shutil.copyfile('../../housingModel_ST.jar', 'housingModel_ST.jar')
+        shutil.copyfile('../../modelsrc/data/AgeMarginalPDFstatic.csv', 'AgeMarginalPDFstatic.csv')
+        shutil.copyfile('../../modelsrc/data/IncomeGivenAge.csv', 'IncomeGivenAge.csv')
+        self.command = ['java', '-jar', '../../housingModel_ST.jar', str(self.control_parameters['seed']), self.config_path, self.output_path]
 
     def pre_processing(self):
         #config_prop = os.path.join(self.output_folder, 'config.properties')
-        with open('config.properties', 'w') as f_config:
+        with open(self.config_path, 'w') as f_config:
             f_config.write('\n'.join(['{}={}'.format(k, v)
                            for k, v in self.model_parameters.items()]))
 
