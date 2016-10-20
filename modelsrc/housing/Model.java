@@ -38,16 +38,32 @@ public class Model extends SimState implements Steppable {
 
 	////////////////////////////////////////////////////////////////////////
 
+	// public static void main(String[] args) {
+	// 	//doLoop(ModelNoGUI.class, args);
+	// 	doLoop(Model.class,args);
+	// 	System.exit(0);//Stop the program when finished.
+	// }
+
 	public static void main(String[] args) {
-		//doLoop(ModelNoGUI.class, args);
-		doLoop(Model.class,args);
-		System.exit(0);//Stop the program when finished.
+		long seed = Long.parseLong(args[0]);
+		String paramsFile = args[1];
+		Model model = new Model(seed, paramsFile);
+		model.start();
+		double time;
+		while((time = model.schedule.getTime()) < N_STEPS)
+			{
+			if (!model.schedule.step(model)) break;
+			if (time%100==0 && time!=0)            System.out.println("Time Step " + time);
+			}
+		model.finish();
 	}
 
-	public Model(long seed) {
+	public Model(long seed, String paramsFile) {
 		super(seed);
+		System.out.println(seed);
+		System.out.println(paramsFile);
 		government = new Government();
-		demographics = new Demographics();
+		demographics = new Demographics(paramsFile);
 		recorder = new Recorder();
 		transactionRecorder = new MicroDataRecorder();
 		rand = new MersenneTwister(seed);
@@ -105,12 +121,12 @@ public class Model extends SimState implements Steppable {
 	 */
 	public void start() {
 		super.start();
-        scheduleRepeat = schedule.scheduleRepeating(this);
+		scheduleRepeat = schedule.scheduleRepeating(this);
 
-        if(!monteCarloCheckpoint.equals("")) {//changed from != ""
-        	File f = new File(monteCarloCheckpoint);
-        	readFromCheckpoint(f);
-        }
+		if(!monteCarloCheckpoint.equals("")) {//changed from != ""
+			File f = new File(monteCarloCheckpoint);
+			readFromCheckpoint(f);
+		}
 			// recorder.start();
 	}
 	
@@ -157,9 +173,9 @@ public class Model extends SimState implements Steppable {
 		housingMarket.clearMarket();
 		collectors.rentalMarketStats.record();
 		rentalMarket.clearMarket();
-        bank.step();
-        centralBank.step(getCoreIndicators());
-        t += 1;        
+		bank.step();
+		centralBank.step(getCoreIndicators());
+		t += 1;        
 	}
 	
 	

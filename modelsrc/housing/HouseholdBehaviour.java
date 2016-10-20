@@ -49,7 +49,7 @@ class PropertyReader {
 
 public class HouseholdBehaviour implements Serializable {// implements IHouseholdBehaviour {
 
-	private PropertyReader properties = new PropertyReader();
+	private PropertyReader properties;
 
 	private static final long serialVersionUID = -7785886649432814279L;
 	public static LogNormalDistribution FTB_DOWNPAYMENT = new LogNormalDistribution(null, 10.30, 0.9093);
@@ -70,7 +70,7 @@ public class HouseholdBehaviour implements Serializable {// implements IHousehol
 
 	// General Parameters
 	public final double BANK_BALANCE_FOR_CASH_DOWNPAYMENT = 2.0; // if bankBalance/housePrice is above this, payment will be made fully in cash
-	public final double HPA_EXPECTATION_WEIGHT = Float.parseFloat(properties.get("HPA_EXPECTATION_WEIGHT"));
+	public final double HPA_EXPECTATION_WEIGHT;
 	// public final double HPA_EXPECTATION_WEIGHT = 0.5; 		// expectation value for HPI(t+DT) = HPI(t) + WEIGHT*DT*dHPI/dt (John Muellbauer: less than 1)
 	static public double P_SELL = 1.0/(11.0*12.0);  // monthly probability of Owner-Occupier selling home (British housing survey 2008)
 
@@ -123,7 +123,10 @@ public class HouseholdBehaviour implements Serializable {// implements IHousehol
 	 * @param incomePercentile the fixed income percentile for the household (assumed constant over a lifetime),
 	 *                         used to determine whether the household can be a BTL investor
      ***************************************************/
-	public HouseholdBehaviour(double incomePercentile) {
+	public HouseholdBehaviour(double incomePercentile, String paramsFile) {
+		properties = new PropertyReader();
+		HPA_EXPECTATION_WEIGHT = Float.parseFloat(properties.get("HPA_EXPECTATION_WEIGHT"));
+
 		propensityToSave = 0.1*Model.rand.nextGaussian();
 		BtLCapGainCoeff = 0.0;
 		if(Household.BTL_ENABLED) {

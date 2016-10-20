@@ -16,6 +16,11 @@ import utilities.Pdf;
 public class Demographics {
 	public static final int TARGET_POPULATION = 10000;  	// target number of households
 	public static final boolean SPINUP = false;
+	public static String params;
+
+	public Demographics(String paramsFile) {
+		params = paramsFile;
+	}
 
 	/***
 	 * Add newly 'born' households to the model and remove households that 'die'
@@ -28,13 +33,13 @@ public class Demographics {
 			// --- still in spinup phase of simulation
 			nBirths = (int)(spinupBirthRatePerHousehold.getEntry((int)(Model.getTime()/12.0))*TARGET_POPULATION/12.0 + 0.5);
 			while(--nBirths >= 0) {
-				Model.households.add(new Household(data.Demographics.pdfSpinupHouseholdAgeAtBirth.nextDouble()));
+				Model.households.add(new Household(data.Demographics.pdfSpinupHouseholdAgeAtBirth.nextDouble(), params));
 			}
 		} else {
 			// --- in projection phase of simulation
 			nBirths = (int)(TARGET_POPULATION*data.Demographics.futureBirthRate(Model.getTime())/12.0 + 0.5);
 			while(--nBirths >= 0) {
-				Model.households.add(new Household(data.Demographics.pdfHouseholdAgeAtBirth.nextDouble()));
+				Model.households.add(new Household(data.Demographics.pdfHouseholdAgeAtBirth.nextDouble(), params));
 			}
 		}
 		

@@ -34,7 +34,7 @@ public class Household implements IHouseOwner, Serializable {
 	 * will be a BTL investor). Households start off in social
 	 * housing and with their 'desired bank balance' in the bank.
 	 ********************************************************/
-	public Household(double age) {
+	public Household(double age, String paramsFile) {
 //		bank = Model.bank;
 //		houseMarket = Model.housingMarket;
 //		rentalMarket = Model.rentalMarket;
@@ -43,7 +43,7 @@ public class Household implements IHouseOwner, Serializable {
 		isFirstTimeBuyer = true;
 		id = ++id_pool;
 		lifecycle = new Lifecycle(age);
-		behaviour = new HouseholdBehaviour(lifecycle.incomePercentile);
+		behaviour = new HouseholdBehaviour(lifecycle.incomePercentile, paramsFile);
 		monthlyEmploymentIncome = lifecycle.annualIncome()/12.0;
 		bankBalance = behaviour.desiredBankBalance(this);
 		monthlyPropertyIncome = 0.0;
