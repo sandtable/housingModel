@@ -1,6 +1,6 @@
 project: housing_inet
 
-version: 0.0.5.0
+version: 0.0.6.0
 
 description: |
   Wrapper for INET's housing model
@@ -8,12 +8,8 @@ description: |
 sim_files:
   - type: simpy_module
     filepath: wrapper.py
-  - type: java
+  - type: jar
     filepath: housingModel_ST.jar
-  - type: data1
-    filepath: modelsrc/data/AgeMarginalPDFstatic.csv
-  - type: data2
-    filepath: modelsrc/data/IncomeGivenAge.csv
 
 control_parameters:
   logging: debug
@@ -33,7 +29,6 @@ model_parameters:
     valid_range: {min: 0.0, max: 1.0, step: 0.1}
 
 model_data_files:
-
   - dataset: AgeMarginalPDF
     filepath: modelsrc/data/AgeMarginalPDF.csv
 
