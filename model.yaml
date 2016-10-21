@@ -1,6 +1,6 @@
 project: housing_inet
 
-version: 0.0.6.0
+version: 0.0.3.0
 
 description: |
   Wrapper for INET's housing model
@@ -109,6 +109,15 @@ replication_analysis:
       transform: []
       load:
         - name: output
+  - name: CopyCoreIndicators
+    type: PandasETLStep
+    dependencies: []
+    params:
+      extract:
+        - {name: coreIndicator, type: sim_data}
+      transform: []
+      load:
+        - name: coreIndicator
 
 replication_data_schema:
   - name: output
