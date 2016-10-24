@@ -1,6 +1,6 @@
 project: housing_inet
 
-version: 0.0.5.0
+version: 0.0.6.0
 
 description: |
   Wrapper for INET's housing model
