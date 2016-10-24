@@ -1,6 +1,6 @@
 project: housing_inet
 
-version: 0.0.4.0
+version: 0.0.5.0
 
 description: |
   Wrapper for INET's housing model
@@ -176,10 +176,157 @@ replication_data_schema:
 replication_tests: []
 
 configuration_analysis:
-  []
+  
+  - name: Output (Mean and Std)
+    type: AggregationStep
+    params:
+      name: output
+      index: "Model time"
+      columns:
+        - {name: "NRegisteredMortgages", agg: [mean, std]}
+        - {name: "nBtL(gene)", agg: [mean, std]}
+        - {name: "nEmpty", agg: [mean, std]}
+        - {name: "nHomeless", agg: [mean, std]}
+        - {name: "nHouseholds", agg: [mean, std]}
+        - {name: "nRenting", agg: [mean, std]}
+        - {name: "AverageBidPrice", agg: [mean, std]}
+        - {name: "AverageDaysOnMarket", agg: [mean, std]}
+        - {name: "AverageOfferPrice", agg: [mean, std]}
+        - {name: "BTLSalesProportion", agg: [mean, std]}
+        - {name: "FTBSalesProportion", agg: [mean, std]}
+        - {name: "HPA", agg: [mean, std]}
+        - {name: "HPI", agg: [mean, std]}
+        - {name: "nBuyers", agg: [mean, std]}
+        - {name: "nSellers", agg: [mean, std]}
+        - {name: "nSales", agg: [mean, std]}
+        - {name: "nNewBuild", agg: [mean, std]}
+        - {name: "Rental AverageBidPrice", agg: [mean, std]}
+        - {name: "Rental AverageDaysOnMarket", agg: [mean, std]}
+        - {name: "Rental AverageOfferPrice", agg: [mean, std]}
+        - {name: "Rental HPA", agg: [mean, std]}
+        - {name: "Rental HPI", agg: [mean, std]}
+        - {name: "Rental nBuyers", agg: [mean, std]}
+        - {name: "Rental nSellers", agg: [mean, std]}
+        - {name: "Rental nSales", agg: [mean, std]}
+        - {name: "averageNewRentalGrossYield", agg: [mean, std]}
+        - {name: "nBtL(active)", agg: [mean, std]}
+        - {name: "ProportionOfHousingStockBtL", agg: [mean, std]}
+
+  - name: Core Indicator (Mean and Std)
+    type: AggregationStep
+    params:
+      name: coreIndicator
+      index: tick
+      columns:
+        - {name: tick, agg: [mean, std]}
+        - {name: advancesToBTL, agg: [mean, std]}
+        - {name: advancesToFTB, agg: [mean, std]}
+        - {name: advancesToMovers, agg: [mean, std]}
+        - {name: btlLTV, agg: [mean, std]}
+        - {name: creditGrowth, agg: [mean, std]}
+        - {name: debtToIncome, agg: [mean, std]}
+        - {name: housePriceGrowth, agg: [mean, std]}
+        - {name: housingTransactions, agg: [mean, std]}
+        - {name: interestRateSpread, agg: [mean, std]}
+        - {name: mortgageApprovals, agg: [mean, std]}
+        - {name: ooDebtToIncome, agg: [mean, std]}
+        - {name: ooLTI, agg: [mean, std]}
+        - {name: priceToIncome, agg: [mean, std]}
+        - {name: rentalYield, agg: [mean, std]}
 
 configuration_data_schema:
-  []
+  
+  - name: output
+    columns:
+      - {name: "Model time", type: int}
+      - {name: "NRegisteredMortgages_mean", type: real}
+      - {name: "NRegisteredMortgages_std", type: real}
+      - {name: "nBtL(gene)_mean", type: real}
+      - {name: "nBtL(gene)_std", type: real}
+      - {name: "nEmpty_mean", type: real}
+      - {name: "nEmpty_std", type: real}
+      - {name: "nHomeless_mean", type: real}
+      - {name: "nHomeless_std", type: real}
+      - {name: "nHouseholds_mean", type: real}
+      - {name: "nHouseholds_std", type: real}
+      - {name: "nRenting_mean", type: real}
+      - {name: "nRenting_std", type: real}
+      - {name: "AverageBidPrice_mean", type: real}
+      - {name: "AverageBidPrice_std", type: real}
+      - {name: "AverageDaysOnMarket_mean", type: real}
+      - {name: "AverageDaysOnMarket_std", type: real}
+      - {name: "AverageOfferPrice_mean", type: real}
+      - {name: "AverageOfferPrice_std", type: real}
+      - {name: "BTLSalesProportion_mean", type: real}
+      - {name: "BTLSalesProportion_std", type: real}
+      - {name: "FTBSalesProportion_mean", type: real}
+      - {name: "FTBSalesProportion_std", type: real}
+      - {name: "HPA_mean", type: real}
+      - {name: "HPA_std", type: real}
+      - {name: "HPI_mean", type: real}
+      - {name: "HPI_std", type: real}
+      - {name: "nBuyers_mean", type: real}
+      - {name: "nBuyers_std", type: real}
+      - {name: "nSellers_mean", type: real}
+      - {name: "nSellers_std", type: real}
+      - {name: "nSales_mean", type: real}
+      - {name: "nSales_std", type: real}
+      - {name: "nNewBuild_mean", type: real}
+      - {name: "nNewBuild_std", type: real}
+      - {name: "Rental AverageBidPrice_mean", type: real}
+      - {name: "Rental AverageBidPrice_std", type: real}
+      - {name: "Rental AverageDaysOnMarket_mean", type: real}
+      - {name: "Rental AverageDaysOnMarket_std", type: real}
+      - {name: "Rental AverageOfferPrice_mean", type: real}
+      - {name: "Rental AverageOfferPrice_std", type: real}
+      - {name: "Rental HPA_mean", type: real}
+      - {name: "Rental HPA_std", type: real}
+      - {name: "Rental HPI_mean", type: real}
+      - {name: "Rental HPI_std", type: real}
+      - {name: "Rental nBuyers_mean", type: real}
+      - {name: "Rental nBuyers_std", type: real}
+      - {name: "Rental nSellers_mean", type: real}
+      - {name: "Rental nSellers_std", type: real}
+      - {name: "Rental nSales_mean", type: real}
+      - {name: "Rental nSales_std", type: real}
+      - {name: "averageNewRentalGrossYield_mean", type: real}
+      - {name: "averageNewRentalGrossYield_std", type: real}
+      - {name: "nBtL(active)_mean", type: real}
+      - {name: "nBtL(active)_std", type: real}
+      - {name: "ProportionOfHousingStockBtL_mean", type: real}
+      - {name: "ProportionOfHousingStockBtL_std", type: real}
+
+  - name: coreIndicator
+    columns:
+      - {name: tick, type: int}
+      - {name: advancesToBTL_mean, type: real}
+      - {name: advancesToBTL_std, type: real}
+      - {name: advancesToFTB_mean, type: real}
+      - {name: advancesToFTB_std, type: real}
+      - {name: advancesToMovers_mean, type: real}
+      - {name: advancesToMovers_std, type: real}
+      - {name: btlLTV_mean, type: real}
+      - {name: btlLTV_std, type: real}
+      - {name: creditGrowth_mean, type: real}
+      - {name: creditGrowth_std, type: real}
+      - {name: debtToIncome_mean, type: real}
+      - {name: debtToIncome_std, type: real}
+      - {name: housePriceGrowth_mean, type: real}
+      - {name: housePriceGrowth_std, type: real}
+      - {name: housingTransactions_mean, type: real}
+      - {name: housingTransactions_std, type: real}
+      - {name: interestRateSpread_mean, type: real}
+      - {name: interestRateSpread_std, type: real}
+      - {name: mortgageApprovals_mean, type: real}
+      - {name: mortgageApprovals_std, type: real}
+      - {name: ooDebtToIncome_mean, type: real}
+      - {name: ooDebtToIncome_std, type: real}
+      - {name: ooLTI_mean, type: real}
+      - {name: ooLTI_std, type: real}
+      - {name: priceToIncome_mean, type: real}
+      - {name: priceToIncome_std, type: real}
+      - {name: rentalYield_mean, type: real}
+      - {name: rentalYield_std, type: real}
 
 configuration_tests: []
 
