@@ -13,7 +13,7 @@ sim_files:
 
 control_parameters:
   logging: debug
-  ticks: 300
+  ticks: 1500
   agents: 10000
   # seed: 104654501
   # seed: 0
