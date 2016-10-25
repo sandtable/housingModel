@@ -1,0 +1,210 @@
+project: housing_inet
+
+version: 0.0.5.0
+
+description: |
+  Wrapper for INET's housing model
+
+sim_files:
+  - type: simpy_module
+    filepath: wrapper_docker.py
+  - type: jar
+    filepath: housingModel_ST.jar
+
+control_parameters:
+  logging: debug
+  ticks: 300
+  agents: 10000
+  docker_image: inet/housingmodel:0.1
+  # seed: 104654501
+  # seed: 0
+  # sinks: [CommonSink, IndividualSink, TrustsSink]
+
+replications: 1
+
+model_parameters:
+  - name: HPA_EXPECTATION_WEIGHT
+    description: Expectation of future house prices
+    type: real
+    value: 0.2
+    valid_range: {min: 0.0, max: 1.0, step: 0.1}
+
+model_data_files:
+
+  - dataset: AgeMarginalPDF
+    filepath: modelsrc/data/AgeMarginalPDF.csv
+
+  - dataset: AgeMarginalPDFdata
+    filepath: modelsrc/data/AgeMarginalPDFdata.csv
+
+  - dataset: AgeMarginalPDFstatic
+    filepath: modelsrc/data/AgeMarginalPDFstatic.csv
+
+  - dataset: HousePriceDist
+    filepath: modelsrc/data/HousePriceDist.csv
+
+  - dataset: IncomeGivenAge
+    filepath: modelsrc/data/IncomeGivenAge.csv
+
+model_data_schema:
+
+  - name: AgeMarginalPDF
+    columns:
+      - {name: "HRP age min", type: int}
+      - {name: "HRP age max", type: int}
+      - {name: "probability", type: real}
+
+  - name: AgeMarginalPDFdata
+    columns:
+      - {name: "HRP age min", type: int}
+      - {name: "HRP age max", type: int}
+      - {name: "probability", type: real}
+
+  - name: AgeMarginalPDFstatic
+    columns:
+      - {name: "HRP age min", type: int}
+      - {name: "HRP age max", type: int}
+      - {name: "probability", type: real}
+
+  - name: HousePriceDist
+    columns:
+      - {name: year, type: int}
+      - {name: month, type: int}
+      - {name: meanlogprice, type: real}
+      - {name: sdlogprice, type: real}
+
+  - name: IncomeGivenAge
+    columns:
+      - {name: "HRP age min", type: int}
+      - {name: "HRP age max", type: int}
+      - {name: "ln(income) min", type: real}
+      - {name: "ln(income) max", type: real}
+      - {name: "probability", type: real}
+
+model_data_preprocessing: []
+
+model_reference_data_schema:
+  - name: dummy_ref
+    columns:
+      - {name: tick, type: int}
+      - {name: dummy_ref_data, type: real}
+
+
+model_reference_data_preprocessing:
+
+  - name: CreateDummyRef
+    dependencies: []
+    type: ValuesStep
+    params:
+      dataset: dummy_ref
+      columns: [tick, dummy_ref_data]
+      values:
+        - {tick: 0, dummy_ref_data: 0.0}
+
+replication_analysis:
+  - name: CopyOutput
+    type: PandasETLStep
+    dependencies: []
+    params:
+      extract:
+        - {name: output, type: sim_data}
+      transform: []
+      load:
+        - name: output
+
+replication_data_schema:
+  - name: output
+    columns:
+      - {name: "Model time", type: int}
+      - {name: "NRegisteredMortgages", type: int}
+      - {name: "nBtL(gene)", type: int}
+      - {name: "nEmpty", type: int}
+      - {name: "nHomeless", type: int}
+      - {name: "nHouseholds", type: int}
+      - {name: "nRenting", type: int}
+      - {name: "AverageBidPrice", type: real}
+      - {name: "AverageDaysOnMarket", type: real}
+      - {name: "AverageOfferPrice", type: real}
+      - {name: "BTLSalesProportion", type: real}
+      - {name: "FTBSalesProportion", type: real}
+      - {name: "HPA", type: real}
+      - {name: "HPI", type: real}
+      - {name: "nBuyers", type: int}
+      - {name: "nSellers", type: int}
+      - {name: "nSales", type: int}
+      - {name: "nNewBuild", type: int}
+      - {name: "Rental AverageBidPrice", type: real}
+      - {name: "Rental AverageDaysOnMarket", type: real}
+      - {name: "Rental AverageOfferPrice", type: real}
+      - {name: "Rental HPA", type: real}
+      - {name: "Rental HPI", type: real}
+      - {name: "Rental nBuyers", type: int}
+      - {name: "Rental nSellers", type: int}
+      - {name: "Rental nSales", type: int}
+      - {name: "averageNewRentalGrossYield", type: real}
+      - {name: "nBtL(active)", type: int}
+      - {name: "ProportionOfHousingStockBtL", type: real}
+
+  - name: coreIndicator
+    columns:
+      - {name: tick, type: int}
+      - {name: advancesToBTL, type: int}
+      - {name: advancesToFTB, type: int}
+      - {name: advancesToMovers, type: int}
+      - {name: btlLTV, type: real}
+      - {name: creditGrowth, type: real}
+      - {name: debtToIncome, type: real}
+      - {name: housePriceGrowth, type: real}
+      - {name: housingTransactions, type: int}
+      - {name: interestRateSpread, type: real}
+      - {name: mortgageApprovals, type: int}
+      - {name: ooDebtToIncome, type: real}
+      - {name: ooLTI, type: real}
+      - {name: priceToIncome, type: real}
+      - {name: rentalYield, type: real}
+
+
+
+
+replication_tests: []
+
+configuration_analysis:
+  []
+
+configuration_data_schema:
+  []
+
+configuration_tests: []
+
+model_reports: []
+
+scenario_templates:
+
+  - name: Generic Scenario
+    description: Generic scenario
+    parameters:
+      []
+
+scenario_reports: []
+
+metrics:
+  - name: dummy_metric
+    description: Dummy metric
+    type: PooledMeanSquaredErrorMetric
+    agg: {func: mean}
+    params:
+      from: coreIndicator
+      from_column: advancesToBTL
+      from_index: tick
+      ref: dummy_ref
+      ref_column: dummy_ref_data
+      ref_index: tick
+
+model_calibration:
+  model_parameters:
+    - name: HPA_EXPECTATION_WEIGHT
+  metrics:
+    - name: dummy_metric
+  algorithm: enum
+  selection_procedure: sort
+  params: {}
