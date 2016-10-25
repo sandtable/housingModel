@@ -1,6 +1,6 @@
 project: housing_inet
 
-version: 0.0.6.0
+version: 0.0.7.0
 
 description: |
   Wrapper for INET's housing model
@@ -27,6 +27,18 @@ model_parameters:
     type: real
     value: 0.2
     valid_range: {min: 0.0, max: 1.0, step: 0.1}
+
+  - name: firstTimeBuyerLTILimit
+    description: Central bank LTI limit for first-time buyers
+    type: real
+    value: 6.0
+    valid_range: {min: 2.0, max: 10.0, step: 1.0}
+
+  - name: ownerOccupierLTILimit
+    description: Central bank LTI limit for owner-occupiers
+    type: real
+    value: 6.0
+    valid_range: {min: 2.0, max: 10.0, step: 1.0}
 
 model_data_files:
   - dataset: AgeMarginalPDF

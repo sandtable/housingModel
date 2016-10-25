@@ -71,7 +71,7 @@ public class Model extends SimState implements Steppable {
 		transactionRecorder = new MicroDataRecorder();
 		rand = new MersenneTwister(seed);
 
-		centralBank = new CentralBank();
+		centralBank = new CentralBank(paramsFile);
 		mBank = new Bank();
 		mConstruction = new Construction();
 		mHouseholds = new ArrayList<Household>(Demographics.TARGET_POPULATION*2);
