@@ -37,6 +37,7 @@ class WrappedModel(DockerSimulator):
                       '-jar',
                       self.binaries['jar'],
                       str(self.control_parameters['seed']),
+                      str(self.control_parameters['ticks']),
                       config_file,
                       output_folder]
 
