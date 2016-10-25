@@ -4,15 +4,20 @@ import java.io.Serializable;
 
 public class CentralBank implements Serializable {
 	private static final long serialVersionUID = -2857716547766065142L;
+	private PropertyReader properties;
 
-	public CentralBank() {
+	public CentralBank(String paramsFile) {
 		// Setup initial values
+		properties = new PropertyReader(paramsFile);
+
 		firstTimeBuyerLTVLimit = 0.95;
 		ownerOccupierLTVLimit= 0.9;
 		buyToLetLTVLimit = Bank.MAX_BTL_LTV;
 		
-		firstTimeBuyerLTILimit = 6.0;
-		ownerOccupierLTILimit = 6.0;
+		firstTimeBuyerLTILimit = Float.parseFloat(properties.get("firstTimeBuyerLTILimit"));
+		ownerOccupierLTILimit = Float.parseFloat(properties.get("ownerOccupierLTILimit"));
+		// firstTimeBuyerLTILimit = 6.0;
+		// ownerOccupierLTILimit = 6.0;
 //		buyToLetLTILimit = 1000.0; // unregulated
 
 		proportionOverLTILimit= 0.15;

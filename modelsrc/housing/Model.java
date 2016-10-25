@@ -29,7 +29,7 @@ public class Model extends SimState implements Steppable {
 
 	////////////////////////////////////////////////////////////////////////
 
-	public static int N_STEPS = 1000; // Simulation duration in timesteps
+	public static int N_STEPS; // Simulation duration in timesteps
 	public static int TIME_TO_START_RECORDING = 500; // Timesteps to wait before recording statistics (initialisation time)
 	public static int N_SIMS = 1; // Number of simulations to run (monte-carlo)
 
@@ -46,8 +46,9 @@ public class Model extends SimState implements Steppable {
 
 	public static void main(String[] args) {
 		long seed = Long.parseLong(args[0]);
-		String paramsFile = args[1];
-		String outputDir = args[2];
+		N_STEPS = TIME_TO_START_RECORDING + Integer.parseInt(args[1]);
+		String paramsFile = args[2];
+		String outputDir = args[3];
 		Model model = new Model(seed, paramsFile, outputDir);
 		model.start();
 		double time;
@@ -70,7 +71,7 @@ public class Model extends SimState implements Steppable {
 		transactionRecorder = new MicroDataRecorder();
 		rand = new MersenneTwister(seed);
 
-		centralBank = new CentralBank();
+		centralBank = new CentralBank(paramsFile);
 		mBank = new Bank();
 		mConstruction = new Construction();
 		mHouseholds = new ArrayList<Household>(Demographics.TARGET_POPULATION*2);

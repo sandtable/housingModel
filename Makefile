@@ -18,3 +18,12 @@ upload:
 
 project:
 		sandplatform --hostname $(SAND_HOSTNAME) create project project.yaml
+
+fetch-config:
+	mkdir -p platform_results/$(cid) && cd platform_results/$(cid) && sandplatform configurations data get --project_name housing_inet --configuration_id $(cid)
+
+fetch-rslt:
+	mkdir -p platform_results/calibrations/$(mcid) && cd platform_results/calibrations/$(mcid) && sandplatform calibrations results --project_name housing_inet --calibration_id $(mcid) --path parm.dat
+
+fetch-clbr: fetch-rslt
+	mkdir -p platform_results/calibrations/$(mcid) && cd platform_results/calibrations/$(mcid) && sandplatform calibrations data get --project_name housing_inet --calibration_id $(mcid)

@@ -37,6 +37,7 @@ class WrappedModel(ShellSimulator):
                         '-jar',
                         binary,
                         str(self.control_parameters['seed']),
+                        str(self.control_parameters['ticks']),
                         self.config_file,
                         self.output_folder]
 

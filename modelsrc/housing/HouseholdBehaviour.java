@@ -6,46 +6,11 @@ import org.apache.commons.math3.distribution.LogNormalDistribution;
 
 import ec.util.MersenneTwisterFast;
 
-import java.util.Properties;
-import java.io.IOException;
-import java.io.FileInputStream;
-import java.io.InputStream;
-
 /**
  * This class implements the behavioural decisions made by households
  *
  * @author daniel
  */
-class PropertyReader {
-	//private static String path = "config.properties";
-	private Properties prop = new Properties();
-
-	public PropertyReader(String path) {
-		InputStream input = null;
-
-		try {
-			input = new FileInputStream(path);
-			// load a properties file
-			prop.load(input);
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		} finally {
-			if (input != null) {
-				try {
-					input.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-
-	}
-
-	public String get(String var) {
-		return(prop.getProperty(var));
-	}
-}
-
 
 public class HouseholdBehaviour implements Serializable {// implements IHouseholdBehaviour {
 
